@@ -42,6 +42,9 @@ export function formatDate(date: Date | string | undefined | null): string {
  * month is 1-12. Returns '—' for invalid inputs.
  */
 export function formatMonth(month: number | undefined | null, year: number | undefined | null): string {
+  // Narrow types explicitly for TypeScript
+  if (month == null || year == null) return '—'
+  if (typeof month !== 'number' || typeof year !== 'number') return '—'
   if (!Number.isInteger(month) || !Number.isInteger(year)) return '—'
   // month is 1-12; JS Date months are 0-11
   const date = new Date(year, month - 1, 1)
@@ -70,7 +73,6 @@ export function calculateWorkingDays(startDateInput: Date | string, endDateInput
   const cur = new Date(start)
   while (cur <= end) {
     const dayOfWeek = cur.getDay() // 0 = Sun ... 5 = Fri ... 6 = Sat
-    // In UAE typical weekend is Friday; counting rules vary by org.
     if (excludeFriday) {
       if (dayOfWeek !== 5) count++
     } else {
