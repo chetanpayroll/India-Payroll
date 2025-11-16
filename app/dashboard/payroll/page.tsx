@@ -218,7 +218,7 @@ export default function PayrollPage() {
                             year: 'numeric'
                           })}
                         </>
-                      ) : (
+                      ) : run.createdAt ? (
                         <>
                           Created on<br />
                           {new Date(run.createdAt).toLocaleDateString('en-GB', {
@@ -227,6 +227,8 @@ export default function PayrollPage() {
                             year: 'numeric'
                           })}
                         </>
+                      ) : (
+                        <>N/A</>
                       )}
                     </div>
                   </div>
