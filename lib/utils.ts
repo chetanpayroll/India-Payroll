@@ -1,3 +1,5 @@
+// lib/utils.ts - utility helpers for currency, date formatting, and payroll calculations
+
 import { type ClassValue, clsx } from "clsx"
 import { twMerge } from "tailwind-merge"
 
@@ -5,20 +7,29 @@ export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
 }
 
-export function formatCurrency(amount: number | string): string {
-  const num = typeof amount === 'string' ? parseFloat(amount) : amount
+/**
+ * Format a number or numeric string into AED currency.
+ * Returns a safe formatted string; invalid values return "AED 0.00".
+ */
+export function formatCurrency(amount: number | string | undefined | null): string {
+  const n = amount == null ? 0 : (typeof amount === 'string' ? parseFloat(amount) : Number(amount))
+  const value = Number.isFinite(n) ? n : 0
   return new Intl.NumberFormat('en-AE', {
     style: 'currency',
     currency: 'AED',
     minimumFractionDigits: 2,
     maximumFractionDigits: 2,
-  }).format(num)
+  }).format(value)
 }
 
-export function formatDate(date: Date | string | undefined): string {
+/**
+ * Format a Date or ISO date string to 'DD Mon YYYY' (en-GB).
+ * Returns '—' for undefined/invalid inputs.
+ */
+export function formatDate(date: Date | string | undefined | null): string {
   if (!date) return '—'
   const d = typeof date === 'string' ? new Date(date) : date
-  if (isNaN(d.getTime())) return '—'
+  if (!(d instanceof Date) || isNaN(d.getTime())) return '—'
   return new Intl.DateTimeFormat('en-GB', {
     day: '2-digit',
     month: 'short',
@@ -26,36 +37,59 @@ export function formatDate(date: Date | string | undefined): string {
   }).format(d)
 }
 
-export function formatMonth(month: number, year: number): string {
+/**
+ * Format a month/year into a readable string like "November 2024".
+ * month is 1-12. Returns '—' for invalid inputs.
+ */
+export function formatMonth(month: number | undefined | null, year: number | undefined | null): string {
+  if (!Number.isInteger(month) || !Number.isInteger(year)) return '—'
+  // month is 1-12; JS Date months are 0-11
   const date = new Date(year, month - 1, 1)
-  return new Intl.DateFormat('en-GB', {
+  if (isNaN(date.getTime())) return '—'
+  return new Intl.DateTimeFormat('en-GB', {
     month: 'long',
-    year: 'numeric',
+    year: 'numeric'
   }).format(date)
 }
 
-export function calculateWorkingDays(startDate: Date, endDate: Date): number {
-  const start = new Date(startDate)
-  const end = new Date(endDate)
+/**
+ * Calculate working days between two dates (inclusive).
+ * By default excludes Friday (day 5) as non-working day for UAE.
+ * Accepts Date or date-like inputs; returns 0 for invalid dates.
+ */
+export function calculateWorkingDays(startDateInput: Date | string, endDateInput: Date | string, excludeFriday = true): number {
+  const start = (typeof startDateInput === 'string') ? new Date(startDateInput) : new Date(startDateInput)
+  const end = (typeof endDateInput === 'string') ? new Date(endDateInput) : new Date(endDateInput)
+  if (isNaN(start.getTime()) || isNaN(end.getTime())) return 0
+  // Normalize times to midnight to avoid DST issues
+  start.setHours(0, 0, 0, 0)
+  end.setHours(0, 0, 0, 0)
+  if (end < start) return 0
+
   let count = 0
-  
-  while (start <= end) {
-    const dayOfWeek = start.getDay()
-    // Count all days (UAE typically works Saturday-Thursday)
-    // Excluding Friday only
-    if (dayOfWeek !== 5) {
+  const cur = new Date(start)
+  while (cur <= end) {
+    const dayOfWeek = cur.getDay() // 0 = Sun ... 5 = Fri ... 6 = Sat
+    // In UAE typical weekend is Friday; counting rules vary by org.
+    if (excludeFriday) {
+      if (dayOfWeek !== 5) count++
+    } else {
       count++
     }
-    start.setDate(start.getDate() + 1)
+    cur.setDate(cur.getDate() + 1)
   }
-  
   return count
 }
 
-export function prorateAmount(
-  amount: number,
-  totalDays: number,
-  workedDays: number
-): number {
-  return (amount / totalDays) * workedDays
+/**
+ * Simple prorate calculation: proportionally scales amount.
+ * Returns 0 if inputs are invalid.
+ */
+export function prorateAmount(amount: number | string, totalDays: number, workedDays: number): number {
+  const amt = typeof amount === 'string' ? parseFloat(amount) : Number(amount)
+  const a = Number.isFinite(amt) ? amt : 0
+  const td = Number.isFinite(Number(totalDays)) && Number(totalDays) > 0 ? Number(totalDays) : 0
+  const wd = Number.isFinite(Number(workedDays)) && Number(workedDays) >= 0 ? Number(workedDays) : 0
+  if (td <= 0) return 0
+  return (a / td) * wd
 }
