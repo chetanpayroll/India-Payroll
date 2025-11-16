@@ -15,12 +15,14 @@ export function formatCurrency(amount: number | string): string {
   }).format(num)
 }
 
-export function formatDate(date: Date | string): string {
+export function formatDate(date: Date | string | undefined): string {
+  if (!date) return '—'
   const d = typeof date === 'string' ? new Date(date) : date
-  return new Intl.DateFormat('en-GB', {
+  if (isNaN(d.getTime())) return '—'
+  return new Intl.DateTimeFormat('en-GB', {
     day: '2-digit',
     month: 'short',
-    year: 'numeric',
+    year: 'numeric'
   }).format(d)
 }
 
