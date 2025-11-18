@@ -145,7 +145,7 @@ class StorageService {
    * Initialize storage with version check
    */
   initialize(): void {
-    const currentVersion = this.get(StorageKeys.VERSION, '');
+    const currentVersion = this.get<string>(StorageKeys.VERSION, '');
     if (currentVersion !== STORAGE_VERSION) {
       console.log('Storage version mismatch, initializing...');
       this.set(StorageKeys.VERSION, STORAGE_VERSION);

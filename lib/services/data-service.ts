@@ -326,6 +326,7 @@ export class LeaveService {
       return this.balancesCollection.update(existing.employeeId + '_' + year, updates);
     } else {
       const newBalance: LeaveBalance = {
+        id: `${employeeId}_${year}`,
         employeeId,
         year,
         annualLeaveEntitled: 30,
@@ -336,7 +337,7 @@ export class LeaveService {
         unpaidLeaveTaken: 0,
         ...updates,
       };
-      return this.balancesCollection.add({ ...newBalance, id: `${employeeId}_${year}` });
+      return this.balancesCollection.add(newBalance);
     }
   }
 }
