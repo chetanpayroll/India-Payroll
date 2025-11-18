@@ -223,6 +223,7 @@ export interface LeaveRequest {
 }
 
 export interface LeaveBalance {
+  id: string;
   employeeId: string;
   annualLeaveEntitled: number;
   annualLeaveTaken: number;
