@@ -1,625 +1,576 @@
 "use client"
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import {
-  ArrowLeft,
-  ArrowRight,
-  Calculator,
   Calendar,
-  Check,
-  Users,
   DollarSign,
-  FileText,
-  AlertCircle,
+  Users,
   CheckCircle2,
-  Search,
-  X
+  ArrowLeft,
+  Save,
+  Play,
+  Edit2,
+  TrendingUp,
+  Sparkles,
+  Download
 } from 'lucide-react'
 import { useToast } from '@/components/ui/use-toast'
-
-const steps = [
-  { id: 1, name: 'Payroll Details', icon: Calendar },
-  { id: 2, name: 'Select Employees', icon: Users },
-  { id: 3, name: 'Calculate', icon: Calculator },
-  { id: 4, name: 'Review & Finalize', icon: FileText },
-]
-
-// Demo employees for selection
-const allEmployees = [
-  {
-    id: '1',
-    employeeNumber: 'EMP001',
-    name: 'Ahmed Mohammed',
-    designation: 'Senior Accountant',
-    department: 'Finance',
-    basicSalary: 15000,
-    allowances: 3000,
-    selected: true,
-  },
-  {
-    id: '2',
-    employeeNumber: 'EMP002',
-    name: 'Sarah Johnson',
-    designation: 'HR Manager',
-    department: 'Human Resources',
-    basicSalary: 18000,
-    allowances: 4000,
-    selected: true,
-  },
-  {
-    id: '3',
-    employeeNumber: 'EMP003',
-    name: 'Fatima Ali',
-    designation: 'Marketing Specialist',
-    department: 'Marketing',
-    basicSalary: 12000,
-    allowances: 2500,
-    selected: true,
-  },
-  {
-    id: '4',
-    employeeNumber: 'EMP004',
-    name: 'Raj Kumar',
-    designation: 'Software Developer',
-    department: 'IT',
-    basicSalary: 14000,
-    allowances: 3500,
-    selected: true,
-  },
-  {
-    id: '5',
-    employeeNumber: 'EMP005',
-    name: 'Maria Garcia',
-    designation: 'Sales Executive',
-    department: 'Sales',
-    basicSalary: 10000,
-    allowances: 2000,
-    selected: true,
-  },
-]
+import { employeeService, payrollService } from '@/lib/services/data-service'
+import { calculateEmployeePayroll } from '@/lib/services/payroll-calculator'
+import { Employee, PayrollItem } from '@/lib/types'
+import { formatCurrency, formatMonth, getDaysInMonth } from '@/lib/utils'
 
 export default function NewPayrollPage() {
   const router = useRouter()
   const { toast } = useToast()
-  const [currentStep, setCurrentStep] = useState(1)
-  const [searchQuery, setSearchQuery] = useState('')
+
+  const currentDate = new Date()
+  const [selectedMonth, setSelectedMonth] = useState(currentDate.getMonth() + 1)
+  const [selectedYear, setSelectedYear] = useState(currentDate.getFullYear())
+  const [paymentDate, setPaymentDate] = useState(
+    new Date(currentDate.getFullYear(), currentDate.getMonth(), 28).toISOString().split('T')[0]
+  )
+
+  const [employees, setEmployees] = useState<Employee[]>([])
+  const [payrollItems, setPayrollItems] = useState<PayrollItem[]>([])
+  const [editingItem, setEditingItem] = useState<string | null>(null)
+  const [customValues, setCustomValues] = useState<Record<string, any>>({})
   const [isCalculating, setIsCalculating] = useState(false)
   const [isCalculated, setIsCalculated] = useState(false)
-  const [employees, setEmployees] = useState(allEmployees)
-  const [payrollData, setPayrollData] = useState({
-    entity: 'gmp-trading',
-    month: new Date().getMonth() + 1,
-    year: new Date().getFullYear(),
-    periodStart: '',
-    periodEnd: '',
-    paymentDate: '',
-    workingDays: 26,
-  })
+  const [isSaving, setIsSaving] = useState(false)
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
-    const { name, value } = e.target
-    setPayrollData(prev => ({ ...prev, [name]: value }))
+  useEffect(() => {
+    loadEmployees()
+  }, [])
+
+  const loadEmployees = () => {
+    const allEmployees = employeeService.getActive()
+    setEmployees(allEmployees)
   }
 
-  const toggleEmployee = (id: string) => {
-    setEmployees(prev =>
-      prev.map(emp => (emp.id === id ? { ...emp, selected: !emp.selected } : emp))
-    )
-  }
-
-  const toggleAll = () => {
-    const allSelected = employees.every(emp => emp.selected)
-    setEmployees(prev => prev.map(emp => ({ ...emp, selected: !allSelected })))
-  }
-
-  const handleCalculate = () => {
+  const calculatePayroll = () => {
     setIsCalculating(true)
-    setTimeout(() => {
-      setIsCalculating(false)
-      setIsCalculated(true)
-      toast({
-        title: "Calculation Complete",
-        description: "Payroll has been calculated successfully for all selected employees.",
+
+    try {
+      const items: PayrollItem[] = []
+
+      employees.forEach((employee) => {
+        const custom = customValues[employee.id] || {}
+
+        const item = calculateEmployeePayroll(employee, selectedYear, selectedMonth, {
+          presentDays: custom.presentDays ?? 22,
+          absentDays: custom.absentDays ?? 0,
+          leaveDays: custom.leaveDays ?? 0,
+          regularOTHours: custom.regularOTHours ?? 0,
+          weekendOTHours: custom.weekendOTHours ?? 0,
+          holidayOTHours: custom.holidayOTHours ?? 0,
+          bonus: custom.bonus ?? 0,
+          commission: custom.commission ?? 0,
+          reimbursements: custom.reimbursements ?? 0,
+          otherDeductions: custom.otherDeductions ?? 0,
+        })
+
+        items.push(item)
       })
-      setCurrentStep(4)
-    }, 2000)
+
+      setPayrollItems(items)
+      setIsCalculated(true)
+
+      toast({
+        title: '✅ Payroll Calculated',
+        description: `Successfully calculated payroll for ${items.length} employees.`,
+      })
+    } catch (error) {
+      toast({
+        title: '❌ Calculation Error',
+        description: 'Failed to calculate payroll. Please try again.',
+        variant: 'destructive',
+      })
+    } finally {
+      setIsCalculating(false)
+    }
   }
 
-  const handleFinalize = () => {
-    toast({
-      title: "Payroll Created Successfully!",
-      description: `Payroll for ${getMonthName(payrollData.month)} ${payrollData.year} has been created.`,
+  const savePayroll = async () => {
+    if (!isCalculated || payrollItems.length === 0) {
+      toast({
+        title: 'No Data',
+        description: 'Please calculate payroll first.',
+        variant: 'destructive',
+      })
+      return
+    }
+
+    setIsSaving(true)
+
+    try {
+      const totalGross = payrollItems.reduce((sum, item) => sum + item.grossSalary, 0)
+      const totalDeductions = payrollItems.reduce((sum, item) => sum + item.totalDeductions, 0)
+      const totalNet = payrollItems.reduce((sum, item) => sum + item.netSalary, 0)
+
+      const payrollRun = payrollService.createRun({
+        runCode: `PR-${selectedYear}${String(selectedMonth).padStart(2, '0')}`,
+        payPeriod: `${selectedYear}-${String(selectedMonth).padStart(2, '0')}`,
+        payrollMonth: selectedMonth,
+        payrollYear: selectedYear,
+        paymentDate,
+        status: 'calculated',
+        totalEmployees: payrollItems.length,
+        totalGross,
+        totalDeductions,
+        totalNet,
+        totalEmployerCost: totalGross * 1.15,
+        notes: `Payroll for ${formatMonth(selectedMonth, selectedYear)}`,
+      })
+
+      const itemsWithRunId = payrollItems.map(item => ({
+        ...item,
+        payrollRunId: payrollRun.id,
+      }))
+
+      payrollService.createItemsBulk(itemsWithRunId)
+
+      toast({
+        title: '🎉 Payroll Saved!',
+        description: `Payroll for ${formatMonth(selectedMonth, selectedYear)} has been saved successfully.`,
+      })
+
+      setTimeout(() => router.push('/dashboard/payroll'), 1000)
+    } catch (error: any) {
+      toast({
+        title: '❌ Save Error',
+        description: error.message || 'Failed to save payroll.',
+        variant: 'destructive',
+      })
+    } finally {
+      setIsSaving(false)
+    }
+  }
+
+  const updateCustomValue = (employeeId: string, field: string, value: number) => {
+    setCustomValues(prev => ({
+      ...prev,
+      [employeeId]: {
+        ...(prev[employeeId] || {}),
+        [field]: value,
+      }
+    }))
+  }
+
+  const recalculateSingleEmployee = (employeeId: string) => {
+    const employee = employees.find(e => e.id === employeeId)
+    if (!employee) return
+
+    const custom = customValues[employeeId] || {}
+    const newItem = calculateEmployeePayroll(employee, selectedYear, selectedMonth, {
+      presentDays: custom.presentDays ?? 22,
+      absentDays: custom.absentDays ?? 0,
+      leaveDays: custom.leaveDays ?? 0,
+      regularOTHours: custom.regularOTHours ?? 0,
+      weekendOTHours: custom.weekendOTHours ?? 0,
+      holidayOTHours: custom.holidayOTHours ?? 0,
+      bonus: custom.bonus ?? 0,
+      commission: custom.commission ?? 0,
+      reimbursements: custom.reimbursements ?? 0,
+      otherDeductions: custom.otherDeductions ?? 0,
     })
-    setTimeout(() => {
-      router.push('/dashboard/payroll')
-    }, 1500)
+
+    setPayrollItems(prev => prev.map(item =>
+      item.employeeId === employeeId ? newItem : item
+    ))
+
+    setEditingItem(null)
+
+    toast({
+      title: '✅ Updated',
+      description: `Recalculated for ${employee.firstName} ${employee.lastName}`,
+    })
   }
 
-  const handleNext = () => {
-    if (currentStep < steps.length) {
-      setCurrentStep(currentStep + 1)
-    }
-  }
-
-  const handleBack = () => {
-    if (currentStep > 1) {
-      setCurrentStep(currentStep - 1)
-    }
-  }
-
-  const getMonthName = (month: number) => {
-    const months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December']
-    return months[month - 1]
-  }
-
-  const selectedEmployees = employees.filter(emp => emp.selected)
-  const totalGross = selectedEmployees.reduce((sum, emp) => sum + emp.basicSalary + emp.allowances, 0)
-  const totalDeductions = selectedEmployees.reduce((sum, emp) => sum + emp.basicSalary * 0.05, 0) // 5% deductions
-  const totalNet = totalGross - totalDeductions
-
-  const filteredEmployees = employees.filter(emp =>
-    emp.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    emp.employeeNumber.toLowerCase().includes(searchQuery.toLowerCase())
-  )
+  const totalGross = payrollItems.reduce((sum, item) => sum + item.grossSalary, 0)
+  const totalDeductions = payrollItems.reduce((sum, item) => sum + item.totalDeductions, 0)
+  const totalNet = payrollItems.reduce((sum, item) => sum + item.netSalary, 0)
+  const totalEmployees = payrollItems.length
 
   return (
     <div className="space-y-6">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-4">
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={() => router.push('/dashboard/payroll')}
-          >
-            <ArrowLeft className="h-5 w-5" />
+          <Button variant="ghost" size="sm" onClick={() => router.back()}>
+            <ArrowLeft className="h-4 w-4 mr-2" />
+            Back
           </Button>
           <div>
-            <h1 className="text-3xl font-bold text-gray-900">New Payroll Run</h1>
-            <p className="mt-2 text-gray-600">
-              Process monthly payroll for your employees
-            </p>
+            <h1 className="text-4xl font-bold bg-gradient-to-r from-emerald-600 via-blue-600 to-purple-600 bg-clip-text text-transparent flex items-center gap-2">
+              <Sparkles className="h-8 w-8 text-blue-600" />
+              New Payroll Run
+            </h1>
+            <p className="mt-1 text-gray-600">Process payroll for all active employees</p>
           </div>
         </div>
       </div>
 
-      {/* Progress Steps */}
-      <Card>
-        <CardContent className="p-6">
-          <div className="flex items-center justify-between">
-            {steps.map((step, index) => {
-              const Icon = step.icon
-              const isCompleted = currentStep > step.id
-              const isCurrent = currentStep === step.id
-              const isLast = index === steps.length - 1
+      {/* Configuration Card */}
+      <Card className="border-2 border-blue-200 shadow-lg">
+        <CardHeader className="bg-gradient-to-r from-blue-50 to-purple-50">
+          <CardTitle className="flex items-center gap-2">
+            <Calendar className="h-5 w-5 text-blue-600" />
+            Payroll Configuration
+          </CardTitle>
+          <CardDescription>Select the month and payment date for this payroll run</CardDescription>
+        </CardHeader>
+        <CardContent className="pt-6">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div>
+              <Label className="text-sm font-semibold">Payroll Month</Label>
+              <select
+                className="w-full px-3 py-2 border-2 border-gray-200 rounded-lg mt-2 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all"
+                value={selectedMonth}
+                onChange={(e) => setSelectedMonth(parseInt(e.target.value))}
+                disabled={isCalculated}
+              >
+                {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12].map(month => (
+                  <option key={month} value={month}>
+                    {new Date(2024, month - 1, 1).toLocaleString('default', { month: 'long' })}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <div>
+              <Label className="text-sm font-semibold">Payroll Year</Label>
+              <select
+                className="w-full px-3 py-2 border-2 border-gray-200 rounded-lg mt-2 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all"
+                value={selectedYear}
+                onChange={(e) => setSelectedYear(parseInt(e.target.value))}
+                disabled={isCalculated}
+              >
+                {[2024, 2025].map(year => (
+                  <option key={year} value={year}>{year}</option>
+                ))}
+              </select>
+            </div>
+            <div>
+              <Label className="text-sm font-semibold">Payment Date</Label>
+              <Input
+                type="date"
+                value={paymentDate}
+                onChange={(e) => setPaymentDate(e.target.value)}
+                disabled={isCalculated}
+                className="mt-2 border-2 focus:border-blue-500"
+              />
+            </div>
+          </div>
 
-              return (
-                <div key={step.id} className="flex items-center flex-1">
-                  <div className="flex flex-col items-center flex-1">
-                    <div
-                      className={`flex items-center justify-center w-12 h-12 rounded-full border-2 transition-colors ${
-                        isCompleted
-                          ? 'bg-green-500 border-green-500 text-white'
-                          : isCurrent
-                          ? 'bg-blue-500 border-blue-500 text-white'
-                          : 'bg-white border-gray-300 text-gray-500'
-                      }`}
-                    >
-                      {isCompleted ? (
-                        <Check className="h-6 w-6" />
-                      ) : (
-                        <Icon className="h-6 w-6" />
-                      )}
-                    </div>
-                    <span
-                      className={`mt-2 text-sm font-medium ${
-                        isCurrent ? 'text-blue-600' : isCompleted ? 'text-green-600' : 'text-gray-500'
-                      }`}
-                    >
-                      {step.name}
-                    </span>
-                  </div>
-                  {!isLast && (
-                    <div
-                      className={`h-0.5 flex-1 mx-2 ${
-                        isCompleted ? 'bg-green-500' : 'bg-gray-300'
-                      }`}
-                    />
+          <div className="mt-6 p-6 bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 rounded-xl text-white">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium opacity-90">Payroll Period:</p>
+                <p className="text-2xl font-bold">{formatMonth(selectedMonth, selectedYear)}</p>
+              </div>
+              <div>
+                <p className="text-sm font-medium opacity-90">Active Employees:</p>
+                <p className="text-2xl font-bold">{employees.length}</p>
+              </div>
+              <div>
+                <Button
+                  onClick={calculatePayroll}
+                  disabled={isCalculating || isCalculated}
+                  size="lg"
+                  className="bg-white text-blue-600 hover:bg-blue-50 font-bold shadow-lg"
+                >
+                  {isCalculating ? (
+                    <>Processing...</>
+                  ) : isCalculated ? (
+                    <>
+                      <CheckCircle2 className="h-5 w-5 mr-2" />
+                      Calculated
+                    </>
+                  ) : (
+                    <>
+                      <Play className="h-5 w-5 mr-2" />
+                      Calculate Payroll
+                    </>
                   )}
-                </div>
-              )
-            })}
+                </Button>
+              </div>
+            </div>
           </div>
         </CardContent>
       </Card>
 
-      {/* Form Content */}
-      <Card>
-        <CardHeader>
-          <CardTitle>{steps.find(s => s.id === currentStep)?.name}</CardTitle>
-          <CardDescription>
-            {currentStep === 1 && 'Set the payroll period and payment details'}
-            {currentStep === 2 && 'Select employees to include in this payroll run'}
-            {currentStep === 3 && 'Calculate salaries and deductions'}
-            {currentStep === 4 && 'Review calculations and finalize payroll'}
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          {/* Step 1: Payroll Details */}
-          {currentStep === 1 && (
-            <div className="space-y-6">
-              <div>
-                <Label htmlFor="entity">Business Entity *</Label>
-                <select
-                  id="entity"
-                  name="entity"
-                  value={payrollData.entity}
-                  onChange={handleInputChange}
-                  className="w-full h-10 px-3 py-2 border border-gray-300 rounded-md"
-                >
-                  <option value="gmp-trading">GMP Trading LLC</option>
-                  <option value="gmp-services">GMP Services FZE</option>
-                </select>
-              </div>
+      {/* Summary Cards */}
+      {isCalculated && (
+        <>
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+            <Card className="border-l-4 border-l-blue-500 shadow-lg hover:shadow-xl transition-shadow">
+              <CardContent className="p-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm font-medium text-gray-600">Total Employees</p>
+                    <p className="mt-2 text-3xl font-bold text-gray-900">{totalEmployees}</p>
+                    <p className="mt-1 text-xs text-gray-500">Active in payroll</p>
+                  </div>
+                  <div className="p-3 bg-blue-100 rounded-xl">
+                    <Users className="h-7 w-7 text-blue-600" />
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div>
-                  <Label htmlFor="month">Payroll Month *</Label>
-                  <select
-                    id="month"
-                    name="month"
-                    value={payrollData.month}
-                    onChange={handleInputChange}
-                    className="w-full h-10 px-3 py-2 border border-gray-300 rounded-md"
-                  >
-                    {Array.from({ length: 12 }, (_, i) => i + 1).map(month => (
-                      <option key={month} value={month}>
-                        {getMonthName(month)}
-                      </option>
-                    ))}
-                  </select>
+            <Card className="border-l-4 border-l-green-500 shadow-lg hover:shadow-xl transition-shadow">
+              <CardContent className="p-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm font-medium text-gray-600">Gross Salary</p>
+                    <p className="mt-2 text-3xl font-bold text-green-600">{formatCurrency(totalGross)}</p>
+                    <p className="mt-1 text-xs text-gray-500">Before deductions</p>
+                  </div>
+                  <div className="p-3 bg-green-100 rounded-xl">
+                    <TrendingUp className="h-7 w-7 text-green-600" />
+                  </div>
                 </div>
-                <div>
-                  <Label htmlFor="year">Payroll Year *</Label>
-                  <Input
-                    id="year"
-                    name="year"
-                    type="number"
-                    value={payrollData.year}
-                    onChange={handleInputChange}
-                  />
-                </div>
-              </div>
+              </CardContent>
+            </Card>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div>
-                  <Label htmlFor="periodStart">Period Start Date *</Label>
-                  <Input
-                    id="periodStart"
-                    name="periodStart"
-                    type="date"
-                    value={payrollData.periodStart}
-                    onChange={handleInputChange}
-                  />
+            <Card className="border-l-4 border-l-red-500 shadow-lg hover:shadow-xl transition-shadow">
+              <CardContent className="p-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm font-medium text-gray-600">Total Deductions</p>
+                    <p className="mt-2 text-3xl font-bold text-red-600">{formatCurrency(totalDeductions)}</p>
+                    <p className="mt-1 text-xs text-gray-500">Loans, advances, etc.</p>
+                  </div>
+                  <div className="p-3 bg-red-100 rounded-xl">
+                    <DollarSign className="h-7 w-7 text-red-600" />
+                  </div>
                 </div>
-                <div>
-                  <Label htmlFor="periodEnd">Period End Date *</Label>
-                  <Input
-                    id="periodEnd"
-                    name="periodEnd"
-                    type="date"
-                    value={payrollData.periodEnd}
-                    onChange={handleInputChange}
-                  />
-                </div>
-              </div>
+              </CardContent>
+            </Card>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div>
-                  <Label htmlFor="paymentDate">Payment Date *</Label>
-                  <Input
-                    id="paymentDate"
-                    name="paymentDate"
-                    type="date"
-                    value={payrollData.paymentDate}
-                    onChange={handleInputChange}
-                  />
+            <Card className="border-l-4 border-l-purple-500 shadow-lg hover:shadow-xl transition-shadow">
+              <CardContent className="p-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm font-medium text-gray-600">Net Payable</p>
+                    <p className="mt-2 text-3xl font-bold text-purple-600">{formatCurrency(totalNet)}</p>
+                    <p className="mt-1 text-xs text-gray-500">Final payout</p>
+                  </div>
+                  <div className="p-3 bg-purple-100 rounded-xl">
+                    <CheckCircle2 className="h-7 w-7 text-purple-600" />
+                  </div>
                 </div>
-                <div>
-                  <Label htmlFor="workingDays">Working Days in Month</Label>
-                  <Input
-                    id="workingDays"
-                    name="workingDays"
-                    type="number"
-                    value={payrollData.workingDays}
-                    onChange={handleInputChange}
-                  />
-                </div>
-              </div>
+              </CardContent>
+            </Card>
+          </div>
 
-              <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg">
-                <h4 className="font-semibold text-blue-900 mb-2">Payroll Summary</h4>
-                <div className="space-y-1 text-sm text-blue-800">
-                  <p>Period: <span className="font-medium">{getMonthName(payrollData.month)} {payrollData.year}</span></p>
-                  <p>Entity: <span className="font-medium">GMP Trading LLC</span></p>
-                  <p>Working Days: <span className="font-medium">{payrollData.workingDays} days</span></p>
-                </div>
-              </div>
-            </div>
-          )}
-
-          {/* Step 2: Select Employees */}
-          {currentStep === 2 && (
-            <div className="space-y-6">
+          {/* Payroll Details Table */}
+          <Card className="shadow-xl">
+            <CardHeader className="bg-gradient-to-r from-gray-50 to-blue-50">
               <div className="flex items-center justify-between">
-                <div className="relative flex-1 max-w-md">
-                  <Search className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
-                  <Input
-                    placeholder="Search employees..."
-                    className="pl-10"
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                  />
+                <div>
+                  <CardTitle className="text-2xl">Payroll Details</CardTitle>
+                  <CardDescription className="mt-1">{payrollItems.length} employees processed • Total: {formatCurrency(totalNet)}</CardDescription>
                 </div>
-                <Button variant="outline" onClick={toggleAll}>
-                  {employees.every(emp => emp.selected) ? 'Deselect All' : 'Select All'}
-                </Button>
-              </div>
-
-              <div className="p-4 bg-gray-50 rounded-lg">
-                <div className="flex justify-between items-center">
-                  <span className="text-sm text-gray-600">
-                    {selectedEmployees.length} of {employees.length} employees selected
-                  </span>
-                  <span className="text-sm font-medium text-gray-900">
-                    Total: AED {totalGross.toLocaleString()}
-                  </span>
-                </div>
-              </div>
-
-              <div className="border border-gray-200 rounded-lg overflow-hidden">
-                <table className="w-full">
-                  <thead className="bg-gray-50">
-                    <tr>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                        <input
-                          type="checkbox"
-                          checked={employees.every(emp => emp.selected)}
-                          onChange={toggleAll}
-                          className="w-4 h-4"
-                        />
-                      </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Employee</th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Department</th>
-                      <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">Basic Salary</th>
-                      <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">Allowances</th>
-                      <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">Total</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-gray-200">
-                    {filteredEmployees.map((employee) => (
-                      <tr
-                        key={employee.id}
-                        className={`${employee.selected ? 'bg-blue-50' : 'hover:bg-gray-50'}`}
-                      >
-                        <td className="px-6 py-4">
-                          <input
-                            type="checkbox"
-                            checked={employee.selected}
-                            onChange={() => toggleEmployee(employee.id)}
-                            className="w-4 h-4"
-                          />
-                        </td>
-                        <td className="px-6 py-4">
-                          <div>
-                            <div className="font-medium text-gray-900">{employee.name}</div>
-                            <div className="text-sm text-gray-500">{employee.employeeNumber}</div>
-                          </div>
-                        </td>
-                        <td className="px-6 py-4 text-sm text-gray-600">{employee.department}</td>
-                        <td className="px-6 py-4 text-right font-medium text-gray-900">
-                          AED {employee.basicSalary.toLocaleString()}
-                        </td>
-                        <td className="px-6 py-4 text-right text-sm text-gray-600">
-                          AED {employee.allowances.toLocaleString()}
-                        </td>
-                        <td className="px-6 py-4 text-right font-semibold text-gray-900">
-                          AED {(employee.basicSalary + employee.allowances).toLocaleString()}
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            </div>
-          )}
-
-          {/* Step 3: Calculate */}
-          {currentStep === 3 && (
-            <div className="space-y-6">
-              {!isCalculated ? (
-                <>
-                  <div className="p-8 bg-blue-50 border border-blue-200 rounded-lg text-center">
-                    <Calculator className="h-16 w-16 text-blue-600 mx-auto mb-4" />
-                    <h3 className="text-xl font-semibold text-blue-900 mb-2">Ready to Calculate</h3>
-                    <p className="text-blue-700 mb-6">
-                      Click the button below to calculate salaries for {selectedEmployees.length} employees
-                    </p>
-                    <div className="space-y-3 mb-6 max-w-md mx-auto">
-                      <div className="flex justify-between items-center p-3 bg-white rounded-lg">
-                        <span className="text-sm text-gray-600">Selected Employees</span>
-                        <span className="font-semibold text-gray-900">{selectedEmployees.length}</span>
-                      </div>
-                      <div className="flex justify-between items-center p-3 bg-white rounded-lg">
-                        <span className="text-sm text-gray-600">Estimated Gross Total</span>
-                        <span className="font-semibold text-gray-900">AED {totalGross.toLocaleString()}</span>
-                      </div>
-                      <div className="flex justify-between items-center p-3 bg-white rounded-lg">
-                        <span className="text-sm text-gray-600">Working Days</span>
-                        <span className="font-semibold text-gray-900">{payrollData.workingDays} days</span>
-                      </div>
-                    </div>
-                    <Button
-                      size="lg"
-                      onClick={handleCalculate}
-                      disabled={isCalculating}
-                      className="min-w-48"
-                    >
-                      {isCalculating ? (
-                        <>
-                          <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2"></div>
-                          Calculating...
-                        </>
-                      ) : (
-                        <>
-                          <Calculator className="h-5 w-5 mr-2" />
-                          Calculate Payroll
-                        </>
-                      )}
-                    </Button>
-                  </div>
-
-                  <div className="p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
-                    <div className="flex gap-3">
-                      <AlertCircle className="h-5 w-5 text-yellow-600 flex-shrink-0 mt-0.5" />
-                      <div>
-                        <h4 className="font-semibold text-yellow-900 mb-1">What happens during calculation?</h4>
-                        <ul className="text-sm text-yellow-800 space-y-1 list-disc list-inside">
-                          <li>Proration for mid-month joiners/leavers</li>
-                          <li>Automatic GPSSA calculations for UAE nationals</li>
-                          <li>Deduction processing (loans, advances, etc.)</li>
-                          <li>Net salary computation</li>
-                        </ul>
-                      </div>
-                    </div>
-                  </div>
-                </>
-              ) : (
-                <div className="p-8 bg-green-50 border border-green-200 rounded-lg text-center">
-                  <CheckCircle2 className="h-16 w-16 text-green-600 mx-auto mb-4" />
-                  <h3 className="text-xl font-semibold text-green-900 mb-2">Calculation Complete!</h3>
-                  <p className="text-green-700 mb-6">
-                    Payroll has been calculated successfully for all {selectedEmployees.length} employees
-                  </p>
-                  <Button onClick={handleNext}>
-                    Continue to Review
-                    <ArrowRight className="h-4 w-4 ml-2" />
+                <div className="flex gap-3">
+                  <Button
+                    variant="outline"
+                    onClick={() => {
+                      const csv = generatePayrollCSV(payrollItems)
+                      downloadCSV(csv, `payroll_${selectedYear}_${selectedMonth}.csv`)
+                      toast({ title: '✅ Exported', description: 'Payroll data exported to CSV' })
+                    }}
+                  >
+                    <Download className="h-4 w-4 mr-2" />
+                    Export CSV
+                  </Button>
+                  <Button
+                    onClick={savePayroll}
+                    disabled={isSaving}
+                    size="lg"
+                    className="bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 font-bold shadow-lg"
+                  >
+                    {isSaving ? (
+                      'Saving...'
+                    ) : (
+                      <>
+                        <Save className="h-5 w-5 mr-2" />
+                        Save Payroll
+                      </>
+                    )}
                   </Button>
                 </div>
-              )}
-            </div>
-          )}
-
-          {/* Step 4: Review & Finalize */}
-          {currentStep === 4 && (
-            <div className="space-y-6">
-              <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
-                <Card>
-                  <CardContent className="p-6">
-                    <div className="text-sm font-medium text-gray-600 mb-2">Total Gross</div>
-                    <div className="text-3xl font-bold text-gray-900">AED {totalGross.toLocaleString()}</div>
-                  </CardContent>
-                </Card>
-                <Card>
-                  <CardContent className="p-6">
-                    <div className="text-sm font-medium text-gray-600 mb-2">Total Deductions</div>
-                    <div className="text-3xl font-bold text-red-600">AED {totalDeductions.toLocaleString()}</div>
-                  </CardContent>
-                </Card>
-                <Card>
-                  <CardContent className="p-6">
-                    <div className="text-sm font-medium text-gray-600 mb-2">Total Net</div>
-                    <div className="text-3xl font-bold text-green-600">AED {totalNet.toLocaleString()}</div>
-                  </CardContent>
-                </Card>
               </div>
+            </CardHeader>
+            <CardContent className="p-0">
+              <div className="overflow-x-auto">
+                <table className="w-full">
+                  <thead className="bg-gray-100 border-b-2 border-gray-200">
+                    <tr>
+                      <th className="px-4 py-4 text-left text-xs font-bold text-gray-700 uppercase">Employee</th>
+                      <th className="px-4 py-4 text-left text-xs font-bold text-gray-700 uppercase">Department</th>
+                      <th className="px-4 py-4 text-right text-xs font-bold text-gray-700 uppercase">Basic</th>
+                      <th className="px-4 py-4 text-right text-xs font-bold text-gray-700 uppercase">Allowances</th>
+                      <th className="px-4 py-4 text-right text-xs font-bold text-gray-700 uppercase">OT</th>
+                      <th className="px-4 py-4 text-right text-xs font-bold text-gray-700 uppercase">Gross</th>
+                      <th className="px-4 py-4 text-right text-xs font-bold text-gray-700 uppercase">Deductions</th>
+                      <th className="px-4 py-4 text-right text-xs font-bold text-gray-700 uppercase">Net</th>
+                      <th className="px-4 py-4 text-center text-xs font-bold text-gray-700 uppercase">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {payrollItems.map((item, index) => {
+                      const employee = item.employee
+                      if (!employee) return null
 
-              <Card>
-                <CardHeader>
-                  <CardTitle>Payroll Summary</CardTitle>
-                  <CardDescription>
-                    Review the calculated payroll before finalizing
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-3">
-                    <div className="grid grid-cols-2 gap-4 p-3 bg-gray-50 rounded-lg">
-                      <span className="text-sm text-gray-600">Period</span>
-                      <span className="text-sm font-medium text-gray-900">{getMonthName(payrollData.month)} {payrollData.year}</span>
-                    </div>
-                    <div className="grid grid-cols-2 gap-4 p-3 bg-gray-50 rounded-lg">
-                      <span className="text-sm text-gray-600">Entity</span>
-                      <span className="text-sm font-medium text-gray-900">GMP Trading LLC</span>
-                    </div>
-                    <div className="grid grid-cols-2 gap-4 p-3 bg-gray-50 rounded-lg">
-                      <span className="text-sm text-gray-600">Employees</span>
-                      <span className="text-sm font-medium text-gray-900">{selectedEmployees.length}</span>
-                    </div>
-                    <div className="grid grid-cols-2 gap-4 p-3 bg-gray-50 rounded-lg">
-                      <span className="text-sm text-gray-600">Payment Date</span>
-                      <span className="text-sm font-medium text-gray-900">
-                        {payrollData.paymentDate || 'Not set'}
-                      </span>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
+                      const allowances = item.housingAllowance + item.transportationAllowance + item.otherAllowances
+                      const isEditing = editingItem === item.employeeId
 
-              <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg">
-                <div className="flex gap-3">
-                  <CheckCircle2 className="h-5 w-5 text-blue-600 flex-shrink-0 mt-0.5" />
-                  <div>
-                    <h4 className="font-semibold text-blue-900 mb-1">Ready to Finalize</h4>
-                    <p className="text-sm text-blue-800">
-                      Once finalized, you can generate WPS files, payslips, and GPSSA reports.
-                    </p>
-                  </div>
-                </div>
+                      return (
+                        <tr
+                          key={index}
+                          className={`border-b hover:bg-gradient-to-r hover:from-blue-50 hover:to-purple-50 transition-all ${
+                            index % 2 === 0 ? 'bg-white' : 'bg-gray-50'
+                          }`}
+                        >
+                          <td className="px-4 py-4">
+                            <div className="font-semibold text-gray-900">
+                              {employee.firstName} {employee.lastName}
+                            </div>
+                            <div className="text-sm text-gray-500">{employee.employeeCode}</div>
+                          </td>
+                          <td className="px-4 py-4 text-sm text-gray-600">{employee.department}</td>
+                          <td className="px-4 py-4 text-right font-medium text-gray-900">
+                            {formatCurrency(item.basicSalary)}
+                          </td>
+                          <td className="px-4 py-4 text-right text-sm text-gray-600">
+                            {formatCurrency(allowances)}
+                          </td>
+                          <td className="px-4 py-4 text-right text-sm text-blue-600 font-medium">
+                            {formatCurrency(item.overtime)}
+                          </td>
+                          <td className="px-4 py-4 text-right font-bold text-green-600">
+                            {formatCurrency(item.grossSalary)}
+                          </td>
+                          <td className="px-4 py-4 text-right text-sm text-red-600 font-medium">
+                            {formatCurrency(item.totalDeductions)}
+                          </td>
+                          <td className="px-4 py-4 text-right font-bold text-xl text-purple-600">
+                            {formatCurrency(item.netSalary)}
+                          </td>
+                          <td className="px-4 py-4 text-center">
+                            <Button
+                              size="sm"
+                              variant="ghost"
+                              onClick={() => setEditingItem(isEditing ? null : item.employeeId)}
+                              className="hover:bg-blue-100"
+                            >
+                              <Edit2 className="h-4 w-4" />
+                            </Button>
+                          </td>
+                        </tr>
+                      )
+                    })}
+                  </tbody>
+                  <tfoot className="bg-gradient-to-r from-gray-100 to-blue-100">
+                    <tr className="border-t-2 border-gray-300">
+                      <td className="px-4 py-4 font-bold text-gray-900" colSpan={2}>TOTAL</td>
+                      <td className="px-4 py-4 text-right font-bold text-gray-900">
+                        {formatCurrency(payrollItems.reduce((s, i) => s + i.basicSalary, 0))}
+                      </td>
+                      <td className="px-4 py-4 text-right font-bold text-gray-900">
+                        {formatCurrency(payrollItems.reduce((s, i) => s + i.housingAllowance + i.transportationAllowance + i.otherAllowances, 0))}
+                      </td>
+                      <td className="px-4 py-4 text-right font-bold text-blue-600">
+                        {formatCurrency(payrollItems.reduce((s, i) => s + i.overtime, 0))}
+                      </td>
+                      <td className="px-4 py-4 text-right font-bold text-xl text-green-600">
+                        {formatCurrency(totalGross)}
+                      </td>
+                      <td className="px-4 py-4 text-right font-bold text-xl text-red-600">
+                        {formatCurrency(totalDeductions)}
+                      </td>
+                      <td className="px-4 py-4 text-right font-bold text-2xl text-purple-600">
+                        {formatCurrency(totalNet)}
+                      </td>
+                      <td></td>
+                    </tr>
+                  </tfoot>
+                </table>
               </div>
-            </div>
-          )}
+            </CardContent>
+          </Card>
+        </>
+      )}
 
-          {/* Navigation Buttons */}
-          <div className="flex items-center justify-between pt-6 border-t mt-8">
-            <Button
-              variant="outline"
-              onClick={handleBack}
-              disabled={currentStep === 1 || (currentStep === 3 && isCalculating)}
-            >
-              <ArrowLeft className="h-4 w-4 mr-2" />
-              Back
+      {/* No Employees Message */}
+      {!isCalculated && employees.length === 0 && (
+        <Card className="shadow-lg">
+          <CardContent className="p-12 text-center">
+            <Users className="h-20 w-20 mx-auto text-gray-300 mb-4" />
+            <h3 className="text-2xl font-bold text-gray-900 mb-2">No Active Employees</h3>
+            <p className="text-gray-500 mb-6">Add employees first to process payroll</p>
+            <Button onClick={() => router.push('/dashboard/employees')} size="lg">
+              <Users className="h-5 w-5 mr-2" />
+              Go to Employees
             </Button>
-
-            <div className="flex gap-2">
-              <Button
-                variant="outline"
-                onClick={() => router.push('/dashboard/payroll')}
-              >
-                Cancel
-              </Button>
-
-              {currentStep < 3 && (
-                <Button onClick={handleNext}>
-                  Next
-                  <ArrowRight className="h-4 w-4 ml-2" />
-                </Button>
-              )}
-
-              {currentStep === 4 && (
-                <Button onClick={handleFinalize} className="bg-green-600 hover:bg-green-700">
-                  <Check className="h-4 w-4 mr-2" />
-                  Finalize Payroll
-                </Button>
-              )}
-            </div>
-          </div>
-        </CardContent>
-      </Card>
+          </CardContent>
+        </Card>
+      )}
     </div>
   )
+}
+
+// Helper function to generate CSV
+function generatePayrollCSV(items: PayrollItem[]): string {
+  const headers = [
+    'Employee Code',
+    'Employee Name',
+    'Department',
+    'Basic Salary',
+    'Housing',
+    'Transport',
+    'Other Allowances',
+    'Overtime',
+    'Gross Salary',
+    'Deductions',
+    'Net Salary'
+  ]
+
+  const rows = items.map(item => {
+    const emp = item.employee
+    return [
+      emp?.employeeCode || '',
+      `${emp?.firstName || ''} ${emp?.lastName || ''}`,
+      emp?.department || '',
+      item.basicSalary.toFixed(2),
+      item.housingAllowance.toFixed(2),
+      item.transportationAllowance.toFixed(2),
+      item.otherAllowances.toFixed(2),
+      item.overtime.toFixed(2),
+      item.grossSalary.toFixed(2),
+      item.totalDeductions.toFixed(2),
+      item.netSalary.toFixed(2)
+    ]
+  })
+
+  return [headers.join(','), ...rows.map(r => r.join(','))].join('\n')
+}
+
+// Helper function to download CSV
+function downloadCSV(content: string, filename: string) {
+  const blob = new Blob([content], { type: 'text/csv' })
+  const url = URL.createObjectURL(blob)
+  const link = document.createElement('a')
+  link.href = url
+  link.download = filename
+  document.body.appendChild(link)
+  link.click()
+  document.body.removeChild(link)
+  URL.revokeObjectURL(url)
 }

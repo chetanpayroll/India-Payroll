@@ -95,3 +95,94 @@ export function prorateAmount(amount: number | string, totalDays: number, worked
   if (td <= 0) return 0
   return (a / td) * wd
 }
+
+/**
+ * Generate a unique ID for database records
+ */
+export function generateId(): string {
+  return `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+}
+
+/**
+ * Round number to 2 decimal places (for currency calculations)
+ */
+export function roundTo2Decimals(value: number): number {
+  return Math.round(value * 100) / 100;
+}
+
+/**
+ * Calculate days between two dates
+ */
+export function daysBetween(date1: Date | string, date2: Date | string): number {
+  const d1 = typeof date1 === 'string' ? new Date(date1) : date1;
+  const d2 = typeof date2 === 'string' ? new Date(date2) : date2;
+
+  if (isNaN(d1.getTime()) || isNaN(d2.getTime())) return 0;
+
+  const diffTime = Math.abs(d2.getTime() - d1.getTime());
+  return Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+}
+
+/**
+ * Get days in a specific month
+ */
+export function getDaysInMonth(year: number, month: number): number {
+  return new Date(year, month, 0).getDate();
+}
+
+/**
+ * Format IBAN for display (with spaces)
+ */
+export function formatIBAN(iban: string): string {
+  return iban.replace(/(.{4})/g, '$1 ').trim();
+}
+
+/**
+ * Validate UAE Emirates ID format (784-YYYY-NNNNNNN-N)
+ */
+export function validateEmiratesID(emiratesId: string): boolean {
+  const regex = /^784-\d{4}-\d{7}-\d$/;
+  return regex.test(emiratesId);
+}
+
+/**
+ * Validate UAE IBAN format
+ */
+export function validateIBAN(iban: string): boolean {
+  // Remove spaces
+  const cleanIban = iban.replace(/\s/g, '');
+  // UAE IBAN: AE + 2 check digits + 3 bank code + 16 account number = 23 chars
+  const regex = /^AE\d{21}$/;
+  return regex.test(cleanIban);
+}
+
+/**
+ * Calculate years of service
+ */
+export function calculateYearsOfService(joiningDate: Date | string): {
+  years: number;
+  months: number;
+  days: number;
+  totalYears: number;
+} {
+  const start = typeof joiningDate === 'string' ? new Date(joiningDate) : joiningDate;
+  const now = new Date();
+
+  let years = now.getFullYear() - start.getFullYear();
+  let months = now.getMonth() - start.getMonth();
+  let days = now.getDate() - start.getDate();
+
+  if (days < 0) {
+    months--;
+    days += getDaysInMonth(now.getFullYear(), now.getMonth());
+  }
+
+  if (months < 0) {
+    years--;
+    months += 12;
+  }
+
+  const totalYears = years + months / 12 + days / 365;
+
+  return { years, months, days, totalYears };
+}
