@@ -15,16 +15,46 @@ import {
   Menu,
   X,
   Building2,
-  ChevronRight
+  ChevronRight,
+  Clock,
+  Briefcase,
+  UserCheck,
+  BarChart3,
+  Calendar,
+  TrendingUp
 } from 'lucide-react'
 
-const navigation = [
-  { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
-  { name: 'Employees', href: '/dashboard/employees', icon: Users },
-  { name: 'Payroll', href: '/dashboard/payroll', icon: DollarSign },
-  { name: 'Reports', href: '/dashboard/reports', icon: FileText },
-  { name: 'Entities', href: '/dashboard/entities', icon: Building2 },
-  { name: 'Settings', href: '/dashboard/settings', icon: Settings },
+const navigationSections = [
+  {
+    title: 'Overview',
+    items: [
+      { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
+      { name: 'Analytics', href: '/dashboard/analytics', icon: BarChart3 },
+    ]
+  },
+  {
+    title: 'Core HR',
+    items: [
+      { name: 'Employees', href: '/dashboard/employees', icon: Users },
+      { name: 'HR Management', href: '/dashboard/hr', icon: Briefcase },
+      { name: 'Attendance', href: '/dashboard/attendance', icon: UserCheck },
+      { name: 'Leave', href: '/dashboard/leave', icon: Calendar },
+    ]
+  },
+  {
+    title: 'Payroll',
+    items: [
+      { name: 'Payroll', href: '/dashboard/payroll', icon: DollarSign },
+      { name: 'Reports', href: '/dashboard/reports', icon: FileText },
+    ]
+  },
+  {
+    title: 'Organization',
+    items: [
+      { name: 'Entities', href: '/dashboard/entities', icon: Building2 },
+      { name: 'Settings', href: '/dashboard/settings', icon: Settings },
+    ]
+  }
 ]
 
 export default function DashboardLayout({
@@ -76,28 +106,37 @@ export default function DashboardLayout({
         </div>
 
         {/* Navigation */}
-        <nav className="flex-1 px-4 py-6 space-y-1">
-          {navigation.map((item) => {
-            const isActive = pathname === item.href || pathname?.startsWith(item.href + '/')
-            return (
-              <Link
-                key={item.name}
-                href={item.href}
-                className={`
-                  flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium transition-colors
-                  ${isActive
-                    ? 'bg-blue-50 text-blue-700'
-                    : 'text-gray-700 hover:bg-gray-50 hover:text-gray-900'
-                  }
-                `}
-                onClick={() => setSidebarOpen(false)}
-              >
-                <item.icon className="h-5 w-5" />
-                {item.name}
-                {isActive && <ChevronRight className="h-4 w-4 ml-auto" />}
-              </Link>
-            )
-          })}
+        <nav className="flex-1 px-4 py-6 space-y-6 overflow-y-auto">
+          {navigationSections.map((section) => (
+            <div key={section.title}>
+              <h3 className="px-4 mb-2 text-xs font-semibold text-gray-400 uppercase tracking-wider">
+                {section.title}
+              </h3>
+              <div className="space-y-1">
+                {section.items.map((item) => {
+                  const isActive = pathname === item.href || pathname?.startsWith(item.href + '/')
+                  return (
+                    <Link
+                      key={item.name}
+                      href={item.href}
+                      className={`
+                        flex items-center gap-3 px-4 py-2.5 rounded-lg text-sm font-medium transition-all
+                        ${isActive
+                          ? 'bg-gradient-to-r from-blue-50 to-purple-50 text-blue-700 shadow-sm'
+                          : 'text-gray-700 hover:bg-gray-50 hover:text-gray-900'
+                        }
+                      `}
+                      onClick={() => setSidebarOpen(false)}
+                    >
+                      <item.icon className={`h-5 w-5 ${isActive ? 'text-blue-600' : ''}`} />
+                      {item.name}
+                      {isActive && <ChevronRight className="h-4 w-4 ml-auto text-blue-600" />}
+                    </Link>
+                  )
+                })}
+              </div>
+            </div>
+          ))}
         </nav>
 
         {/* User Section */}
