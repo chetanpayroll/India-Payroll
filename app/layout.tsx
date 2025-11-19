@@ -1,18 +1,11 @@
 import type { Metadata } from 'next'
-import { Inter } from 'next/font/google'
 import './globals.css'
 import { Toaster } from '@/components/ui/toaster'
 
-const inter = Inter({
-  subsets: ['latin'],
-  display: 'swap',
-  fallback: ['system-ui', 'arial']
-})
-
 export const metadata: Metadata = {
-  title: 'GMP Payroll - UAE Payroll Management System',
-  description: 'Complete payroll management system for UAE businesses with WPS and GPSSA compliance',
-  keywords: 'UAE payroll, WPS, GPSSA, salary management, payroll software',
+  title: 'GMP Payroll - Enterprise Payroll Management System',
+  description: 'Enterprise-grade payroll management system for UAE businesses with WPS and GPSSA compliance',
+  keywords: 'UAE payroll, WPS, GPSSA, salary management, payroll software, enterprise HR',
 }
 
 export default function RootLayout({
@@ -22,7 +15,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <body className={inter.className}>
+      <body className="font-sans antialiased">
         {children}
         <Toaster />
       </body>
