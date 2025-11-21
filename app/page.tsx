@@ -198,7 +198,7 @@ export default function Home() {
           </p>
           <Link href="/auth/login">
             <Button size="lg" variant="secondary" className="text-lg px-8">
-              Get Started Now - It's Free!
+              Get Started Now - It&apos;s Free!
               <ArrowRight className="ml-2 h-5 w-5" />
             </Button>
           </Link>
@@ -215,7 +215,7 @@ export default function Home() {
                 <span className="text-xl font-bold">GMP Payroll</span>
               </div>
               <p className="text-gray-600">
-                UAE's most trusted payroll management system
+                UAE&apos;s most trusted payroll management system
               </p>
             </div>
             <div>

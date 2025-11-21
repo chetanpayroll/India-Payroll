@@ -183,7 +183,7 @@ export default function NewEmployeePage() {
             {steps.find(s => s.id === currentStep)?.name}
           </CardTitle>
           <CardDescription>
-            {currentStep === 1 && 'Enter employee\'s personal information and contact details'}
+            {currentStep === 1 && 'Enter employee&apos;s personal information and contact details'}
             {currentStep === 2 && 'Provide employment details and contract information'}
             {currentStep === 3 && 'Define salary structure and allowances'}
             {currentStep === 4 && 'Enter bank account details for salary transfer'}
@@ -491,7 +491,7 @@ export default function NewEmployeePage() {
               <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg">
                 <h4 className="font-semibold text-blue-900 mb-2">UAE Salary Structure</h4>
                 <p className="text-sm text-blue-700">
-                  Define the employee's monthly salary breakdown including basic salary and allowances
+                  Define the employee&apos;s monthly salary breakdown including basic salary and allowances
                 </p>
               </div>
 

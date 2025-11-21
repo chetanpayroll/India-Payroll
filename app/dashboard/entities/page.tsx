@@ -145,7 +145,7 @@ export default function EntitiesPage() {
         <div>
           <h1 className="text-3xl font-bold text-gray-900">Business Entities</h1>
           <p className="mt-2 text-gray-600">
-            Manage your organization's business entities and establishments
+            Manage your organization&apos;s business entities and establishments
           </p>
         </div>
         <Button size="lg" onClick={handleAddEntity}>
