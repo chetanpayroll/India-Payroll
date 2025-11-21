@@ -23,6 +23,11 @@ export const StorageKeys = {
 } as const;
 
 /**
+ * Check if we're in a browser environment
+ */
+const isBrowser = typeof window !== 'undefined';
+
+/**
  * Generic storage service for type-safe localStorage operations
  */
 class StorageService {
@@ -30,6 +35,7 @@ class StorageService {
    * Save data to localStorage
    */
   set<T>(key: string, data: T): void {
+    if (!isBrowser) return;
     try {
       const serialized = JSON.stringify(data);
       localStorage.setItem(key, serialized);
@@ -43,6 +49,7 @@ class StorageService {
    * Get data from localStorage
    */
   get<T>(key: string, defaultValue: T): T {
+    if (!isBrowser) return defaultValue;
     try {
       const item = localStorage.getItem(key);
       if (item === null) {
@@ -59,6 +66,7 @@ class StorageService {
    * Remove data from localStorage
    */
   remove(key: string): void {
+    if (!isBrowser) return;
     try {
       localStorage.removeItem(key);
     } catch (error) {
@@ -70,6 +78,7 @@ class StorageService {
    * Clear all app data from localStorage
    */
   clearAll(): void {
+    if (!isBrowser) return;
     try {
       Object.values(StorageKeys).forEach((key) => {
         localStorage.removeItem(key);
@@ -83,6 +92,7 @@ class StorageService {
    * Check if storage is available
    */
   isAvailable(): boolean {
+    if (!isBrowser) return false;
     try {
       const test = '__storage_test__';
       localStorage.setItem(test, test);
@@ -97,6 +107,7 @@ class StorageService {
    * Get storage size in bytes
    */
   getSize(): number {
+    if (!isBrowser) return 0;
     let total = 0;
     for (const key in localStorage) {
       if (localStorage.hasOwnProperty(key) && key.startsWith(STORAGE_PREFIX)) {
@@ -110,6 +121,7 @@ class StorageService {
    * Export all data for backup
    */
   exportData(): Record<string, any> {
+    if (!isBrowser) return {};
     const data: Record<string, any> = {};
     Object.entries(StorageKeys).forEach(([name, key]) => {
       const item = localStorage.getItem(key);
@@ -128,6 +140,7 @@ class StorageService {
    * Import data from backup
    */
   importData(data: Record<string, any>): void {
+    if (!isBrowser) return;
     try {
       Object.entries(data).forEach(([name, value]) => {
         const key = StorageKeys[name as keyof typeof StorageKeys];
@@ -145,6 +158,7 @@ class StorageService {
    * Initialize storage with version check
    */
   initialize(): void {
+    if (!isBrowser) return;
     const currentVersion = this.get<string>(StorageKeys.VERSION, '');
     if (currentVersion !== STORAGE_VERSION) {
       console.log('Storage version mismatch, initializing...');
