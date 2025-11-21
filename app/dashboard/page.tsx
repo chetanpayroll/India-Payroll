@@ -68,7 +68,7 @@ export default function DashboardPage() {
   const [stats, setStats] = useState({
     totalEmployees: 0,
     activeEmployees: 0,
-    uaeNationals: 0,
+    nationals: 0,
     currentMonthPayroll: 0,
     lastMonthPayroll: 0,
     departments: 0,
@@ -93,9 +93,17 @@ export default function DashboardPage() {
     // Employee stats
     const allEmployees = employeeService.getAll()
     const activeEmployees = employeeService.getActive()
-    const uaeNationals = allEmployees.filter(e =>
-      e.nationality.toLowerCase() === 'uae' || e.nationality.toLowerCase() === 'emirati'
-    ).length
+
+    // Count nationals based on selected country
+    const nationals = allEmployees.filter(e => {
+      const nat = e.nationality.toLowerCase()
+      if (country === 'INDIA') {
+        return nat === 'indian' || nat === 'india'
+      } else {
+        return nat === 'uae' || nat === 'emirati'
+      }
+    }).length
+
     const onProbation = allEmployees.filter(e => e.employmentStatus === 'probation').length
     const departments = employeeService.getDepartments()
     const expiringDocs = employeeService.getExpiringDocuments(30).length
@@ -118,7 +126,7 @@ export default function DashboardPage() {
     setStats({
       totalEmployees: allEmployees.length,
       activeEmployees: activeEmployees.length,
-      uaeNationals,
+      nationals,
       currentMonthPayroll: currentMonthRun?.totalNet || 0,
       lastMonthPayroll: lastMonthRun?.totalNet || 0,
       departments: departments.length,
@@ -237,9 +245,11 @@ export default function DashboardPage() {
       bgGradient: 'from-purple-50 to-purple-100'
     },
     {
-      name: 'UAE Nationals',
-      value: stats.uaeNationals.toString(),
-      change: `${((stats.uaeNationals / stats.totalEmployees) * 100).toFixed(1)}% Emiratisation`,
+      name: country === 'INDIA' ? 'Indian Nationals' : 'UAE Nationals',
+      value: stats.nationals.toString(),
+      change: country === 'INDIA'
+        ? `${((stats.nationals / stats.totalEmployees) * 100).toFixed(1)}% Local talent`
+        : `${((stats.nationals / stats.totalEmployees) * 100).toFixed(1)}% Emiratisation`,
       changeValue: '+2',
       changeType: 'positive',
       icon: Award,
@@ -627,7 +637,7 @@ export default function DashboardPage() {
         </Card>
       </div>
 
-      {/* UAE Compliance Banner */}
+      {/* Compliance Banner */}
       <Card className="border-0 bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 text-white shadow-2xl">
         <CardContent className="p-6">
           <div className="flex items-center gap-4">
@@ -635,16 +645,21 @@ export default function DashboardPage() {
               <Award className="h-8 w-8 text-white" />
             </div>
             <div className="flex-1">
-              <h3 className="font-bold text-xl mb-2">UAE Labor Law Compliance Status</h3>
+              <h3 className="font-bold text-xl mb-2">
+                {country === 'INDIA' ? 'India Labour Law Compliance Status' : 'UAE Labor Law Compliance Status'}
+              </h3>
               <p className="text-white/90 text-sm mb-3">
-                ✅ WPS Compliant • ✅ MOHRE Registered • ✅ GPSSA Active • ✅ Labor Law Adherent
+                {country === 'INDIA'
+                  ? '✅ PF Compliant • ✅ ESIC Active • ✅ TDS Filed • ✅ Labour Law Adherent'
+                  : '✅ WPS Compliant • ✅ MOHRE Registered • ✅ GPSSA Active • ✅ Labor Law Adherent'
+                }
               </p>
               <div className="flex flex-wrap gap-2">
                 <span className="px-4 py-1.5 bg-white/20 backdrop-blur-sm rounded-full text-sm font-semibold">
                   {stats.totalEmployees} Total Employees
                 </span>
                 <span className="px-4 py-1.5 bg-white/20 backdrop-blur-sm rounded-full text-sm font-semibold">
-                  {stats.uaeNationals} UAE Nationals
+                  {stats.nationals} {country === 'INDIA' ? 'Indian Nationals' : 'UAE Nationals'}
                 </span>
                 <span className="px-4 py-1.5 bg-white/20 backdrop-blur-sm rounded-full text-sm font-semibold">
                   {stats.totalEntities} Active Entities
