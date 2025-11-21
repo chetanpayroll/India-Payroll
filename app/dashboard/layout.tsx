@@ -72,7 +72,7 @@ export default function DashboardLayout({
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 flex">
       {/* Mobile sidebar backdrop */}
       {sidebarOpen && (
         <div
@@ -84,7 +84,7 @@ export default function DashboardLayout({
       {/* Sidebar */}
       <div
         className={`
-          fixed inset-y-0 left-0 z-50 w-64 bg-white border-r border-gray-200 transform transition-transform duration-300 ease-in-out
+          fixed inset-y-0 left-0 z-50 w-64 bg-white border-r border-gray-200 transform transition-transform duration-300 ease-in-out flex-shrink-0 flex flex-col
           lg:translate-x-0 lg:static lg:inset-0
           ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'}
         `}
@@ -157,7 +157,7 @@ export default function DashboardLayout({
       </div>
 
       {/* Main Content */}
-      <div className="lg:pl-64">
+      <div className="flex-1 min-w-0">
         {/* Top Bar */}
         <div className="sticky top-0 z-10 flex items-center justify-between h-16 px-6 bg-white border-b border-gray-200 lg:px-8">
           <button
