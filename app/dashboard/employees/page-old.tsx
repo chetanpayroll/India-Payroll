@@ -104,7 +104,7 @@ export default function EmployeesPage() {
         <div>
           <h1 className="text-3xl font-bold text-gray-900">Employees</h1>
           <p className="mt-2 text-gray-600">
-            Manage your organization's employees and their information
+            Manage your organization&apos;s employees and their information
           </p>
         </div>
         <Link href="/dashboard/employees/new">

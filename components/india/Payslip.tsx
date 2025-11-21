@@ -4,6 +4,7 @@
 // INDIA PAYSLIP COMPONENT
 // ============================================================================
 
+import Image from 'next/image';
 import { PayrollData, PayrollEarning, PayrollDeduction, EmployerContribution } from '@/lib/payroll/core/types';
 
 interface PayslipProps {
@@ -35,7 +36,7 @@ export function IndiaPayslip({ data, companyName = 'Company Name', companyAddres
       <div className="border-b-2 border-orange-500 pb-4 mb-6">
         <div className="flex justify-between items-start">
           <div>
-            {logoUrl && <img src={logoUrl} alt="Logo" className="h-12 mb-2" />}
+            {logoUrl && <Image src={logoUrl} alt="Logo" width={48} height={48} className="h-12 mb-2" />}
             <h1 className="text-2xl font-bold text-gray-900">{companyName}</h1>
             {companyAddress && <p className="text-sm text-gray-600">{companyAddress}</p>}
           </div>

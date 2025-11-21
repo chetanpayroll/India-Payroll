@@ -128,7 +128,7 @@ export default function EmployeesPage() {
             Employees
           </h1>
           <p className="mt-2 text-gray-600">
-            Manage your organization's employees and their information
+            Manage your organization&apos;s employees and their information
           </p>
         </div>
         <Button

@@ -170,15 +170,15 @@ export default function DashboardLayout({
           </button>
           
           <div className="flex-1" />
-          
+
           <div className="flex items-center gap-4">
             <div className="hidden md:block">
-              <div className="text-sm text-gray-500">Today's Date</div>
+              <div className="text-sm text-gray-500">Today&apos;s Date</div>
               <div className="text-sm font-medium">
-                {new Date().toLocaleDateString('en-GB', { 
-                  day: '2-digit', 
-                  month: 'long', 
-                  year: 'numeric' 
+                {new Date().toLocaleDateString('en-GB', {
+                  day: '2-digit',
+                  month: 'long',
+                  year: 'numeric'
                 })}
               </div>
             </div>

@@ -38,7 +38,21 @@ export default function LeaveManagementPage() {
   }, [])
 
   useEffect(() => {
-    filterLeaveRequests()
+    let filtered = leaveRequests
+
+    if (statusFilter !== 'all') {
+      filtered = filtered.filter(req => req.status === statusFilter)
+    }
+
+    if (searchQuery) {
+      filtered = filtered.filter(req =>
+        req.employeeId.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        req.leaveType.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        req.reason.toLowerCase().includes(searchQuery.toLowerCase())
+      )
+    }
+
+    setFilteredRequests(filtered)
   }, [searchQuery, statusFilter, leaveRequests])
 
   const loadLeaveData = () => {
@@ -89,24 +103,6 @@ export default function LeaveManagementPage() {
       },
     ]
     setLeaveRequests(sampleRequests)
-  }
-
-  const filterLeaveRequests = () => {
-    let filtered = leaveRequests
-
-    if (statusFilter !== 'all') {
-      filtered = filtered.filter(req => req.status === statusFilter)
-    }
-
-    if (searchQuery) {
-      filtered = filtered.filter(req =>
-        req.employeeId.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        req.leaveType.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        req.reason.toLowerCase().includes(searchQuery.toLowerCase())
-      )
-    }
-
-    setFilteredRequests(filtered)
   }
 
   const getStatusColor = (status: string) => {

@@ -215,7 +215,7 @@ export default function AttendancePage() {
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <TrendingUp className="h-5 w-5 text-purple-600" />
-              Today's Distribution
+              Today&apos;s Distribution
             </CardTitle>
             <CardDescription>Current day attendance breakdown</CardDescription>
           </CardHeader>
@@ -250,7 +250,7 @@ export default function AttendancePage() {
             <Users className="h-5 w-5 text-green-600" />
             Department-wise Attendance
           </CardTitle>
-          <CardDescription>Today's attendance by department</CardDescription>
+          <CardDescription>Today&apos;s attendance by department</CardDescription>
         </CardHeader>
         <CardContent>
           <ResponsiveContainer width="100%" height={300}>
@@ -272,7 +272,7 @@ export default function AttendancePage() {
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Clock className="h-5 w-5 text-blue-600" />
-            Today's Attendance Log
+            Today&apos;s Attendance Log
           </CardTitle>
           <CardDescription>Real-time attendance tracking</CardDescription>
         </CardHeader>
