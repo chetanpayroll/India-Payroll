@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useEffect } from 'react'
+import { useRouter } from 'next/navigation'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import {
@@ -30,6 +31,7 @@ import {
 } from 'lucide-react'
 import Link from 'next/link'
 import { useInitData } from '@/lib/hooks/use-init-data'
+import { useCountry } from '@/lib/context/CountryContext'
 import { employeeService, payrollService } from '@/lib/services/data-service'
 import { formatCurrency, formatMonth } from '@/lib/utils'
 import {
@@ -51,7 +53,17 @@ import {
 } from 'recharts'
 
 export default function DashboardPage() {
+  const router = useRouter()
+  const { country, isLoading: countryLoading } = useCountry()
+
   useInitData()
+
+  // Redirect to country selection if no country is selected
+  useEffect(() => {
+    if (!countryLoading && !country) {
+      router.push('/dashboard/country-select')
+    }
+  }, [country, countryLoading, router])
 
   const [stats, setStats] = useState({
     totalEmployees: 0,
@@ -165,6 +177,23 @@ export default function DashboardPage() {
       })
     }
     setHeadcountTrend(headcountData)
+  }
+
+  // Show loading state while checking country
+  if (countryLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-[60vh]">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+          <p className="text-gray-600">Loading...</p>
+        </div>
+      </div>
+    )
+  }
+
+  // Don't render if no country (will redirect)
+  if (!country) {
+    return null
   }
 
   const payrollChange = stats.lastMonthPayroll > 0
