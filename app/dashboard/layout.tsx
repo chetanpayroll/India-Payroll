@@ -4,6 +4,7 @@ import { useState } from 'react'
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
+import { CountryProvider } from '@/lib/context/CountryContext'
 import {
   Calculator,
   LayoutDashboard,
@@ -72,6 +73,7 @@ export default function DashboardLayout({
   }
 
   return (
+    <CountryProvider>
     <div className="min-h-screen bg-gray-50 flex">
       {/* Mobile sidebar backdrop */}
       {sidebarOpen && (
@@ -189,5 +191,6 @@ export default function DashboardLayout({
         </main>
       </div>
     </div>
+    </CountryProvider>
   )
 }
