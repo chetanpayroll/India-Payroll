@@ -1,6 +1,7 @@
 "use client"
 
 import { useState } from 'react'
+import { useCountry } from '@/lib/context/CountryContext'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -71,6 +72,7 @@ const settingsSections = [
 ]
 
 export default function SettingsPage() {
+  const { country, countryConfig } = useCountry()
   const [activeSection, setActiveSection] = useState('organization')
 
   return (
@@ -80,6 +82,7 @@ export default function SettingsPage() {
         <h1 className="text-3xl font-bold text-gray-900">Settings</h1>
         <p className="mt-2 text-gray-600">
           Manage your system preferences and configurations
+          {country && <span className="ml-2 text-blue-600">({countryConfig?.name})</span>}
         </p>
       </div>
 
@@ -201,9 +204,18 @@ export default function SettingsPage() {
                     <div>
                       <Label htmlFor="currency">Currency</Label>
                       <select id="currency" className="w-full h-10 px-3 py-2 border border-gray-300 rounded-md">
-                        <option>AED - UAE Dirham</option>
-                        <option>USD - US Dollar</option>
-                        <option>EUR - Euro</option>
+                        {country === 'INDIA' ? (
+                          <>
+                            <option>INR - Indian Rupee</option>
+                            <option>USD - US Dollar</option>
+                          </>
+                        ) : (
+                          <>
+                            <option>AED - UAE Dirham</option>
+                            <option>USD - US Dollar</option>
+                            <option>EUR - Euro</option>
+                          </>
+                        )}
                       </select>
                     </div>
                     <div>
@@ -213,27 +225,77 @@ export default function SettingsPage() {
                   </div>
 
                   <div className="space-y-4">
-                    <h4 className="font-semibold text-gray-900">UAE Compliance Settings</h4>
-                    <div className="flex items-center justify-between p-4 border border-gray-200 rounded-lg">
-                      <div>
-                        <p className="font-medium text-gray-900">WPS File Generation</p>
-                        <p className="text-sm text-gray-600">Automatically generate WPS files after finalization</p>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <input type="checkbox" defaultChecked className="w-4 h-4" />
-                        <span className="text-sm text-green-600">Enabled</span>
-                      </div>
-                    </div>
-                    <div className="flex items-center justify-between p-4 border border-gray-200 rounded-lg">
-                      <div>
-                        <p className="font-medium text-gray-900">GPSSA Calculations</p>
-                        <p className="text-sm text-gray-600">Auto-calculate GPSSA for Emirati employees</p>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <input type="checkbox" defaultChecked className="w-4 h-4" />
-                        <span className="text-sm text-green-600">Enabled</span>
-                      </div>
-                    </div>
+                    <h4 className="font-semibold text-gray-900">
+                      {country === 'INDIA' ? 'India Compliance Settings' : 'UAE Compliance Settings'}
+                    </h4>
+
+                    {country === 'INDIA' ? (
+                      <>
+                        <div className="flex items-center justify-between p-4 border border-gray-200 rounded-lg">
+                          <div>
+                            <p className="font-medium text-gray-900">PF Calculations</p>
+                            <p className="text-sm text-gray-600">Auto-calculate EPF/EPS contributions</p>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <input type="checkbox" defaultChecked className="w-4 h-4" />
+                            <span className="text-sm text-green-600">Enabled</span>
+                          </div>
+                        </div>
+                        <div className="flex items-center justify-between p-4 border border-gray-200 rounded-lg">
+                          <div>
+                            <p className="font-medium text-gray-900">ESIC Calculations</p>
+                            <p className="text-sm text-gray-600">Auto-calculate ESIC for eligible employees</p>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <input type="checkbox" defaultChecked className="w-4 h-4" />
+                            <span className="text-sm text-green-600">Enabled</span>
+                          </div>
+                        </div>
+                        <div className="flex items-center justify-between p-4 border border-gray-200 rounded-lg">
+                          <div>
+                            <p className="font-medium text-gray-900">TDS Calculations</p>
+                            <p className="text-sm text-gray-600">Auto-calculate income tax deductions</p>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <input type="checkbox" defaultChecked className="w-4 h-4" />
+                            <span className="text-sm text-green-600">Enabled</span>
+                          </div>
+                        </div>
+                        <div className="flex items-center justify-between p-4 border border-gray-200 rounded-lg">
+                          <div>
+                            <p className="font-medium text-gray-900">Professional Tax</p>
+                            <p className="text-sm text-gray-600">Auto-calculate PT based on state</p>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <input type="checkbox" defaultChecked className="w-4 h-4" />
+                            <span className="text-sm text-green-600">Enabled</span>
+                          </div>
+                        </div>
+                      </>
+                    ) : (
+                      <>
+                        <div className="flex items-center justify-between p-4 border border-gray-200 rounded-lg">
+                          <div>
+                            <p className="font-medium text-gray-900">WPS File Generation</p>
+                            <p className="text-sm text-gray-600">Automatically generate WPS files after finalization</p>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <input type="checkbox" defaultChecked className="w-4 h-4" />
+                            <span className="text-sm text-green-600">Enabled</span>
+                          </div>
+                        </div>
+                        <div className="flex items-center justify-between p-4 border border-gray-200 rounded-lg">
+                          <div>
+                            <p className="font-medium text-gray-900">GPSSA Calculations</p>
+                            <p className="text-sm text-gray-600">Auto-calculate GPSSA for Emirati employees</p>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <input type="checkbox" defaultChecked className="w-4 h-4" />
+                            <span className="text-sm text-green-600">Enabled</span>
+                          </div>
+                        </div>
+                      </>
+                    )}
                   </div>
 
                   <div className="flex justify-end gap-2">
@@ -255,7 +317,10 @@ export default function SettingsPage() {
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-3">
-                    {['Basic Salary', 'Housing Allowance', 'Transport Allowance', 'GPSSA Deduction'].map((element, idx) => (
+                    {(country === 'INDIA'
+                      ? ['Basic Salary', 'HRA (House Rent Allowance)', 'Special Allowance', 'PF Deduction', 'ESIC Deduction', 'Professional Tax', 'TDS']
+                      : ['Basic Salary', 'Housing Allowance', 'Transport Allowance', 'GPSSA Deduction']
+                    ).map((element, idx) => (
                       <div key={idx} className="flex items-center justify-between p-3 border border-gray-200 rounded-lg">
                         <div className="flex items-center gap-3">
                           <CheckCircle2 className="h-5 w-5 text-green-600" />

@@ -1,6 +1,7 @@
 "use client"
 
 import { useState } from 'react'
+import { useCountry } from '@/lib/context/CountryContext'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -41,8 +42,28 @@ import {
   Loader2
 } from 'lucide-react'
 
-// Report categories with comprehensive options
-const reportCategories = [
+// UAE Compliance Reports
+const uaeComplianceReports = [
+  { id: 'wps-file', name: 'WPS SIF File', description: 'Generate WPS file for bank submission' },
+  { id: 'gpssa-monthly', name: 'GPSSA Monthly Report', description: 'GPSSA contribution report for Emiratis' },
+  { id: 'mol-report', name: 'MOL Labour Report', description: 'Ministry of Labour compliance report' },
+  { id: 'end-of-service', name: 'End of Service Benefits', description: 'Calculate gratuity and benefits' },
+]
+
+// India Compliance Reports
+const indiaComplianceReports = [
+  { id: 'form-24q', name: 'Form 24Q (TDS Return)', description: 'Quarterly TDS statement for income tax' },
+  { id: 'pf-ecr', name: 'PF ECR', description: 'EPF Electronic Challan cum Return for monthly filing' },
+  { id: 'esic-monthly', name: 'ESIC Monthly Return', description: 'ESIC contribution and challan report' },
+  { id: 'pt-challan', name: 'Professional Tax Challan', description: 'State-wise PT challan and payment details' },
+  { id: 'form-16', name: 'Form 16', description: 'Annual TDS certificate for employees' },
+  { id: 'salary-register', name: 'Salary Register', description: 'Monthly salary register with all statutory deductions' },
+  { id: 'tds-register', name: 'TDS Register', description: 'Monthly TDS deduction register' },
+  { id: 'labour-welfare', name: 'Labour Welfare Fund', description: 'State labour welfare fund contribution report' },
+]
+
+// Get report categories based on country
+const getReportCategories = (country: string | null) => [
   {
     id: 'payroll',
     name: 'Payroll Reports',
@@ -58,15 +79,10 @@ const reportCategories = [
   },
   {
     id: 'compliance',
-    name: 'UAE Compliance',
+    name: country === 'INDIA' ? 'India Compliance' : 'UAE Compliance',
     icon: FileCheck,
     color: 'green',
-    reports: [
-      { id: 'wps-file', name: 'WPS SIF File', description: 'Generate WPS file for bank submission' },
-      { id: 'gpssa-monthly', name: 'GPSSA Monthly Report', description: 'GPSSA contribution report for Emiratis' },
-      { id: 'mol-report', name: 'MOL Labour Report', description: 'Ministry of Labour compliance report' },
-      { id: 'end-of-service', name: 'End of Service Benefits', description: 'Calculate gratuity and benefits' },
-    ]
+    reports: country === 'INDIA' ? indiaComplianceReports : uaeComplianceReports,
   },
   {
     id: 'employee',
@@ -154,6 +170,7 @@ type Report = {
 }
 
 export default function ReportsPage() {
+  const { country, countryConfig } = useCountry()
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null)
   const [searchQuery, setSearchQuery] = useState('')
   const [selectedReport, setSelectedReport] = useState<string | null>(null)
@@ -170,6 +187,7 @@ export default function ReportsPage() {
     includeCharts: true
   })
 
+  const reportCategories = getReportCategories(country)
   const filteredCategories = selectedCategory
     ? reportCategories.filter(cat => cat.id === selectedCategory)
     : reportCategories
@@ -233,7 +251,7 @@ export default function ReportsPage() {
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-gray-600">WPS Files</p>
+                <p className="text-sm font-medium text-gray-600">{country === 'INDIA' ? 'PF ECR Files' : 'WPS Files'}</p>
                 <p className="mt-2 text-3xl font-bold text-gray-900">12</p>
                 <p className="mt-2 text-sm text-gray-500">Last 12 months</p>
               </div>
@@ -248,7 +266,7 @@ export default function ReportsPage() {
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-gray-600">GPSSA Reports</p>
+                <p className="text-sm font-medium text-gray-600">{country === 'INDIA' ? 'TDS Returns' : 'GPSSA Reports'}</p>
                 <p className="mt-2 text-3xl font-bold text-gray-900">8</p>
                 <p className="mt-2 text-sm text-gray-500">Last 12 months</p>
               </div>
