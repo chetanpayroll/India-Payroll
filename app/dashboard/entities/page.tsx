@@ -4,6 +4,22 @@ import { useState } from 'react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
 import {
   Building2,
   Plus,
@@ -19,7 +35,8 @@ import {
   AlertCircle,
   MoreVertical,
   Settings,
-  Download
+  Download,
+  X
 } from 'lucide-react'
 
 // Demo entities data
@@ -60,13 +77,66 @@ const entities = [
   },
 ]
 
+type Entity = typeof entities[0]
+
+const emptyEntity = {
+  id: '',
+  name: '',
+  establishmentNo: '',
+  laborCardNo: '',
+  wpsRegistrationNo: '',
+  licenseNo: '',
+  status: 'active',
+  employees: 0,
+  monthlyPayroll: 0,
+  location: '',
+  address: '',
+  registrationDate: '',
+  contactPerson: '',
+  contactEmail: '',
+  contactPhone: '',
+}
+
 export default function EntitiesPage() {
   const [searchQuery, setSearchQuery] = useState('')
+  const [isModalOpen, setIsModalOpen] = useState(false)
+  const [isViewModalOpen, setIsViewModalOpen] = useState(false)
+  const [editingEntity, setEditingEntity] = useState<Entity | null>(null)
+  const [viewingEntity, setViewingEntity] = useState<Entity | null>(null)
+  const [formData, setFormData] = useState(emptyEntity)
 
   const filteredEntities = entities.filter(entity =>
     entity.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
     entity.establishmentNo.toLowerCase().includes(searchQuery.toLowerCase())
   )
+
+  const handleAddEntity = () => {
+    setEditingEntity(null)
+    setFormData(emptyEntity)
+    setIsModalOpen(true)
+  }
+
+  const handleEditEntity = (entity: Entity) => {
+    setEditingEntity(entity)
+    setFormData(entity)
+    setIsModalOpen(true)
+  }
+
+  const handleViewEntity = (entity: Entity) => {
+    setViewingEntity(entity)
+    setIsViewModalOpen(true)
+  }
+
+  const handleSubmit = () => {
+    // In a real app, this would save to the database
+    console.log('Saving entity:', formData)
+    setIsModalOpen(false)
+    setFormData(emptyEntity)
+  }
+
+  const handleInputChange = (field: string, value: string) => {
+    setFormData(prev => ({ ...prev, [field]: value }))
+  }
 
   return (
     <div className="space-y-6">
@@ -78,7 +148,7 @@ export default function EntitiesPage() {
             Manage your organization's business entities and establishments
           </p>
         </div>
-        <Button size="lg">
+        <Button size="lg" onClick={handleAddEntity}>
           <Plus className="h-4 w-4 mr-2" />
           Add Entity
         </Button>
@@ -274,11 +344,11 @@ export default function EntitiesPage() {
 
               {/* Action Buttons */}
               <div className="flex gap-2">
-                <Button variant="outline" className="flex-1">
+                <Button variant="outline" className="flex-1" onClick={() => handleViewEntity(entity)}>
                   <Eye className="h-4 w-4 mr-2" />
                   View Details
                 </Button>
-                <Button variant="outline" className="flex-1">
+                <Button variant="outline" className="flex-1" onClick={() => handleEditEntity(entity)}>
                   <Edit className="h-4 w-4 mr-2" />
                   Edit
                 </Button>
@@ -319,6 +389,261 @@ export default function EntitiesPage() {
           </div>
         </CardContent>
       </Card>
+
+      {/* Add/Edit Entity Modal */}
+      <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>{editingEntity ? 'Edit Entity' : 'Add New Entity'}</DialogTitle>
+            <DialogDescription>
+              {editingEntity ? 'Update the entity details below' : 'Enter the details for the new business entity'}
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="grid gap-6 py-4">
+            {/* Basic Information */}
+            <div className="space-y-4">
+              <h3 className="font-semibold text-gray-900 border-b pb-2">Basic Information</h3>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="name">Entity Name *</Label>
+                  <Input
+                    id="name"
+                    value={formData.name}
+                    onChange={(e) => handleInputChange('name', e.target.value)}
+                    placeholder="e.g., GMP Trading LLC"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="location">Location *</Label>
+                  <Select value={formData.location} onValueChange={(value) => handleInputChange('location', value)}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select emirate" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="Dubai">Dubai</SelectItem>
+                      <SelectItem value="Abu Dhabi">Abu Dhabi</SelectItem>
+                      <SelectItem value="Sharjah">Sharjah</SelectItem>
+                      <SelectItem value="Ajman">Ajman</SelectItem>
+                      <SelectItem value="RAK">Ras Al Khaimah</SelectItem>
+                      <SelectItem value="Fujairah">Fujairah</SelectItem>
+                      <SelectItem value="UAQ">Umm Al Quwain</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="address">Full Address</Label>
+                <Input
+                  id="address"
+                  value={formData.address}
+                  onChange={(e) => handleInputChange('address', e.target.value)}
+                  placeholder="e.g., Business Bay, Dubai, UAE"
+                />
+              </div>
+            </div>
+
+            {/* Registration Details */}
+            <div className="space-y-4">
+              <h3 className="font-semibold text-gray-900 border-b pb-2">Registration Details</h3>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="establishmentNo">Establishment Number *</Label>
+                  <Input
+                    id="establishmentNo"
+                    value={formData.establishmentNo}
+                    onChange={(e) => handleInputChange('establishmentNo', e.target.value)}
+                    placeholder="e.g., EST-2345678"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="laborCardNo">Labor Card Number</Label>
+                  <Input
+                    id="laborCardNo"
+                    value={formData.laborCardNo}
+                    onChange={(e) => handleInputChange('laborCardNo', e.target.value)}
+                    placeholder="e.g., LC-2345678-01"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="wpsRegistrationNo">WPS Registration Number</Label>
+                  <Input
+                    id="wpsRegistrationNo"
+                    value={formData.wpsRegistrationNo}
+                    onChange={(e) => handleInputChange('wpsRegistrationNo', e.target.value)}
+                    placeholder="e.g., WPS-AE-12345"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="licenseNo">Trade License Number</Label>
+                  <Input
+                    id="licenseNo"
+                    value={formData.licenseNo}
+                    onChange={(e) => handleInputChange('licenseNo', e.target.value)}
+                    placeholder="e.g., TL-234567"
+                  />
+                </div>
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="registrationDate">Registration Date</Label>
+                <Input
+                  id="registrationDate"
+                  type="date"
+                  value={formData.registrationDate}
+                  onChange={(e) => handleInputChange('registrationDate', e.target.value)}
+                />
+              </div>
+            </div>
+
+            {/* Contact Information */}
+            <div className="space-y-4">
+              <h3 className="font-semibold text-gray-900 border-b pb-2">Contact Information</h3>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="contactPerson">Contact Person</Label>
+                  <Input
+                    id="contactPerson"
+                    value={formData.contactPerson}
+                    onChange={(e) => handleInputChange('contactPerson', e.target.value)}
+                    placeholder="e.g., Ahmed Mohammed"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="contactEmail">Email Address</Label>
+                  <Input
+                    id="contactEmail"
+                    type="email"
+                    value={formData.contactEmail}
+                    onChange={(e) => handleInputChange('contactEmail', e.target.value)}
+                    placeholder="e.g., contact@company.ae"
+                  />
+                </div>
+                <div className="col-span-2 space-y-2">
+                  <Label htmlFor="contactPhone">Phone Number</Label>
+                  <Input
+                    id="contactPhone"
+                    value={formData.contactPhone}
+                    onChange={(e) => handleInputChange('contactPhone', e.target.value)}
+                    placeholder="e.g., +971 4 123 4567"
+                  />
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setIsModalOpen(false)}>
+              Cancel
+            </Button>
+            <Button onClick={handleSubmit}>
+              {editingEntity ? 'Update Entity' : 'Add Entity'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* View Entity Details Modal */}
+      <Dialog open={isViewModalOpen} onOpenChange={setIsViewModalOpen}>
+        <DialogContent className="max-w-2xl">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-3">
+              <div className="p-2 bg-blue-100 rounded-lg">
+                <Building2 className="h-5 w-5 text-blue-600" />
+              </div>
+              {viewingEntity?.name}
+            </DialogTitle>
+            <DialogDescription>
+              Entity details and compliance information
+            </DialogDescription>
+          </DialogHeader>
+
+          {viewingEntity && (
+            <div className="space-y-6 py-4">
+              {/* Status Badge */}
+              <div className="flex items-center gap-2">
+                <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-green-100 text-green-800">
+                  <CheckCircle2 className="h-4 w-4 mr-1" />
+                  {viewingEntity.status.charAt(0).toUpperCase() + viewingEntity.status.slice(1)}
+                </span>
+                <span className="flex items-center text-sm text-gray-500">
+                  <MapPin className="h-4 w-4 mr-1" />
+                  {viewingEntity.location}
+                </span>
+              </div>
+
+              {/* Registration Details */}
+              <div className="grid grid-cols-2 gap-4 p-4 bg-gray-50 rounded-lg">
+                <div>
+                  <p className="text-sm text-gray-500">Establishment No.</p>
+                  <p className="font-semibold text-gray-900">{viewingEntity.establishmentNo}</p>
+                </div>
+                <div>
+                  <p className="text-sm text-gray-500">Labor Card No.</p>
+                  <p className="font-semibold text-gray-900">{viewingEntity.laborCardNo}</p>
+                </div>
+                <div>
+                  <p className="text-sm text-gray-500">WPS Registration</p>
+                  <p className="font-semibold text-gray-900">{viewingEntity.wpsRegistrationNo}</p>
+                </div>
+                <div>
+                  <p className="text-sm text-gray-500">License No.</p>
+                  <p className="font-semibold text-gray-900">{viewingEntity.licenseNo}</p>
+                </div>
+              </div>
+
+              {/* Statistics */}
+              <div className="grid grid-cols-2 gap-4">
+                <div className="p-4 border rounded-lg text-center">
+                  <Users className="h-6 w-6 mx-auto text-blue-600 mb-2" />
+                  <p className="text-2xl font-bold text-gray-900">{viewingEntity.employees}</p>
+                  <p className="text-sm text-gray-500">Employees</p>
+                </div>
+                <div className="p-4 border rounded-lg text-center">
+                  <DollarSign className="h-6 w-6 mx-auto text-green-600 mb-2" />
+                  <p className="text-2xl font-bold text-gray-900">AED {viewingEntity.monthlyPayroll.toLocaleString()}</p>
+                  <p className="text-sm text-gray-500">Monthly Payroll</p>
+                </div>
+              </div>
+
+              {/* Contact Information */}
+              <div className="p-4 border rounded-lg space-y-3">
+                <h4 className="font-semibold text-gray-900">Contact Information</h4>
+                <div className="grid grid-cols-2 gap-4 text-sm">
+                  <div>
+                    <p className="text-gray-500">Contact Person</p>
+                    <p className="font-medium">{viewingEntity.contactPerson}</p>
+                  </div>
+                  <div>
+                    <p className="text-gray-500">Email</p>
+                    <p className="font-medium">{viewingEntity.contactEmail}</p>
+                  </div>
+                  <div>
+                    <p className="text-gray-500">Phone</p>
+                    <p className="font-medium">{viewingEntity.contactPhone}</p>
+                  </div>
+                  <div>
+                    <p className="text-gray-500">Address</p>
+                    <p className="font-medium">{viewingEntity.address}</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setIsViewModalOpen(false)}>
+              Close
+            </Button>
+            <Button onClick={() => {
+              setIsViewModalOpen(false)
+              if (viewingEntity) handleEditEntity(viewingEntity)
+            }}>
+              <Edit className="h-4 w-4 mr-2" />
+              Edit Entity
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }

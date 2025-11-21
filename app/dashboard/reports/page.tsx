@@ -6,6 +6,21 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
+import {
   Download,
   FileText,
   TrendingUp,
@@ -21,7 +36,9 @@ import {
   FileSpreadsheet,
   FileCheck,
   ChevronDown,
-  Clock
+  Clock,
+  CheckCircle2,
+  Loader2
 } from 'lucide-react'
 
 // Report categories with comprehensive options
@@ -130,14 +147,60 @@ const recentReports = [
   },
 ]
 
+type Report = {
+  id: string
+  name: string
+  description: string
+}
+
 export default function ReportsPage() {
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null)
   const [searchQuery, setSearchQuery] = useState('')
   const [selectedReport, setSelectedReport] = useState<string | null>(null)
+  const [isGenerateModalOpen, setIsGenerateModalOpen] = useState(false)
+  const [isPreviewModalOpen, setIsPreviewModalOpen] = useState(false)
+  const [currentReport, setCurrentReport] = useState<Report | null>(null)
+  const [isGenerating, setIsGenerating] = useState(false)
+  const [generationComplete, setGenerationComplete] = useState(false)
+  const [reportConfig, setReportConfig] = useState({
+    dateFrom: '',
+    dateTo: '',
+    format: 'pdf',
+    entity: 'all',
+    includeCharts: true
+  })
 
   const filteredCategories = selectedCategory
     ? reportCategories.filter(cat => cat.id === selectedCategory)
     : reportCategories
+
+  const handleGenerateReport = (report: Report) => {
+    setCurrentReport(report)
+    setGenerationComplete(false)
+    setIsGenerating(false)
+    setIsGenerateModalOpen(true)
+  }
+
+  const handlePreviewReport = (report: Report) => {
+    setCurrentReport(report)
+    setIsPreviewModalOpen(true)
+  }
+
+  const executeGeneration = () => {
+    setIsGenerating(true)
+    // Simulate report generation
+    setTimeout(() => {
+      setIsGenerating(false)
+      setGenerationComplete(true)
+    }, 2000)
+  }
+
+  const handleDownload = () => {
+    // In a real app, this would trigger file download
+    console.log('Downloading report:', currentReport?.name, reportConfig)
+    setIsGenerateModalOpen(false)
+    setGenerationComplete(false)
+  }
 
   return (
     <div className="space-y-6">
@@ -284,11 +347,17 @@ export default function ReportsPage() {
                       </div>
                       <p className="text-sm text-gray-600 mb-4">{report.description}</p>
                       <div className="flex gap-2">
-                        <Button size="sm" className="flex-1">
+                        <Button size="sm" className="flex-1" onClick={(e) => {
+                          e.stopPropagation()
+                          handleGenerateReport(report)
+                        }}>
                           <FileText className="h-3 w-3 mr-1" />
                           Generate
                         </Button>
-                        <Button size="sm" variant="outline">
+                        <Button size="sm" variant="outline" onClick={(e) => {
+                          e.stopPropagation()
+                          handlePreviewReport(report)
+                        }}>
                           <Eye className="h-3 w-3" />
                         </Button>
                       </div>
@@ -385,6 +454,225 @@ export default function ReportsPage() {
           </div>
         </CardContent>
       </Card>
+
+      {/* Generate Report Modal */}
+      <Dialog open={isGenerateModalOpen} onOpenChange={setIsGenerateModalOpen}>
+        <DialogContent className="max-w-lg">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <FileText className="h-5 w-5 text-blue-600" />
+              Generate Report
+            </DialogTitle>
+            <DialogDescription>
+              Configure and generate: {currentReport?.name}
+            </DialogDescription>
+          </DialogHeader>
+
+          {!generationComplete ? (
+            <div className="space-y-4 py-4">
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="dateFrom">From Date</Label>
+                  <Input
+                    id="dateFrom"
+                    type="date"
+                    value={reportConfig.dateFrom}
+                    onChange={(e) => setReportConfig(prev => ({ ...prev, dateFrom: e.target.value }))}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="dateTo">To Date</Label>
+                  <Input
+                    id="dateTo"
+                    type="date"
+                    value={reportConfig.dateTo}
+                    onChange={(e) => setReportConfig(prev => ({ ...prev, dateTo: e.target.value }))}
+                  />
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="entity">Business Entity</Label>
+                <Select value={reportConfig.entity} onValueChange={(value) => setReportConfig(prev => ({ ...prev, entity: value }))}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select entity" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All Entities</SelectItem>
+                    <SelectItem value="gmp-trading">GMP Trading LLC</SelectItem>
+                    <SelectItem value="gmp-services">GMP Services FZE</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="format">Output Format</Label>
+                <Select value={reportConfig.format} onValueChange={(value) => setReportConfig(prev => ({ ...prev, format: value }))}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select format" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="pdf">PDF Document</SelectItem>
+                    <SelectItem value="xlsx">Excel Spreadsheet</SelectItem>
+                    <SelectItem value="csv">CSV File</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="flex items-center gap-2 p-3 bg-gray-50 rounded-lg">
+                <input
+                  type="checkbox"
+                  id="includeCharts"
+                  checked={reportConfig.includeCharts}
+                  onChange={(e) => setReportConfig(prev => ({ ...prev, includeCharts: e.target.checked }))}
+                  className="rounded border-gray-300"
+                />
+                <Label htmlFor="includeCharts" className="text-sm cursor-pointer">Include charts and visualizations</Label>
+              </div>
+            </div>
+          ) : (
+            <div className="py-8 text-center">
+              <div className="mx-auto w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mb-4">
+                <CheckCircle2 className="h-8 w-8 text-green-600" />
+              </div>
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">Report Generated Successfully!</h3>
+              <p className="text-sm text-gray-600 mb-4">
+                Your {currentReport?.name} is ready for download.
+              </p>
+              <div className="flex items-center justify-center gap-4 text-sm text-gray-500">
+                <span className="flex items-center gap-1">
+                  <FileText className="h-4 w-4" />
+                  {reportConfig.format.toUpperCase()}
+                </span>
+                <span>•</span>
+                <span>2.4 MB</span>
+              </div>
+            </div>
+          )}
+
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setIsGenerateModalOpen(false)}>
+              {generationComplete ? 'Close' : 'Cancel'}
+            </Button>
+            {!generationComplete ? (
+              <Button onClick={executeGeneration} disabled={isGenerating}>
+                {isGenerating ? (
+                  <>
+                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                    Generating...
+                  </>
+                ) : (
+                  <>
+                    <FileText className="h-4 w-4 mr-2" />
+                    Generate Report
+                  </>
+                )}
+              </Button>
+            ) : (
+              <Button onClick={handleDownload}>
+                <Download className="h-4 w-4 mr-2" />
+                Download Report
+              </Button>
+            )}
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Preview Report Modal */}
+      <Dialog open={isPreviewModalOpen} onOpenChange={setIsPreviewModalOpen}>
+        <DialogContent className="max-w-3xl max-h-[80vh]">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Eye className="h-5 w-5 text-blue-600" />
+              Report Preview
+            </DialogTitle>
+            <DialogDescription>
+              Preview: {currentReport?.name}
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="py-4">
+            <div className="border rounded-lg p-6 bg-gray-50 min-h-[300px]">
+              <div className="text-center mb-6">
+                <h2 className="text-xl font-bold text-gray-900">{currentReport?.name}</h2>
+                <p className="text-sm text-gray-500 mt-1">Generated on {new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })}</p>
+              </div>
+
+              {/* Sample Preview Content */}
+              <div className="space-y-4">
+                <div className="grid grid-cols-3 gap-4">
+                  <div className="p-4 bg-white rounded-lg border text-center">
+                    <p className="text-2xl font-bold text-blue-600">AED 245,680</p>
+                    <p className="text-sm text-gray-500">Total Amount</p>
+                  </div>
+                  <div className="p-4 bg-white rounded-lg border text-center">
+                    <p className="text-2xl font-bold text-green-600">48</p>
+                    <p className="text-sm text-gray-500">Employees</p>
+                  </div>
+                  <div className="p-4 bg-white rounded-lg border text-center">
+                    <p className="text-2xl font-bold text-purple-600">2</p>
+                    <p className="text-sm text-gray-500">Entities</p>
+                  </div>
+                </div>
+
+                <div className="p-4 bg-white rounded-lg border">
+                  <h4 className="font-semibold text-gray-900 mb-3">Sample Data Preview</h4>
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-sm">
+                      <thead>
+                        <tr className="border-b">
+                          <th className="text-left py-2 px-2">Employee</th>
+                          <th className="text-left py-2 px-2">Department</th>
+                          <th className="text-right py-2 px-2">Basic</th>
+                          <th className="text-right py-2 px-2">Allowances</th>
+                          <th className="text-right py-2 px-2">Net Pay</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        <tr className="border-b">
+                          <td className="py-2 px-2">Ahmed M.</td>
+                          <td className="py-2 px-2">Finance</td>
+                          <td className="text-right py-2 px-2">8,500</td>
+                          <td className="text-right py-2 px-2">3,200</td>
+                          <td className="text-right py-2 px-2 font-semibold">11,700</td>
+                        </tr>
+                        <tr className="border-b">
+                          <td className="py-2 px-2">Sarah J.</td>
+                          <td className="py-2 px-2">IT</td>
+                          <td className="text-right py-2 px-2">12,000</td>
+                          <td className="text-right py-2 px-2">4,500</td>
+                          <td className="text-right py-2 px-2 font-semibold">16,500</td>
+                        </tr>
+                        <tr>
+                          <td className="py-2 px-2">Mohammed A.</td>
+                          <td className="py-2 px-2">Operations</td>
+                          <td className="text-right py-2 px-2">6,800</td>
+                          <td className="text-right py-2 px-2">2,100</td>
+                          <td className="text-right py-2 px-2 font-semibold">8,900</td>
+                        </tr>
+                      </tbody>
+                    </table>
+                  </div>
+                  <p className="text-xs text-gray-400 mt-2 text-center">... and 45 more records</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setIsPreviewModalOpen(false)}>
+              Close
+            </Button>
+            <Button onClick={() => {
+              setIsPreviewModalOpen(false)
+              if (currentReport) handleGenerateReport(currentReport)
+            }}>
+              <FileText className="h-4 w-4 mr-2" />
+              Generate Full Report
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }

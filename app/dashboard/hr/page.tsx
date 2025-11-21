@@ -4,6 +4,14 @@ import { useState } from 'react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog'
+import {
   Briefcase,
   Users,
   GraduationCap,
@@ -15,12 +23,26 @@ import {
   Target,
   CheckCircle2,
   Clock,
-  AlertCircle
+  AlertCircle,
+  Download,
+  PieChart,
+  Activity
 } from 'lucide-react'
 import Link from 'next/link'
 
 export default function HRManagementPage() {
   const [activeTab, setActiveTab] = useState('overview')
+  const [isReportsModalOpen, setIsReportsModalOpen] = useState(false)
+  const [isAnalyticsModalOpen, setIsAnalyticsModalOpen] = useState(false)
+
+  const hrReports = [
+    { id: 'headcount', name: 'Headcount Report', description: 'Employee count by department, location, and status' },
+    { id: 'turnover', name: 'Turnover Analysis', description: 'Employee retention and attrition metrics' },
+    { id: 'attendance', name: 'Attendance Summary', description: 'Attendance patterns and trends' },
+    { id: 'leave', name: 'Leave Utilization', description: 'Leave balances and usage statistics' },
+    { id: 'performance', name: 'Performance Summary', description: 'Performance ratings distribution' },
+    { id: 'training', name: 'Training Completion', description: 'Training program completion rates' },
+  ]
 
   const modules = [
     {
@@ -116,11 +138,11 @@ export default function HRManagementPage() {
           </p>
         </div>
         <div className="flex gap-3">
-          <Button variant="outline">
+          <Button variant="outline" onClick={() => setIsReportsModalOpen(true)}>
             <FileText className="h-4 w-4 mr-2" />
             HR Reports
           </Button>
-          <Button className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700">
+          <Button className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700" onClick={() => setIsAnalyticsModalOpen(true)}>
             <BarChart3 className="h-4 w-4 mr-2" />
             HR Analytics
           </Button>
@@ -260,6 +282,147 @@ export default function HRManagementPage() {
           </CardContent>
         </Card>
       </div>
+
+      {/* HR Reports Modal */}
+      <Dialog open={isReportsModalOpen} onOpenChange={setIsReportsModalOpen}>
+        <DialogContent className="max-w-2xl">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <FileText className="h-5 w-5 text-blue-600" />
+              HR Reports
+            </DialogTitle>
+            <DialogDescription>
+              Generate and download HR reports
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="py-4 space-y-3">
+            {hrReports.map((report) => (
+              <div
+                key={report.id}
+                className="flex items-center justify-between p-4 border rounded-lg hover:bg-gray-50 transition-colors"
+              >
+                <div>
+                  <h4 className="font-semibold text-gray-900">{report.name}</h4>
+                  <p className="text-sm text-gray-500">{report.description}</p>
+                </div>
+                <Button size="sm">
+                  <Download className="h-4 w-4 mr-1" />
+                  Generate
+                </Button>
+              </div>
+            ))}
+          </div>
+
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setIsReportsModalOpen(false)}>
+              Close
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* HR Analytics Modal */}
+      <Dialog open={isAnalyticsModalOpen} onOpenChange={setIsAnalyticsModalOpen}>
+        <DialogContent className="max-w-3xl">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <BarChart3 className="h-5 w-5 text-purple-600" />
+              HR Analytics Dashboard
+            </DialogTitle>
+            <DialogDescription>
+              Key HR metrics and insights
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="py-4 space-y-6">
+            {/* Summary Stats */}
+            <div className="grid grid-cols-4 gap-4">
+              <div className="p-4 bg-blue-50 rounded-lg text-center">
+                <Users className="h-6 w-6 mx-auto text-blue-600 mb-2" />
+                <p className="text-2xl font-bold text-gray-900">156</p>
+                <p className="text-xs text-gray-500">Total Employees</p>
+              </div>
+              <div className="p-4 bg-green-50 rounded-lg text-center">
+                <UserPlus className="h-6 w-6 mx-auto text-green-600 mb-2" />
+                <p className="text-2xl font-bold text-gray-900">8</p>
+                <p className="text-xs text-gray-500">New Hires (MTD)</p>
+              </div>
+              <div className="p-4 bg-purple-50 rounded-lg text-center">
+                <Activity className="h-6 w-6 mx-auto text-purple-600 mb-2" />
+                <p className="text-2xl font-bold text-gray-900">4.2%</p>
+                <p className="text-xs text-gray-500">Turnover Rate</p>
+              </div>
+              <div className="p-4 bg-orange-50 rounded-lg text-center">
+                <Award className="h-6 w-6 mx-auto text-orange-600 mb-2" />
+                <p className="text-2xl font-bold text-gray-900">87%</p>
+                <p className="text-xs text-gray-500">Avg Performance</p>
+              </div>
+            </div>
+
+            {/* Department Distribution */}
+            <div className="p-4 border rounded-lg">
+              <h4 className="font-semibold text-gray-900 mb-4 flex items-center gap-2">
+                <PieChart className="h-4 w-4 text-blue-600" />
+                Headcount by Department
+              </h4>
+              <div className="space-y-3">
+                {[
+                  { dept: 'Operations', count: 45, percent: 29, color: 'bg-blue-500' },
+                  { dept: 'Finance', count: 32, percent: 21, color: 'bg-green-500' },
+                  { dept: 'IT', count: 28, percent: 18, color: 'bg-purple-500' },
+                  { dept: 'HR', count: 18, percent: 12, color: 'bg-orange-500' },
+                  { dept: 'Sales', count: 33, percent: 21, color: 'bg-pink-500' },
+                ].map((item) => (
+                  <div key={item.dept} className="flex items-center gap-3">
+                    <span className="w-24 text-sm text-gray-600">{item.dept}</span>
+                    <div className="flex-1 bg-gray-100 rounded-full h-3">
+                      <div className={`${item.color} h-3 rounded-full`} style={{ width: `${item.percent}%` }} />
+                    </div>
+                    <span className="w-16 text-sm text-gray-900 text-right">{item.count} ({item.percent}%)</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Trends */}
+            <div className="grid grid-cols-2 gap-4">
+              <div className="p-4 border rounded-lg">
+                <h4 className="font-semibold text-gray-900 mb-2">Hiring Trend</h4>
+                <div className="flex items-end gap-1 h-20">
+                  {[30, 45, 35, 55, 40, 60].map((h, i) => (
+                    <div key={i} className="flex-1 bg-green-500 rounded-t" style={{ height: `${h}%` }} />
+                  ))}
+                </div>
+                <div className="flex justify-between text-xs text-gray-500 mt-2">
+                  <span>Jun</span><span>Jul</span><span>Aug</span><span>Sep</span><span>Oct</span><span>Nov</span>
+                </div>
+              </div>
+              <div className="p-4 border rounded-lg">
+                <h4 className="font-semibold text-gray-900 mb-2">Attrition Trend</h4>
+                <div className="flex items-end gap-1 h-20">
+                  {[25, 20, 30, 15, 20, 18].map((h, i) => (
+                    <div key={i} className="flex-1 bg-red-400 rounded-t" style={{ height: `${h}%` }} />
+                  ))}
+                </div>
+                <div className="flex justify-between text-xs text-gray-500 mt-2">
+                  <span>Jun</span><span>Jul</span><span>Aug</span><span>Sep</span><span>Oct</span><span>Nov</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setIsAnalyticsModalOpen(false)}>
+              Close
+            </Button>
+            <Button>
+              <Download className="h-4 w-4 mr-2" />
+              Export Analytics
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }
