@@ -4,7 +4,8 @@ import { useState } from 'react'
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
-import { CountryProvider } from '@/lib/context/CountryContext'
+import { CountryProvider, useCountry } from '@/lib/context/CountryContext'
+import { COUNTRY_CONFIGS } from '@/lib/payroll/core/countryConfig'
 import {
   Calculator,
   LayoutDashboard,
@@ -22,7 +23,8 @@ import {
   UserCheck,
   BarChart3,
   Calendar,
-  TrendingUp
+  TrendingUp,
+  Globe
 } from 'lucide-react'
 
 const navigationSections = [
@@ -58,11 +60,33 @@ const navigationSections = [
   }
 ]
 
-export default function DashboardLayout({
-  children,
-}: {
-  children: React.ReactNode
-}) {
+// Country Selector Component
+function CountrySelector() {
+  const router = useRouter()
+  const { country, countryConfig } = useCountry()
+
+  if (!country || !countryConfig) {
+    return null
+  }
+
+  return (
+    <button
+      onClick={() => router.push('/dashboard/country-select')}
+      className="flex items-center gap-2 px-3 py-2 bg-gradient-to-r from-blue-50 to-purple-50 border border-blue-200 rounded-lg hover:shadow-md transition-all"
+      title="Change country"
+    >
+      <Globe className="h-4 w-4 text-blue-600" />
+      <span className="text-2xl">{countryConfig.uiConfig.flagEmoji}</span>
+      <div className="text-left hidden md:block">
+        <div className="text-xs font-medium text-gray-900">{countryConfig.name}</div>
+        <div className="text-xs text-gray-500">{countryConfig.currency}</div>
+      </div>
+    </button>
+  )
+}
+
+// Main Layout Content Component
+function DashboardLayoutContent({ children }: { children: React.ReactNode }) {
   const pathname = usePathname()
   const router = useRouter()
   const [sidebarOpen, setSidebarOpen] = useState(false)
@@ -73,7 +97,6 @@ export default function DashboardLayout({
   }
 
   return (
-    <CountryProvider>
     <div className="min-h-screen bg-gray-50 flex">
       {/* Mobile sidebar backdrop */}
       {sidebarOpen && (
@@ -168,10 +191,13 @@ export default function DashboardLayout({
           >
             <Menu className="h-6 w-6 text-gray-400" />
           </button>
-          
+
           <div className="flex-1" />
 
           <div className="flex items-center gap-4">
+            {/* Country Selector */}
+            <CountrySelector />
+
             <div className="hidden md:block">
               <div className="text-sm text-gray-500">Today&apos;s Date</div>
               <div className="text-sm font-medium">
@@ -191,6 +217,18 @@ export default function DashboardLayout({
         </main>
       </div>
     </div>
+  )
+}
+
+// Main export with CountryProvider wrapper
+export default function DashboardLayout({
+  children,
+}: {
+  children: React.ReactNode
+}) {
+  return (
+    <CountryProvider>
+      <DashboardLayoutContent>{children}</DashboardLayoutContent>
     </CountryProvider>
   )
 }
