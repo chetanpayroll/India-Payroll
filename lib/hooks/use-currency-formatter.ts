@@ -16,21 +16,28 @@ import { formatCurrencyForCountry } from '@/lib/payroll/core/countryConfig';
  * ```
  */
 export function useCurrencyFormatter() {
-  const { country } = useCountry();
+  const { country, countryConfig } = useCountry();
 
   return (amount: number | string | undefined | null): string => {
     const n = amount == null ? 0 : (typeof amount === 'string' ? parseFloat(amount) : Number(amount));
     const value = Number.isFinite(n) ? n : 0;
 
     // If country is selected, use country-specific formatter
-    if (country) {
+    if (country && countryConfig) {
       return formatCurrencyForCountry(value, country);
     }
 
-    // Fallback to AED if no country selected
-    return new Intl.NumberFormat('en-AE', {
-      style: 'currency',
-      currency: 'AED',
+    // Fallback: Try to get country from localStorage
+    if (typeof window !== 'undefined') {
+      const stored = localStorage.getItem('gmppayroll_selected_country');
+      if (stored && (stored === 'INDIA' || stored === 'UAE')) {
+        return formatCurrencyForCountry(value, stored as 'INDIA' | 'UAE');
+      }
+    }
+
+    // Final fallback to neutral format (no country selected)
+    return new Intl.NumberFormat('en-US', {
+      style: 'decimal',
       minimumFractionDigits: 2,
       maximumFractionDigits: 2,
     }).format(value);
@@ -51,5 +58,18 @@ export function useCurrencyFormatter() {
  */
 export function useCurrencySymbol(): string {
   const { countryConfig } = useCountry();
-  return countryConfig?.currency || 'AED';
+
+  if (countryConfig?.currency) {
+    return countryConfig.currency;
+  }
+
+  // Fallback: Try to get country from localStorage
+  if (typeof window !== 'undefined') {
+    const stored = localStorage.getItem('gmppayroll_selected_country');
+    if (stored === 'INDIA') return 'INR';
+    if (stored === 'UAE') return 'AED';
+  }
+
+  // Final fallback to empty string
+  return '';
 }
