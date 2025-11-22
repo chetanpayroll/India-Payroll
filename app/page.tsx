@@ -65,7 +65,7 @@ export default function Home() {
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.7, delay: 0.2 }}
-            className="text-6xl md:text-7xl font-black mb-8"
+            className="text-6xl md:text-7xl font-black mb-8 text-gray-900"
           >
             Payroll Management Made
             <span className="gradient-text neon-glow block mt-2"> Simple & Compliant</span>

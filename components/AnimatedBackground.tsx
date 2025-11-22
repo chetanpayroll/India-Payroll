@@ -53,7 +53,7 @@ export default function AnimatedBackground() {
     function animate() {
       if (!ctx || !canvas) return
 
-      ctx.fillStyle = 'rgba(0, 0, 0, 0.05)'
+      ctx.fillStyle = 'rgba(240, 249, 255, 0.05)'
       ctx.fillRect(0, 0, canvas.width, canvas.height)
 
       particles.forEach((particle, i) => {
@@ -129,7 +129,8 @@ export default function AnimatedBackground() {
       ref={canvasRef}
       className="fixed inset-0 pointer-events-none z-0"
       style={{
-        background: 'linear-gradient(to bottom right, #0a0a0a, #1a0a2e, #0a0a0a)',
+        background: 'linear-gradient(to bottom right, #f0f9ff, #dbeafe, #eff6ff)',
+        opacity: 0.6,
       }}
     />
   )
