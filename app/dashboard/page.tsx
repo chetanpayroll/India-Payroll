@@ -4,6 +4,10 @@ import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
+import Card3D from '@/components/Card3D'
+import Button3D from '@/components/Button3D'
+import ParallaxSection from '@/components/ParallaxSection'
+import { motion } from 'framer-motion'
 import {
   Users,
   DollarSign,
@@ -306,85 +310,124 @@ export default function DashboardPage() {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <motion.div
+        initial={{ opacity: 0, y: -20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.6 }}
+        className="flex items-center justify-between"
+      >
         <div>
-          <h1 className="text-4xl font-bold bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 bg-clip-text text-transparent">
+          <h1 className="text-5xl font-bold gradient-text neon-glow">
             Enterprise Dashboard
           </h1>
-          <p className="mt-2 text-gray-600">
+          <p className="mt-3 text-gray-600 text-lg">
             Real-time insights and analytics for your organization
           </p>
         </div>
         <div className="flex gap-3">
           <Link href="/dashboard/reports">
-            <Button className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700">
+            <Button3D variant="primary" magnetic>
               <BarChart3 className="h-4 w-4 mr-2" />
               Reports
-            </Button>
+            </Button3D>
           </Link>
           <Link href="/dashboard/payroll/new">
-            <Button className="bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700">
+            <Button3D variant="success" magnetic>
               <DollarSign className="h-4 w-4 mr-2" />
               Process Payroll
-            </Button>
+            </Button3D>
           </Link>
         </div>
-      </div>
+      </motion.div>
 
       {/* KPI Cards Grid */}
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        {kpiCards.map((kpi) => {
-          const Icon = kpi.icon
-          return (
-            <Link key={kpi.name} href={kpi.href}>
-              <Card className="group hover:shadow-2xl transition-all duration-300 hover:-translate-y-1 border-0 overflow-hidden relative">
-                <div className={`absolute inset-0 bg-gradient-to-br ${kpi.bgGradient} opacity-50`} />
-                <CardContent className="p-5 relative">
-                  <div className="flex items-center justify-between mb-4">
-                    <div className={`p-3 rounded-xl bg-gradient-to-br ${kpi.gradient} shadow-lg group-hover:scale-110 transition-transform`}>
-                      <Icon className="h-5 w-5 text-white" />
-                    </div>
-                    <div className="text-right">
-                      <span className={`text-xs font-semibold px-2 py-1 rounded-full ${
-                        kpi.changeType === 'positive' ? 'bg-green-100 text-green-700' :
-                        kpi.changeType === 'negative' ? 'bg-red-100 text-red-700' :
-                        kpi.changeType === 'warning' ? 'bg-orange-100 text-orange-700' :
-                        'bg-blue-100 text-blue-700'
-                      }`}>
-                        {kpi.changeValue}
-                      </span>
-                    </div>
-                  </div>
-                  <div>
-                    <p className="text-sm font-medium text-gray-600 mb-1">{kpi.name}</p>
-                    <p className="text-2xl font-bold text-gray-900">{kpi.value}</p>
-                    <p className="text-xs text-gray-500 mt-1">{kpi.change}</p>
-                  </div>
-                </CardContent>
-              </Card>
-            </Link>
-          )
-        })}
-      </div>
+      <ParallaxSection speed={0.3}>
+        <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
+          {kpiCards.map((kpi, index) => {
+            const Icon = kpi.icon
+            return (
+              <motion.div
+                key={kpi.name}
+                initial={{ opacity: 0, y: 50, scale: 0.9 }}
+                animate={{ opacity: 1, y: 0, scale: 1 }}
+                transition={{ duration: 0.5, delay: index * 0.1 }}
+              >
+                <Link href={kpi.href}>
+                  <Card3D
+                    className="group border-0 overflow-hidden relative hover:scale-105 transition-all duration-300"
+                    glassEffect={true}
+                    intensity={15}
+                  >
+                    <div className={`absolute inset-0 bg-gradient-to-br ${kpi.bgGradient} opacity-60 animate-gradient-shift`} />
+                    <CardContent className="p-6 relative z-10">
+                      <div className="flex items-center justify-between mb-4">
+                        <motion.div
+                          className={`p-4 rounded-2xl bg-gradient-to-br ${kpi.gradient} shadow-2xl animate-float`}
+                          whileHover={{ scale: 1.2, rotate: 5 }}
+                          transition={{ type: "spring", stiffness: 300 }}
+                        >
+                          <Icon className="h-6 w-6 text-white" />
+                        </motion.div>
+                        <div className="text-right">
+                          <span className={`text-xs font-bold px-3 py-1.5 rounded-full shadow-lg ${
+                            kpi.changeType === 'positive' ? 'bg-green-100 text-green-700 animate-pulse-glow' :
+                            kpi.changeType === 'negative' ? 'bg-red-100 text-red-700' :
+                            kpi.changeType === 'warning' ? 'bg-orange-100 text-orange-700 animate-pulse' :
+                            'bg-blue-100 text-blue-700'
+                          }`}>
+                            {kpi.changeValue}
+                          </span>
+                        </div>
+                      </div>
+                      <div>
+                        <p className="text-sm font-semibold text-gray-700 mb-2">{kpi.name}</p>
+                        <p className="text-3xl font-black bg-gradient-to-r from-gray-900 to-gray-700 bg-clip-text text-transparent">
+                          {kpi.value}
+                        </p>
+                        <p className="text-xs text-gray-600 mt-2 font-medium">{kpi.change}</p>
+                      </div>
+                    </CardContent>
+                  </Card3D>
+                </Link>
+              </motion.div>
+            )
+          })}
+        </div>
+      </ParallaxSection>
 
       {/* Charts Row 1: Payroll Trends & Department Distribution */}
-      <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
-        {/* Payroll Trend Chart */}
-        <Card className="shadow-lg border-0">
-          <CardHeader>
-            <div className="flex items-center justify-between">
-              <div>
-                <CardTitle className="flex items-center gap-2">
-                  <TrendingUp className="h-5 w-5 text-green-600" />
-                  Payroll Trend Analysis
-                </CardTitle>
-                <CardDescription>Last 6 months payroll performance</CardDescription>
+      <ParallaxSection speed={0.2}>
+        <motion.div
+          initial={{ opacity: 0, y: 30 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6, delay: 0.8 }}
+          className="grid grid-cols-1 gap-6 lg:grid-cols-2"
+        >
+          {/* Payroll Trend Chart */}
+          <Card3D className="shadow-2xl border-0" glassEffect={true}>
+            <CardHeader>
+              <div className="flex items-center justify-between">
+                <div>
+                  <CardTitle className="flex items-center gap-2 text-xl">
+                    <motion.div
+                      animate={{ rotate: [0, 360] }}
+                      transition={{ duration: 3, repeat: Infinity, ease: "linear" }}
+                    >
+                      <TrendingUp className="h-6 w-6 text-green-600" />
+                    </motion.div>
+                    <span className="bg-gradient-to-r from-green-600 to-emerald-600 bg-clip-text text-transparent">
+                      Payroll Trend Analysis
+                    </span>
+                  </CardTitle>
+                  <CardDescription className="text-gray-600">Last 6 months payroll performance</CardDescription>
+                </div>
+                <Link href="/dashboard/analytics">
+                  <Button3D variant="secondary" className="text-sm px-4 py-2">
+                    View Details
+                  </Button3D>
+                </Link>
               </div>
-              <Link href="/dashboard/analytics">
-                <Button variant="outline" size="sm">View Details</Button>
-              </Link>
-            </div>
-          </CardHeader>
+            </CardHeader>
           <CardContent>
             <ResponsiveContainer width="100%" height={300}>
               <AreaChart data={payrollTrends}>
@@ -411,21 +454,30 @@ export default function DashboardPage() {
               </AreaChart>
             </ResponsiveContainer>
           </CardContent>
-        </Card>
+        </Card3D>
 
         {/* Department Distribution */}
-        <Card className="shadow-lg border-0">
+        <Card3D className="shadow-2xl border-0" glassEffect={true}>
           <CardHeader>
             <div className="flex items-center justify-between">
               <div>
-                <CardTitle className="flex items-center gap-2">
-                  <PieChart className="h-5 w-5 text-purple-600" />
-                  Department Distribution
+                <CardTitle className="flex items-center gap-2 text-xl">
+                  <motion.div
+                    animate={{ scale: [1, 1.1, 1] }}
+                    transition={{ duration: 2, repeat: Infinity }}
+                  >
+                    <PieChart className="h-6 w-6 text-purple-600" />
+                  </motion.div>
+                  <span className="bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">
+                    Department Distribution
+                  </span>
                 </CardTitle>
-                <CardDescription>Employee count by department</CardDescription>
+                <CardDescription className="text-gray-600">Employee count by department</CardDescription>
               </div>
               <Link href="/dashboard/analytics">
-                <Button variant="outline" size="sm">Explore</Button>
+                <Button3D variant="secondary" className="text-sm px-4 py-2">
+                  Explore
+                </Button3D>
               </Link>
             </div>
           </CardHeader>
@@ -453,27 +505,38 @@ export default function DashboardPage() {
               </RechartsPieChart>
             </ResponsiveContainer>
           </CardContent>
-        </Card>
-      </div>
+        </Card3D>
+      </motion.div>
+      </ParallaxSection>
 
       {/* Charts Row 2: Headcount Trend & Department Costs */}
-      <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
-        {/* Headcount Trend */}
-        <Card className="shadow-lg border-0">
-          <CardHeader>
-            <div className="flex items-center justify-between">
-              <div>
-                <CardTitle className="flex items-center gap-2">
-                  <Activity className="h-5 w-5 text-blue-600" />
-                  Headcount Evolution
-                </CardTitle>
-                <CardDescription>12-month workforce analysis</CardDescription>
+      <ParallaxSection speed={0.15}>
+        <motion.div
+          initial={{ opacity: 0, y: 30 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6, delay: 1 }}
+          className="grid grid-cols-1 gap-6 lg:grid-cols-2"
+        >
+          {/* Headcount Trend */}
+          <Card3D className="shadow-2xl border-0" glassEffect={true}>
+            <CardHeader>
+              <div className="flex items-center justify-between">
+                <div>
+                  <CardTitle className="flex items-center gap-2 text-xl">
+                    <Activity className="h-6 w-6 text-blue-600 animate-pulse" />
+                    <span className="bg-gradient-to-r from-blue-600 to-cyan-600 bg-clip-text text-transparent">
+                      Headcount Evolution
+                    </span>
+                  </CardTitle>
+                  <CardDescription className="text-gray-600">12-month workforce analysis</CardDescription>
+                </div>
+                <Link href="/dashboard/hr">
+                  <Button3D variant="primary" className="text-sm px-4 py-2">
+                    HR Analytics
+                  </Button3D>
+                </Link>
               </div>
-              <Link href="/dashboard/hr">
-                <Button variant="outline" size="sm">HR Analytics</Button>
-              </Link>
-            </div>
-          </CardHeader>
+            </CardHeader>
           <CardContent>
             <ResponsiveContainer width="100%" height={300}>
               <LineChart data={headcountTrend}>
@@ -490,21 +553,25 @@ export default function DashboardPage() {
               </LineChart>
             </ResponsiveContainer>
           </CardContent>
-        </Card>
+        </Card3D>
 
         {/* Department Cost Analysis */}
-        <Card className="shadow-lg border-0">
+        <Card3D className="shadow-2xl border-0" glassEffect={true}>
           <CardHeader>
             <div className="flex items-center justify-between">
               <div>
-                <CardTitle className="flex items-center gap-2">
-                  <Banknote className="h-5 w-5 text-green-600" />
-                  Cost Center Analysis
+                <CardTitle className="flex items-center gap-2 text-xl">
+                  <Banknote className="h-6 w-6 text-green-600 animate-scale-pulse" />
+                  <span className="bg-gradient-to-r from-green-600 to-teal-600 bg-clip-text text-transparent">
+                    Cost Center Analysis
+                  </span>
                 </CardTitle>
-                <CardDescription>Monthly cost by department</CardDescription>
+                <CardDescription className="text-gray-600">Monthly cost by department</CardDescription>
               </div>
               <Link href="/dashboard/analytics">
-                <Button variant="outline" size="sm">Cost Report</Button>
+                <Button3D variant="success" className="text-sm px-4 py-2">
+                  Cost Report
+                </Button3D>
               </Link>
             </div>
           </CardHeader>
@@ -523,20 +590,29 @@ export default function DashboardPage() {
               </BarChart>
             </ResponsiveContainer>
           </CardContent>
-        </Card>
-      </div>
+        </Card3D>
+      </motion.div>
+      </ParallaxSection>
 
       {/* Bottom Row: Recent Activity & Quick Stats */}
-      <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
-        {/* Recent Payrolls */}
-        <Card className="shadow-lg border-0 lg:col-span-2">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Calendar className="h-5 w-5 text-blue-600" />
-              Recent Payroll Processing
-            </CardTitle>
-            <CardDescription>Latest payroll runs and their status</CardDescription>
-          </CardHeader>
+      <ParallaxSection speed={0.1}>
+        <motion.div
+          initial={{ opacity: 0, y: 30 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6, delay: 1.2 }}
+          className="grid grid-cols-1 gap-6 lg:grid-cols-3"
+        >
+          {/* Recent Payrolls */}
+          <Card3D className="shadow-2xl border-0 lg:col-span-2" glassEffect={true}>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2 text-xl">
+                <Calendar className="h-6 w-6 text-blue-600 animate-float" />
+                <span className="bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
+                  Recent Payroll Processing
+                </span>
+              </CardTitle>
+              <CardDescription className="text-gray-600">Latest payroll runs and their status</CardDescription>
+            </CardHeader>
           <CardContent>
             <div className="space-y-3">
               {recentPayrolls.length > 0 ? (
@@ -577,22 +653,24 @@ export default function DashboardPage() {
                 </div>
               )}
               <Link href="/dashboard/payroll">
-                <Button variant="outline" className="w-full mt-3 hover:bg-blue-50">
+                <Button3D variant="primary" className="w-full mt-3">
                   View All Payroll Runs
-                </Button>
+                </Button3D>
               </Link>
             </div>
           </CardContent>
-        </Card>
+        </Card3D>
 
         {/* Quick Actions & Stats */}
-        <Card className="shadow-lg border-0">
+        <Card3D className="shadow-2xl border-0" glassEffect={true}>
           <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Target className="h-5 w-5 text-orange-600" />
-              Quick Actions
+            <CardTitle className="flex items-center gap-2 text-xl">
+              <Target className="h-6 w-6 text-orange-600 animate-scale-pulse" />
+              <span className="bg-gradient-to-r from-orange-600 to-red-600 bg-clip-text text-transparent">
+                Quick Actions
+              </span>
             </CardTitle>
-            <CardDescription>Essential tasks and shortcuts</CardDescription>
+            <CardDescription className="text-gray-600">Essential tasks and shortcuts</CardDescription>
           </CardHeader>
           <CardContent>
             <div className="space-y-3">
@@ -634,11 +712,17 @@ export default function DashboardPage() {
               </Link>
             </div>
           </CardContent>
-        </Card>
-      </div>
+        </Card3D>
+      </motion.div>
+      </ParallaxSection>
 
       {/* Compliance Banner */}
-      <Card className="border-0 bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 text-white shadow-2xl">
+      <motion.div
+        initial={{ opacity: 0, scale: 0.95 }}
+        animate={{ opacity: 1, scale: 1 }}
+        transition={{ duration: 0.6, delay: 1.4 }}
+      >
+        <Card3D className="border-0 bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 text-white shadow-2xl animate-gradient-shift" glassEffect={false}>
         <CardContent className="p-6">
           <div className="flex items-center gap-4">
             <div className="p-3 bg-white/20 backdrop-blur-sm rounded-xl">
@@ -670,13 +754,14 @@ export default function DashboardPage() {
               </div>
             </div>
             <Link href="/dashboard/reports">
-              <Button className="bg-white text-purple-600 hover:bg-white/90 font-semibold">
+              <Button3D variant="secondary" className="bg-white text-purple-600 hover:bg-white/90 font-semibold">
                 Compliance Reports
-              </Button>
+              </Button3D>
             </Link>
           </div>
         </CardContent>
-      </Card>
+      </Card3D>
+      </motion.div>
     </div>
   )
 }
