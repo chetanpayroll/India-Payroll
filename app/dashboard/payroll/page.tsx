@@ -18,12 +18,14 @@ import {
   DollarSign
 } from 'lucide-react'
 import { useInitData } from '@/lib/hooks/use-init-data'
+import { useCurrencyFormatter } from '@/lib/hooks/use-currency-formatter'
 import { payrollService } from '@/lib/services/data-service'
 import { PayrollRun } from '@/lib/types'
-import { formatCurrency, formatMonth } from '@/lib/utils'
+import { formatMonth } from '@/lib/utils'
 
 export default function PayrollPage() {
   useInitData()
+  const formatCurrency = useCurrencyFormatter()
 
   const [payrollRuns, setPayrollRuns] = useState<PayrollRun[]>([])
 
