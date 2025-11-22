@@ -95,7 +95,7 @@ const entities = [
   {
     id: '3',
     name: 'GMP Technologies India Pvt Ltd',
-    country: 'India',
+    country: 'INDIA',
     // UAE fields
     establishmentNo: '',
     laborCardNo: '',
@@ -331,11 +331,11 @@ export default function EntitiesPage() {
               <div className="space-y-3 mb-6">
                 <div className="flex items-center gap-2 mb-2">
                   <span className="text-xs font-semibold text-gray-500 uppercase">
-                    {entity.country === 'India' ? '🇮🇳 India Compliance' : '🇦🇪 UAE Compliance'}
+                    {entity.country === 'INDIA' ? '🇮🇳 India Compliance' : '🇦🇪 UAE Compliance'}
                   </span>
                 </div>
 
-                {entity.country === 'India' ? (
+                {entity.country === 'INDIA' ? (
                   // India Compliance Display
                   <>
                     <div className="grid grid-cols-2 gap-4">
@@ -405,7 +405,7 @@ export default function EntitiesPage() {
                 <div className="text-center">
                   <p className="text-sm text-gray-600 mb-1">Monthly Payroll</p>
                   <p className="text-2xl font-bold text-gray-900">
-                    {entity.country === 'India'
+                    {entity.country === 'INDIA'
                       ? `₹${(entity.monthlyPayroll / 1000).toFixed(0)}K`
                       : `AED ${(entity.monthlyPayroll / 1000).toFixed(0)}K`
                     }
@@ -440,7 +440,7 @@ export default function EntitiesPage() {
                 <div>
                   <p className="text-sm font-medium text-green-900">Fully Compliant</p>
                   <p className="text-xs text-green-700">
-                    {entity.country === 'India'
+                    {entity.country === 'INDIA'
                       ? 'PF registered • ESI registered • GST compliant • All documents up to date'
                       : 'WPS registered • Labor card valid • All documents up to date'
                     }
@@ -517,17 +517,17 @@ export default function EntitiesPage() {
                     id="name"
                     value={formData.name}
                     onChange={(e) => handleInputChange('name', e.target.value)}
-                    placeholder={formData.country === 'India' ? 'e.g., GMP Technologies India Pvt Ltd' : 'e.g., GMP Trading LLC'}
+                    placeholder={formData.country === 'INDIA' ? 'e.g., GMP Technologies India Pvt Ltd' : 'e.g., GMP Trading LLC'}
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="location">{formData.country === 'India' ? 'State' : 'Emirate'} *</Label>
+                  <Label htmlFor="location">{formData.country === 'INDIA' ? 'State' : 'Emirate'} *</Label>
                   <Select value={formData.location} onValueChange={(value) => handleInputChange('location', value)}>
                     <SelectTrigger>
-                      <SelectValue placeholder={formData.country === 'India' ? 'Select state' : 'Select emirate'} />
+                      <SelectValue placeholder={formData.country === 'INDIA' ? 'Select state' : 'Select emirate'} />
                     </SelectTrigger>
                     <SelectContent>
-                      {formData.country === 'India' ? (
+                      {formData.country === 'INDIA' ? (
                         <>
                           <SelectItem value="Maharashtra">Maharashtra</SelectItem>
                           <SelectItem value="Delhi">Delhi</SelectItem>
@@ -561,7 +561,7 @@ export default function EntitiesPage() {
                   id="address"
                   value={formData.address}
                   onChange={(e) => handleInputChange('address', e.target.value)}
-                  placeholder={formData.country === 'India' ? 'e.g., Bandra Kurla Complex, Mumbai, Maharashtra, India' : 'e.g., Business Bay, Dubai, UAE'}
+                  placeholder={formData.country === 'INDIA' ? 'e.g., Bandra Kurla Complex, Mumbai, Maharashtra, India' : 'e.g., Business Bay, Dubai, UAE'}
                 />
               </div>
             </div>
@@ -569,10 +569,10 @@ export default function EntitiesPage() {
             {/* Registration Details - Country Specific */}
             <div className="space-y-4">
               <h3 className="font-semibold text-gray-900 border-b pb-2 flex items-center gap-2">
-                {formData.country === 'India' ? '🇮🇳 India' : '🇦🇪 UAE'} Compliance & Registration
+                {formData.country === 'INDIA' ? '🇮🇳 India' : '🇦🇪 UAE'} Compliance & Registration
               </h3>
 
-              {formData.country === 'India' ? (
+              {formData.country === 'INDIA' ? (
                 // India Compliance Fields
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
@@ -706,7 +706,7 @@ export default function EntitiesPage() {
                     type="email"
                     value={formData.contactEmail}
                     onChange={(e) => handleInputChange('contactEmail', e.target.value)}
-                    placeholder={formData.country === 'India' ? 'e.g., contact@company.in' : 'e.g., contact@company.ae'}
+                    placeholder={formData.country === 'INDIA' ? 'e.g., contact@company.in' : 'e.g., contact@company.ae'}
                   />
                 </div>
                 <div className="col-span-2 space-y-2">
@@ -715,7 +715,7 @@ export default function EntitiesPage() {
                     id="contactPhone"
                     value={formData.contactPhone}
                     onChange={(e) => handleInputChange('contactPhone', e.target.value)}
-                    placeholder={formData.country === 'India' ? 'e.g., +91 22 1234 5678' : 'e.g., +971 4 123 4567'}
+                    placeholder={formData.country === 'INDIA' ? 'e.g., +91 22 1234 5678' : 'e.g., +971 4 123 4567'}
                   />
                 </div>
               </div>
@@ -765,10 +765,10 @@ export default function EntitiesPage() {
               {/* Registration Details - Country Specific */}
               <div className="p-4 bg-gray-50 rounded-lg">
                 <h4 className="font-semibold text-gray-900 mb-3 flex items-center gap-2">
-                  {viewingEntity.country === 'India' ? '🇮🇳 India' : '🇦🇪 UAE'} Compliance Details
+                  {viewingEntity.country === 'INDIA' ? '🇮🇳 India' : '🇦🇪 UAE'} Compliance Details
                 </h4>
 
-                {viewingEntity.country === 'India' ? (
+                {viewingEntity.country === 'INDIA' ? (
                   // India Compliance
                   <div className="grid grid-cols-2 gap-4">
                     <div>
@@ -829,7 +829,7 @@ export default function EntitiesPage() {
                 <div className="p-4 border rounded-lg text-center">
                   <DollarSign className="h-6 w-6 mx-auto text-green-600 mb-2" />
                   <p className="text-2xl font-bold text-gray-900">
-                    {viewingEntity.country === 'India'
+                    {viewingEntity.country === 'INDIA'
                       ? `₹${viewingEntity.monthlyPayroll.toLocaleString()}`
                       : `AED ${viewingEntity.monthlyPayroll.toLocaleString()}`
                     }
