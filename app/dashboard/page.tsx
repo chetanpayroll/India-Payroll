@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -89,11 +89,7 @@ export default function DashboardPage() {
   const [departmentData, setDepartmentData] = useState<any[]>([])
   const [headcountTrend, setHeadcountTrend] = useState<any[]>([])
 
-  useEffect(() => {
-    loadDashboardData()
-  }, [])
-
-  const loadDashboardData = () => {
+  const loadDashboardData = useCallback(() => {
     // Employee stats
     const allEmployees = employeeService.getAll()
     const activeEmployees = employeeService.getActive()
@@ -189,7 +185,11 @@ export default function DashboardPage() {
       })
     }
     setHeadcountTrend(headcountData)
-  }
+  }, [country])
+
+  useEffect(() => {
+    loadDashboardData()
+  }, [loadDashboardData])
 
   // Show loading state while checking country
   if (countryLoading) {
