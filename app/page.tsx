@@ -59,7 +59,7 @@ export default function Home() {
             transition={{ duration: 0.6 }}
             className="inline-block mb-6 px-6 py-3 glass-effect border-blue-200 rounded-full text-sm font-bold shadow-lg animate-pulse-glow"
           >
-            🇦🇪 UAE & India Compliant Payroll System
+            🇦🇪 UAE & 🇮🇳 India Compliant Payroll System
           </motion.div>
           <motion.h1
             initial={{ opacity: 0, y: 30 }}
@@ -76,8 +76,9 @@ export default function Home() {
             transition={{ duration: 0.7, delay: 0.4 }}
             className="text-2xl text-gray-700 mb-10 font-medium"
           >
-            Complete payroll solution for UAE & India businesses with WPS, GPSSA, PF, ESIC compliance,
-            automated calculations, and instant payslip generation.
+            Complete payroll solution for 🇦🇪 UAE businesses (WPS, GPSSA, End of Service)
+            and 🇮🇳 India businesses (PF, ESI, PT, TDS) with automated compliance,
+            calculations, and instant payslip generation.
           </motion.p>
           <motion.div
             initial={{ opacity: 0, y: 30 }}
@@ -139,7 +140,7 @@ export default function Home() {
             Everything You Need for Payroll
           </h2>
           <p className="text-2xl text-gray-700 max-w-3xl mx-auto font-medium">
-            Powerful features designed for UAE & India labor law and compliance requirements
+            Powerful features designed for 🇦🇪 UAE & 🇮🇳 India labor law and compliance requirements
           </p>
         </motion.div>
 
@@ -168,85 +169,164 @@ export default function Home() {
           </motion.div>
 
           {/* Feature 2 */}
-          <div className="bg-white p-8 rounded-xl shadow-sm border border-gray-100 hover:shadow-md transition">
-            <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center mb-4">
-              <Calculator className="h-6 w-6 text-green-600" />
-            </div>
-            <h3 className="text-xl font-semibold mb-3">Automated Calculations</h3>
-            <p className="text-gray-600">
-              Accurate salary calculations with proration, overtime, allowances, and deductions.
-            </p>
-          </div>
+          <motion.div
+            initial={{ opacity: 0, y: 50 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.5, delay: 0.2 }}
+          >
+            <Card3D className="p-8 border-0 h-full" glassEffect={true}>
+              <motion.div
+                className="w-16 h-16 bg-gradient-to-br from-green-500 to-green-600 rounded-2xl flex items-center justify-center mb-6 shadow-xl"
+                whileHover={{ scale: 1.1, rotate: 5 }}
+              >
+                <Calculator className="h-8 w-8 text-white" />
+              </motion.div>
+              <h3 className="text-2xl font-bold mb-4 bg-gradient-to-r from-green-600 to-emerald-600 bg-clip-text text-transparent">
+                Automated Calculations
+              </h3>
+              <p className="text-gray-700 font-medium">
+                Accurate salary calculations with proration, overtime, allowances, and deductions for both countries.
+              </p>
+            </Card3D>
+          </motion.div>
 
-          {/* Feature 3 */}
-          <div className="bg-white p-8 rounded-xl shadow-sm border border-gray-100 hover:shadow-md transition">
-            <div className="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center mb-4">
-              <Shield className="h-6 w-6 text-purple-600" />
-            </div>
-            <h3 className="text-xl font-semibold mb-3">WPS Compliance</h3>
-            <p className="text-gray-600">
-              Generate WPS SIF files in correct format for all UAE banks and wage protection system.
-            </p>
-          </div>
+          {/* Feature 3 - UAE WPS */}
+          <motion.div
+            initial={{ opacity: 0, y: 50 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.5, delay: 0.3 }}
+          >
+            <Card3D className="p-8 border-0 h-full" glassEffect={true}>
+              <motion.div
+                className="w-16 h-16 bg-gradient-to-br from-purple-500 to-purple-600 rounded-2xl flex items-center justify-center mb-6 shadow-xl"
+                whileHover={{ scale: 1.1, rotate: 5 }}
+              >
+                <Shield className="h-8 w-8 text-white" />
+              </motion.div>
+              <h3 className="text-2xl font-bold mb-4 bg-gradient-to-r from-purple-600 to-violet-600 bg-clip-text text-transparent">
+                🇦🇪 UAE WPS Compliance
+              </h3>
+              <p className="text-gray-700 font-medium">
+                Generate WPS SIF files in correct format for all UAE banks and wage protection system.
+              </p>
+            </Card3D>
+          </motion.div>
 
-          {/* Feature 4 */}
-          <div className="bg-white p-8 rounded-xl shadow-sm border border-gray-100 hover:shadow-md transition">
-            <div className="w-12 h-12 bg-orange-100 rounded-lg flex items-center justify-center mb-4">
-              <Building2 className="h-6 w-6 text-orange-600" />
-            </div>
-            <h3 className="text-xl font-semibold mb-3">GPSSA Calculations</h3>
-            <p className="text-gray-600">
-              Automatic GPSSA contribution calculations for Emirati employees with detailed reports.
-            </p>
-          </div>
+          {/* Feature 4 - UAE GPSSA */}
+          <motion.div
+            initial={{ opacity: 0, y: 50 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.5, delay: 0.4 }}
+          >
+            <Card3D className="p-8 border-0 h-full" glassEffect={true}>
+              <motion.div
+                className="w-16 h-16 bg-gradient-to-br from-orange-500 to-orange-600 rounded-2xl flex items-center justify-center mb-6 shadow-xl"
+                whileHover={{ scale: 1.1, rotate: 5 }}
+              >
+                <Building2 className="h-8 w-8 text-white" />
+              </motion.div>
+              <h3 className="text-2xl font-bold mb-4 bg-gradient-to-r from-orange-600 to-amber-600 bg-clip-text text-transparent">
+                🇦🇪 UAE GPSSA Calculations
+              </h3>
+              <p className="text-gray-700 font-medium">
+                Automatic GPSSA contribution calculations for Emirati employees with detailed reports.
+              </p>
+            </Card3D>
+          </motion.div>
 
-          {/* Feature 5 */}
-          <div className="bg-white p-8 rounded-xl shadow-sm border border-gray-100 hover:shadow-md transition">
-            <div className="w-12 h-12 bg-red-100 rounded-lg flex items-center justify-center mb-4">
-              <FileText className="h-6 w-6 text-red-600" />
-            </div>
-            <h3 className="text-xl font-semibold mb-3">Professional Payslips</h3>
-            <p className="text-gray-600">
-              Generate beautiful, bilingual payslips in PDF format with complete earnings breakdown.
-            </p>
-          </div>
+          {/* Feature 5 - India PF & ESI */}
+          <motion.div
+            initial={{ opacity: 0, y: 50 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.5, delay: 0.5 }}
+          >
+            <Card3D className="p-8 border-0 h-full" glassEffect={true}>
+              <motion.div
+                className="w-16 h-16 bg-gradient-to-br from-red-500 to-red-600 rounded-2xl flex items-center justify-center mb-6 shadow-xl"
+                whileHover={{ scale: 1.1, rotate: 5 }}
+              >
+                <Shield className="h-8 w-8 text-white" />
+              </motion.div>
+              <h3 className="text-2xl font-bold mb-4 bg-gradient-to-r from-red-600 to-rose-600 bg-clip-text text-transparent">
+                🇮🇳 India PF & ESI Compliance
+              </h3>
+              <p className="text-gray-700 font-medium">
+                Automated PF, ESI, PT, and TDS calculations with compliance reports for Indian labor laws.
+              </p>
+            </Card3D>
+          </motion.div>
 
-          {/* Feature 6 */}
-          <div className="bg-white p-8 rounded-xl shadow-sm border border-gray-100 hover:shadow-md transition">
-            <div className="w-12 h-12 bg-cyan-100 rounded-lg flex items-center justify-center mb-4">
-              <TrendingUp className="h-6 w-6 text-cyan-600" />
-            </div>
-            <h3 className="text-xl font-semibold mb-3">Analytics Dashboard</h3>
-            <p className="text-gray-600">
-              Real-time insights into payroll costs, trends, and employee distribution.
-            </p>
-          </div>
+          {/* Feature 6 - Professional Payslips */}
+          <motion.div
+            initial={{ opacity: 0, y: 50 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.5, delay: 0.6 }}
+          >
+            <Card3D className="p-8 border-0 h-full" glassEffect={true}>
+              <motion.div
+                className="w-16 h-16 bg-gradient-to-br from-cyan-500 to-cyan-600 rounded-2xl flex items-center justify-center mb-6 shadow-xl"
+                whileHover={{ scale: 1.1, rotate: 5 }}
+              >
+                <FileText className="h-8 w-8 text-white" />
+              </motion.div>
+              <h3 className="text-2xl font-bold mb-4 bg-gradient-to-r from-cyan-600 to-teal-600 bg-clip-text text-transparent">
+                Professional Payslips
+              </h3>
+              <p className="text-gray-700 font-medium">
+                Generate beautiful, bilingual payslips in PDF format with complete earnings breakdown for both countries.
+              </p>
+            </Card3D>
+          </motion.div>
         </div>
       </section>
 
       {/* Benefits Section */}
-      <section className="bg-blue-600 text-white py-20">
-        <div className="container mx-auto px-4">
+      <section className="bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 text-white py-20 relative overflow-hidden">
+        {/* Animated Background */}
+        <div className="absolute inset-0 opacity-20">
+          <div className="absolute inset-0 bg-gradient-to-br from-blue-400/20 via-purple-400/20 to-pink-400/20 animate-gradient-shift"></div>
+        </div>
+
+        <div className="container mx-auto px-4 relative z-10">
           <div className="max-w-4xl mx-auto">
-            <h2 className="text-4xl font-bold mb-12 text-center">
+            <motion.h2
+              initial={{ opacity: 0, y: 30 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              className="text-5xl font-black mb-12 text-center drop-shadow-lg"
+            >
               Why Choose GMP Payroll?
-            </h2>
-            
+            </motion.h2>
+
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {[
                 'Save 10+ hours every month on payroll processing',
                 'Zero errors in salary calculations and compliance',
-                'Instant WPS file generation for bank transfers',
-                'Automatic GPSSA contribution calculations',
+                '🇦🇪 Instant WPS file generation for UAE bank transfers',
+                '🇦🇪 Automatic GPSSA & End of Service calculations',
+                '🇮🇳 Automated PF, ESI, PT, and TDS for India',
+                '🇮🇳 India Form 16 and compliance reports generation',
                 'Secure cloud storage with 7-year retention',
                 'Mobile-friendly access from anywhere',
                 'Multi-entity and multi-location support',
                 'Export reports in Excel, PDF, and CSV formats'
               ].map((benefit, index) => (
-                <div key={index} className="flex items-start gap-3">
-                  <CheckCircle2 className="h-6 w-6 flex-shrink-0 mt-1" />
-                  <span className="text-lg">{benefit}</span>
-                </div>
+                <motion.div
+                  key={index}
+                  initial={{ opacity: 0, x: -20 }}
+                  whileInView={{ opacity: 1, x: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ delay: index * 0.1 }}
+                  className="flex items-start gap-3 bg-white/10 backdrop-blur-sm p-4 rounded-lg border border-white/20 hover:bg-white/20 transition-all hover:scale-105"
+                >
+                  <CheckCircle2 className="h-6 w-6 flex-shrink-0 mt-1 drop-shadow-lg" />
+                  <span className="text-lg font-medium">{benefit}</span>
+                </motion.div>
               ))}
             </div>
           </div>
@@ -254,62 +334,73 @@ export default function Home() {
       </section>
 
       {/* CTA Section */}
-      <section className="container mx-auto px-4 py-20">
-        <div className="bg-gradient-to-r from-blue-600 to-purple-600 rounded-2xl p-12 text-center text-white">
-          <h2 className="text-4xl font-bold mb-4">
+      <section className="container mx-auto px-4 py-20 relative z-10">
+        <motion.div
+          initial={{ opacity: 0, y: 50 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          className="bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 rounded-3xl p-12 text-center text-white shadow-2xl border border-white/20 relative overflow-hidden"
+        >
+          {/* Animated Background */}
+          <div className="absolute inset-0 bg-gradient-to-br from-blue-400/20 via-purple-400/20 to-pink-400/20 animate-pulse"></div>
+
+          <h2 className="text-5xl font-black mb-4 relative z-10 drop-shadow-lg">
             Ready to Simplify Your Payroll?
           </h2>
-          <p className="text-xl mb-8 opacity-90">
-            Join hundreds of UAE businesses who trust GMP Payroll
+          <p className="text-2xl mb-8 opacity-90 relative z-10 font-medium">
+            Join hundreds of 🇦🇪 UAE & 🇮🇳 India businesses who trust GMP Payroll
           </p>
           <Link href="/auth/login">
-            <Button size="lg" variant="secondary" className="text-lg px-8">
+            <Button3D variant="secondary" magnetic className="text-lg px-10 py-6 relative z-10">
               Get Started Now - It&apos;s Free!
-              <ArrowRight className="ml-2 h-5 w-5" />
-            </Button>
+              <ArrowRight className="ml-2 h-6 w-6" />
+            </Button3D>
           </Link>
-        </div>
+        </motion.div>
       </section>
 
       {/* Footer */}
-      <footer className="border-t bg-gray-50">
+      <footer className="border-t bg-gradient-to-b from-gray-50 to-gray-100 relative z-10">
         <div className="container mx-auto px-4 py-12">
           <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
             <div>
-              <div className="flex items-center gap-2 mb-4">
-                <Calculator className="h-6 w-6 text-blue-600" />
-                <span className="text-xl font-bold">GMP Payroll</span>
+              <div className="flex items-center gap-2 mb-4 group">
+                <div className="w-8 h-8 bg-gradient-to-br from-blue-600 via-purple-600 to-pink-600 rounded-lg flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform">
+                  <Calculator className="h-5 w-5 text-white" />
+                </div>
+                <span className="text-xl font-bold bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 bg-clip-text text-transparent">GMP Payroll</span>
               </div>
-              <p className="text-gray-600">
-                UAE&apos;s most trusted payroll management system
+              <p className="text-gray-700 font-medium">
+                🇦🇪 UAE & 🇮🇳 India&apos;s most trusted payroll management system
               </p>
             </div>
             <div>
-              <h3 className="font-semibold mb-4">Product</h3>
+              <h3 className="font-bold mb-4 text-gray-900">Product</h3>
               <ul className="space-y-2 text-gray-600">
-                <li><Link href="#features">Features</Link></li>
-                <li><Link href="#pricing">Pricing</Link></li>
-                <li><Link href="#demo">Demo</Link></li>
+                <li><Link href="#features" className="hover:text-blue-600 transition font-medium">Features</Link></li>
+                <li><Link href="#pricing" className="hover:text-blue-600 transition font-medium">Pricing</Link></li>
+                <li><Link href="#demo" className="hover:text-blue-600 transition font-medium">Demo</Link></li>
               </ul>
             </div>
             <div>
-              <h3 className="font-semibold mb-4">Company</h3>
+              <h3 className="font-bold mb-4 text-gray-900">Company</h3>
               <ul className="space-y-2 text-gray-600">
-                <li><Link href="#about">About Us</Link></li>
-                <li><Link href="#contact">Contact</Link></li>
-                <li><Link href="#careers">Careers</Link></li>
+                <li><Link href="#about" className="hover:text-blue-600 transition font-medium">About Us</Link></li>
+                <li><Link href="#contact" className="hover:text-blue-600 transition font-medium">Contact</Link></li>
+                <li><Link href="#careers" className="hover:text-blue-600 transition font-medium">Careers</Link></li>
               </ul>
             </div>
             <div>
-              <h3 className="font-semibold mb-4">Legal</h3>
+              <h3 className="font-bold mb-4 text-gray-900">Legal</h3>
               <ul className="space-y-2 text-gray-600">
-                <li><Link href="#privacy">Privacy Policy</Link></li>
-                <li><Link href="#terms">Terms of Service</Link></li>
+                <li><Link href="#privacy" className="hover:text-blue-600 transition font-medium">Privacy Policy</Link></li>
+                <li><Link href="#terms" className="hover:text-blue-600 transition font-medium">Terms of Service</Link></li>
               </ul>
             </div>
           </div>
-          <div className="border-t mt-8 pt-8 text-center text-gray-600">
-            <p>&copy; 2024 GMP Payroll. All rights reserved. Made in UAE 🇦🇪</p>
+          <div className="border-t mt-8 pt-8 text-center">
+            <p className="text-gray-700 font-medium">&copy; 2024 GMP Payroll. All rights reserved.</p>
+            <p className="text-gray-600 mt-2">Serving businesses in 🇦🇪 UAE & 🇮🇳 India with pride</p>
           </div>
         </div>
       </footer>

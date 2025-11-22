@@ -117,35 +117,38 @@ function DashboardLayoutContent({ children }: { children: React.ReactNode }) {
       {/* Sidebar */}
       <div
         className={`
-          fixed inset-y-0 left-0 z-50 w-64 glass-effect backdrop-blur-2xl bg-white/80 border-r border-white/20 transform transition-all duration-300 ease-in-out flex-shrink-0 flex flex-col shadow-2xl
+          fixed inset-y-0 left-0 z-50 w-64 backdrop-blur-2xl bg-gradient-to-b from-gray-900 via-purple-900 to-gray-900 border-r border-purple-500/30 transform transition-all duration-300 ease-in-out flex-shrink-0 flex flex-col shadow-2xl shadow-purple-500/20
           lg:translate-x-0 lg:static lg:inset-0
           ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'}
         `}
       >
+        {/* Animated gradient overlay */}
+        <div className="absolute inset-0 bg-gradient-to-br from-blue-600/10 via-purple-600/10 to-pink-600/10 animate-gradient-shift pointer-events-none"></div>
+
         {/* Logo */}
-        <div className="flex items-center justify-between h-16 px-6 border-b border-white/20">
+        <div className="flex items-center justify-between h-16 px-6 border-b border-purple-500/30 relative z-10">
           <Link href="/dashboard" className="flex items-center gap-2 group">
-            <div className="w-8 h-8 bg-gradient-to-br from-blue-600 via-purple-600 to-pink-600 rounded-lg flex items-center justify-center shadow-lg animate-pulse-glow group-hover:scale-110 transition-transform">
+            <div className="w-8 h-8 bg-gradient-to-br from-blue-500 via-purple-500 to-pink-500 rounded-lg flex items-center justify-center shadow-lg shadow-purple-500/50 animate-pulse-glow group-hover:scale-110 transition-transform">
               <Calculator className="h-5 w-5 text-white" />
             </div>
-            <span className="text-xl font-bold bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 bg-clip-text text-transparent">GMP Payroll</span>
+            <span className="text-xl font-bold bg-gradient-to-r from-blue-400 via-purple-400 to-pink-400 bg-clip-text text-transparent drop-shadow-lg">GMP Payroll</span>
           </Link>
           <button
             className="lg:hidden"
             onClick={() => setSidebarOpen(false)}
           >
-            <X className="h-6 w-6 text-gray-400" />
+            <X className="h-6 w-6 text-gray-300 hover:text-white transition" />
           </button>
         </div>
 
         {/* Navigation */}
-        <nav className="flex-1 px-4 py-6 space-y-6 overflow-y-auto">
+        <nav className="flex-1 px-4 py-6 space-y-6 overflow-y-auto relative z-10">
           {navigationSections.map((section) => (
             <div key={section.title}>
-              <h3 className="px-4 mb-2 text-xs font-semibold text-gray-400 uppercase tracking-wider">
+              <h3 className="px-4 mb-3 text-xs font-bold text-purple-300 uppercase tracking-widest drop-shadow-lg">
                 {section.title}
               </h3>
-              <div className="space-y-1">
+              <div className="space-y-2">
                 {section.items.map((item) => {
                   const isActive = pathname === item.href || pathname?.startsWith(item.href + '/')
                   return (
@@ -153,17 +156,22 @@ function DashboardLayoutContent({ children }: { children: React.ReactNode }) {
                       key={item.name}
                       href={item.href}
                       className={`
-                        flex items-center gap-3 px-4 py-2.5 rounded-lg text-sm font-medium transition-all hover-lift transform-3d
+                        flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-semibold transition-all duration-300 hover-lift transform-3d group relative overflow-hidden
                         ${isActive
-                          ? 'bg-gradient-to-r from-blue-50 to-purple-50 text-blue-700 shadow-lg border border-blue-200/50'
-                          : 'text-gray-700 hover:bg-white/60 hover:text-gray-900 hover:shadow-md'
+                          ? 'bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 text-white shadow-xl shadow-purple-500/50 border border-purple-400/50 scale-105'
+                          : 'text-gray-200 hover:bg-gradient-to-r hover:from-blue-600/20 hover:via-purple-600/20 hover:to-pink-600/20 hover:text-white hover:shadow-lg hover:shadow-purple-500/30 hover:border hover:border-purple-500/30 hover:scale-102'
                         }
                       `}
                       onClick={() => setSidebarOpen(false)}
                     >
-                      <item.icon className={`h-5 w-5 ${isActive ? 'text-blue-600 animate-scale-pulse' : ''}`} />
-                      {item.name}
-                      {isActive && <ChevronRight className="h-4 w-4 ml-auto text-blue-600" />}
+                      {/* Animated background for active item */}
+                      {isActive && (
+                        <div className="absolute inset-0 bg-gradient-to-r from-blue-400/20 via-purple-400/20 to-pink-400/20 animate-pulse"></div>
+                      )}
+
+                      <item.icon className={`h-5 w-5 relative z-10 ${isActive ? 'text-white animate-scale-pulse drop-shadow-lg' : 'text-purple-300 group-hover:text-white'}`} />
+                      <span className="relative z-10">{item.name}</span>
+                      {isActive && <ChevronRight className="h-4 w-4 ml-auto relative z-10 text-white animate-pulse" />}
                     </Link>
                   )
                 })}
@@ -173,14 +181,14 @@ function DashboardLayoutContent({ children }: { children: React.ReactNode }) {
         </nav>
 
         {/* User Section */}
-        <div className="p-4 border-t border-white/20">
-          <div className="px-4 py-3 bg-gradient-to-br from-blue-50 to-purple-50 rounded-lg mb-3 shadow-md border border-blue-100">
-            <p className="text-sm font-medium bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">Demo User</p>
-            <p className="text-xs text-gray-500">demo@gmppayroll.org</p>
+        <div className="p-4 border-t border-purple-500/30 relative z-10">
+          <div className="px-4 py-3 bg-gradient-to-br from-blue-600/20 to-purple-600/20 rounded-lg mb-3 shadow-lg border border-purple-400/30 backdrop-blur-sm">
+            <p className="text-sm font-bold bg-gradient-to-r from-blue-300 to-purple-300 bg-clip-text text-transparent drop-shadow-lg">Demo User</p>
+            <p className="text-xs text-gray-300">demo@gmppayroll.org</p>
           </div>
           <Button
             variant="ghost"
-            className="w-full justify-start"
+            className="w-full justify-start text-gray-200 hover:text-white hover:bg-purple-600/20 transition-all"
             onClick={handleLogout}
           >
             <LogOut className="h-4 w-4 mr-2" />
