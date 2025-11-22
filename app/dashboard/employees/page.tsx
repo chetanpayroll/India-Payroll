@@ -24,6 +24,7 @@ import {
 } from 'lucide-react'
 import { useToast } from '@/components/ui/use-toast'
 import { useInitData } from '@/lib/hooks/use-init-data'
+import { useCountry } from '@/lib/context/CountryContext'
 import { employeeService } from '@/lib/services/data-service'
 import { Employee } from '@/lib/types'
 import { formatCurrency, formatDate, generateId, validateEmiratesID, validateIBAN } from '@/lib/utils'
@@ -31,12 +32,12 @@ import { downloadAsJSON } from '@/lib/storage'
 
 export default function EmployeesPage() {
   useInitData()
+  const { country } = useCountry()
 
   const [searchQuery, setSearchQuery] = useState('')
   const [employees, setEmployees] = useState<Employee[]>([])
   const [filteredEmployees, setFilteredEmployees] = useState<Employee[]>([])
   const [selectedDepartment, setSelectedDepartment] = useState<string>('all')
-  const [showAddModal, setShowAddModal] = useState(false)
   const [editingEmployee, setEditingEmployee] = useState<Employee | null>(null)
   const { toast } = useToast()
 
@@ -110,10 +111,14 @@ export default function EmployeesPage() {
     })
   }
 
-  const uaeNationals = employees.filter(e =>
-    e.nationality.toLowerCase() === 'uae' ||
-    e.nationality.toLowerCase() === 'emirati'
-  ).length
+  const nationals = employees.filter(e => {
+    const nat = e.nationality.toLowerCase()
+    if (country === 'INDIA') {
+      return nat === 'indian' || nat === 'india'
+    } else {
+      return nat === 'uae' || nat === 'emirati'
+    }
+  }).length
 
   const avgSalary = employees.length > 0
     ? employees.reduce((sum, e) => sum + e.basicSalary, 0) / employees.length
@@ -131,17 +136,15 @@ export default function EmployeesPage() {
             Manage your organization&apos;s employees and their information
           </p>
         </div>
-        <Button
-          size="lg"
-          onClick={() => {
-            setEditingEmployee(null)
-            setShowAddModal(true)
-          }}
-          className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700"
-        >
-          <Plus className="h-4 w-4 mr-2" />
-          Add Employee
-        </Button>
+        <Link href={country === 'INDIA' ? '/dashboard/employees/india/new' : '/dashboard/employees/new'}>
+          <Button
+            size="lg"
+            className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700"
+          >
+            <Plus className="h-4 w-4 mr-2" />
+            Add Employee
+          </Button>
+        </Link>
       </div>
 
       {/* Stats Cards */}
@@ -155,9 +158,13 @@ export default function EmployeesPage() {
         </Card>
         <Card className="border-l-4 border-l-green-500">
           <CardContent className="p-6">
-            <div className="text-sm font-medium text-gray-600">UAE Nationals</div>
-            <div className="mt-2 text-3xl font-bold text-gray-900">{uaeNationals}</div>
-            <div className="mt-2 text-sm text-gray-500">GPSSA applicable</div>
+            <div className="text-sm font-medium text-gray-600">
+              {country === 'INDIA' ? 'Indian Nationals' : 'UAE Nationals'}
+            </div>
+            <div className="mt-2 text-3xl font-bold text-gray-900">{nationals}</div>
+            <div className="mt-2 text-sm text-gray-500">
+              {country === 'INDIA' ? 'EPF/ESI applicable' : 'GPSSA applicable'}
+            </div>
           </CardContent>
         </Card>
         <Card className="border-l-4 border-l-purple-500">
@@ -293,10 +300,7 @@ export default function EmployeesPage() {
                           <Button
                             size="sm"
                             variant="ghost"
-                            onClick={() => {
-                              setEditingEmployee(employee)
-                              setShowAddModal(true)
-                            }}
+                            onClick={() => setEditingEmployee(employee)}
                           >
                             <Edit className="h-4 w-4" />
                           </Button>
@@ -325,16 +329,14 @@ export default function EmployeesPage() {
         </CardContent>
       </Card>
 
-      {/* Add/Edit Employee Modal */}
-      {showAddModal && (
+      {/* Edit Employee Modal */}
+      {editingEmployee && (
         <EmployeeModal
           employee={editingEmployee}
           onClose={() => {
-            setShowAddModal(false)
             setEditingEmployee(null)
           }}
           onSave={() => {
-            setShowAddModal(false)
             setEditingEmployee(null)
             loadEmployees()
           }}
