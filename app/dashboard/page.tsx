@@ -35,9 +35,10 @@ import {
 } from 'lucide-react'
 import Link from 'next/link'
 import { useInitData } from '@/lib/hooks/use-init-data'
+import { useCurrencyFormatter } from '@/lib/hooks/use-currency-formatter'
 import { useCountry } from '@/lib/context/CountryContext'
 import { employeeService, payrollService } from '@/lib/services/data-service'
-import { formatCurrency, formatMonth } from '@/lib/utils'
+import { formatMonth } from '@/lib/utils'
 import {
   LineChart,
   Line,
@@ -59,6 +60,7 @@ import {
 export default function DashboardPage() {
   const router = useRouter()
   const { country, isLoading: countryLoading } = useCountry()
+  const formatCurrency = useCurrencyFormatter()
 
   useInitData()
 

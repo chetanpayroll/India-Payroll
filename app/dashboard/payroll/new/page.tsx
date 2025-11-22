@@ -20,14 +20,16 @@ import {
   Download
 } from 'lucide-react'
 import { useToast } from '@/components/ui/use-toast'
+import { useCurrencyFormatter } from '@/lib/hooks/use-currency-formatter'
 import { employeeService, payrollService } from '@/lib/services/data-service'
 import { calculateEmployeePayroll } from '@/lib/services/payroll-calculator'
 import { Employee, PayrollItem } from '@/lib/types'
-import { formatCurrency, formatMonth, getDaysInMonth } from '@/lib/utils'
+import { formatMonth, getDaysInMonth } from '@/lib/utils'
 
 export default function NewPayrollPage() {
   const router = useRouter()
   const { toast } = useToast()
+  const formatCurrency = useCurrencyFormatter()
 
   const currentDate = new Date()
   const [selectedMonth, setSelectedMonth] = useState(currentDate.getMonth() + 1)

@@ -5,6 +5,8 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { useCurrencyFormatter } from '@/lib/hooks/use-currency-formatter';
+import { useCountry } from '@/lib/context/CountryContext';
 import {
   Plus,
   Trash2,
@@ -50,7 +52,9 @@ interface SalaryStructure {
 }
 
 export default function SalaryManagementPage() {
-  const [selectedCountry, setSelectedCountry] = useState<CountryCode>('INDIA');
+  const { country } = useCountry();
+  const formatCurrency = useCurrencyFormatter();
+  const selectedCountry = (country || 'INDIA') as CountryCode;
   const [salaryStructures, setSalaryStructures] = useState<SalaryStructure[]>([]);
   const [showAddModal, setShowAddModal] = useState(false);
   const [editingStructure, setEditingStructure] = useState<SalaryStructure | null>(null);
@@ -262,15 +266,6 @@ export default function SalaryManagementPage() {
 
     // Save file
     XLSX.writeFile(wb, fileName);
-  };
-
-  const formatCurrency = (amount: number) => {
-    const currency = selectedCountry === 'INDIA' ? 'INR' : 'AED';
-    return new Intl.NumberFormat(selectedCountry === 'INDIA' ? 'en-IN' : 'en-AE', {
-      style: 'currency',
-      currency,
-      minimumFractionDigits: 0,
-    }).format(amount);
   };
 
   const totals = calculateTotals();
