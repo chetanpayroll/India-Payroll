@@ -185,33 +185,134 @@ enum ContractType {
 
 model SalaryElement {
   id             String   @id @default(cuid())
-  
+
   name           String
   nameArabic     String?
   code           String   @unique
-  
+
   type           ElementType
   category       ElementCategory
-  
+
   isRecurring    Boolean  @default(true)  // Permanent or Temporary
   isTaxable      Boolean  @default(true)
-  
+
   calculationMethod CalculationMethod @default(FIXED)
-  
+
   // For percentage-based calculations
   percentageOf   String?  // "BASIC_SALARY" or other element code
   percentage     Decimal? @db.Decimal(5, 2)
-  
+
   // For fixed amount
   defaultAmount  Decimal? @db.Decimal(10, 2)
-  
+
   description    String?  @db.Text
-  
+
+  // Country-specific fields
+  countryCode    String?  // "UAE", "INDIA", null for global
+  isStatutory    Boolean  @default(false)  // Compliance-mandated element
+  isSystemDefined Boolean @default(false)  // Cannot be deleted
+  isActive       Boolean  @default(true)
+
+  // Display and sorting
+  displayOrder   Int      @default(0)
+  showInPayslip  Boolean  @default(true)
+
   employees      EmployeeSalaryElement[]
   payrollItems   PayrollItemElement[]
-  
+  rules          PayrollElementRule[]
+  complianceMappings PayrollElementComplianceMapping[]
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
+  @@index([countryCode])
+  @@index([isActive])
+  @@index([type, category])
+}
+
+// Advanced calculation rules for payroll elements
+model PayrollElementRule {
+  id             String   @id @default(cuid())
+
+  elementId      String
+  element        SalaryElement @relation(fields: [elementId], references: [id], onDelete: Cascade)
+
+  ruleName       String
+  ruleType       RuleType
+
+  // Conditions (JSON structure)
+  // Example: { "field": "basic", "operator": ">", "value": 15000 }
+  conditions     Json?
+
+  // Calculation formula (JSON structure)
+  // Example: { "formula": "basic * 0.12", "max": 1800, "min": 0 }
+  formula        Json
+
+  // Applicability
+  countryCode    String?
+  state          String?   // For India PT calculation
+  effectiveFrom  DateTime
+  effectiveTo    DateTime?
+
+  priority       Int      @default(0)  // Higher priority rules override lower
+  isActive       Boolean  @default(true)
+
+  description    String?  @db.Text
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([elementId])
+  @@index([countryCode])
+  @@index([isActive])
+}
+
+enum RuleType {
+  STATUTORY_CALCULATION  // PF, ESIC, PT, GPSSA
+  CONDITIONAL_FORMULA    // If-then-else logic
+  TIERED_CALCULATION     // Slab-based (tax, PT)
+  ATTENDANCE_BASED       // LOP, proration
+  PERFORMANCE_BASED      // Bonus, incentives
+  CUSTOM                 // JavaScript expression
+}
+
+// Compliance mapping for statutory elements
+model PayrollElementComplianceMapping {
+  id                    String   @id @default(cuid())
+
+  elementId             String
+  element               SalaryElement @relation(fields: [elementId], references: [id], onDelete: Cascade)
+
+  countryCode           String
+  complianceAuthority   String   // "PF", "ESIC", "PT", "TDS", "GPSSA", "WPS"
+
+  reportingCode         String?  // Authority's code for this element
+  reportingCategory     String?  // Category in compliance report
+
+  calculationReference  String?  @db.Text  // Reference to law/circular
+
+  // Wage ceiling and limits
+  wageceiling           Decimal? @db.Decimal(10, 2)
+  minAmount             Decimal? @db.Decimal(10, 2)
+  maxAmount             Decimal? @db.Decimal(10, 2)
+
+  // Applicability criteria (JSON)
+  // Example: { "minSalary": 21000, "employeeType": "REGULAR" }
+  applicabilityCriteria Json?
+
+  effectiveFrom         DateTime
+  effectiveTo           DateTime?
+
+  isActive              Boolean  @default(true)
+
+  notes                 String?  @db.Text
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([elementId, countryCode, complianceAuthority])
+  @@index([countryCode])
+  @@index([complianceAuthority])
 }
 
 enum ElementType {
@@ -220,6 +321,7 @@ enum ElementType {
 }
 
 enum ElementCategory {
+  // Earnings
   BASIC_SALARY
   HOUSING_ALLOWANCE
   TRANSPORT_ALLOWANCE
@@ -228,12 +330,34 @@ enum ElementCategory {
   BONUS
   COMMISSION
   OVERTIME
+  INCENTIVE
+  ARREARS
+
+  // India-specific earnings
+  HRA
+  LTA
+  SPECIAL_ALLOWANCE
+  CONVEYANCE
+  MEDICAL_ALLOWANCE
+  EDUCATION_ALLOWANCE
+
+  // Deductions
   LOAN_DEDUCTION
   ADVANCE_DEDUCTION
   PENALTY
   OTHER_DEDUCTION
+
+  // Statutory deductions
   GPSSA_EMPLOYEE
   GPSSA_EMPLOYER
+  PF_EMPLOYEE
+  PF_EMPLOYER
+  ESIC_EMPLOYEE
+  ESIC_EMPLOYER
+  PROFESSIONAL_TAX
+  TDS
+  LWF_EMPLOYEE
+  LWF_EMPLOYER
 }
 
 enum CalculationMethod {
