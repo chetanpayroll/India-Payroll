@@ -27,12 +27,15 @@ import { useInitData } from '@/lib/hooks/use-init-data'
 import { useCountry } from '@/lib/context/CountryContext'
 import { employeeService } from '@/lib/services/data-service'
 import { Employee } from '@/lib/types'
-import { formatCurrency, formatDate, generateId, validateEmiratesID, validateIBAN } from '@/lib/utils'
+import { formatDate, generateId, validateEmiratesID, validateIBAN } from '@/lib/utils'
 import { downloadAsJSON } from '@/lib/storage'
+import { useCurrencyFormatter, useCurrencySymbol } from '@/lib/hooks/use-currency-formatter'
 
 export default function EmployeesPage() {
   useInitData()
   const { country } = useCountry()
+  const formatCurrency = useCurrencyFormatter()
+  const currencySymbol = useCurrencySymbol()
 
   const [searchQuery, setSearchQuery] = useState('')
   const [employees, setEmployees] = useState<Employee[]>([])
@@ -607,7 +610,7 @@ function EmployeeModal({
             <h3 className="text-lg font-semibold text-gray-900 mb-4">Salary Information</h3>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div>
-                <Label>Basic Salary (AED) *</Label>
+                <Label>Basic Salary ({currencySymbol}) *</Label>
                 <Input
                   type="number"
                   value={formData.basicSalary}
@@ -616,7 +619,7 @@ function EmployeeModal({
                 />
               </div>
               <div>
-                <Label>Housing Allowance (AED)</Label>
+                <Label>Housing Allowance ({currencySymbol})</Label>
                 <Input
                   type="number"
                   value={formData.housingAllowance}
@@ -624,7 +627,7 @@ function EmployeeModal({
                 />
               </div>
               <div>
-                <Label>Transport Allowance (AED)</Label>
+                <Label>Transport Allowance ({currencySymbol})</Label>
                 <Input
                   type="number"
                   value={formData.transportationAllowance}
