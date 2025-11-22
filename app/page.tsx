@@ -1,11 +1,19 @@
+'use client'
+
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
-import { 
-  Building2, 
-  Users, 
-  Calculator, 
-  FileText, 
-  Shield, 
+import Button3D from '@/components/Button3D'
+import Card3D from '@/components/Card3D'
+import AnimatedBackground from '@/components/AnimatedBackground'
+import FloatingParticles from '@/components/FloatingParticles'
+import AnimatedGradient from '@/components/AnimatedGradient'
+import { motion } from 'framer-motion'
+import {
+  Building2,
+  Users,
+  Calculator,
+  FileText,
+  Shield,
   TrendingUp,
   CheckCircle2,
   ArrowRight
@@ -13,93 +21,151 @@ import {
 
 export default function Home() {
   return (
-    <div className="min-h-screen bg-gradient-to-b from-blue-50 to-white">
+    <div className="min-h-screen bg-gradient-to-b from-blue-50 to-white relative overflow-hidden">
+      {/* Animated Background Effects */}
+      <AnimatedBackground />
+      <FloatingParticles />
+      <AnimatedGradient />
       {/* Header */}
-      <header className="border-b bg-white/80 backdrop-blur-sm sticky top-0 z-50">
+      <header className="border-b glass-effect backdrop-blur-2xl bg-white/60 border-white/20 sticky top-0 z-50 shadow-lg">
         <div className="container mx-auto px-4 py-4 flex justify-between items-center">
-          <div className="flex items-center gap-2">
-            <Calculator className="h-8 w-8 text-blue-600" />
-            <span className="text-2xl font-bold text-gray-900">GMP Payroll</span>
-          </div>
+          <motion.div
+            initial={{ opacity: 0, x: -20 }}
+            animate={{ opacity: 1, x: 0 }}
+            className="flex items-center gap-2 group"
+          >
+            <div className="w-10 h-10 bg-gradient-to-br from-blue-600 via-purple-600 to-pink-600 rounded-lg flex items-center justify-center shadow-lg animate-pulse-glow group-hover:scale-110 transition-transform">
+              <Calculator className="h-6 w-6 text-white" />
+            </div>
+            <span className="text-2xl font-bold gradient-text">GMP Payroll</span>
+          </motion.div>
           <nav className="hidden md:flex gap-6 items-center">
-            <Link href="#features" className="text-gray-600 hover:text-blue-600 transition">Features</Link>
-            <Link href="#pricing" className="text-gray-600 hover:text-blue-600 transition">Pricing</Link>
-            <Link href="#contact" className="text-gray-600 hover:text-blue-600 transition">Contact</Link>
+            <Link href="#features" className="text-gray-700 hover:text-blue-600 transition font-medium">Features</Link>
+            <Link href="#pricing" className="text-gray-700 hover:text-blue-600 transition font-medium">Pricing</Link>
+            <Link href="#contact" className="text-gray-700 hover:text-blue-600 transition font-medium">Contact</Link>
             <Link href="/auth/login">
-              <Button>Get Started</Button>
+              <Button3D variant="primary" magnetic>Get Started</Button3D>
             </Link>
           </nav>
         </div>
       </header>
 
       {/* Hero Section */}
-      <section className="container mx-auto px-4 py-20 text-center">
+      <section className="container mx-auto px-4 py-20 text-center relative z-10">
         <div className="max-w-4xl mx-auto">
-          <div className="inline-block mb-4 px-4 py-2 bg-blue-100 text-blue-700 rounded-full text-sm font-medium">
-            🇦🇪 UAE Compliant Payroll System
-          </div>
-          <h1 className="text-5xl md:text-6xl font-bold text-gray-900 mb-6">
+          <motion.div
+            initial={{ opacity: 0, y: 30, scale: 0.9 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            transition={{ duration: 0.6 }}
+            className="inline-block mb-6 px-6 py-3 glass-effect border-blue-200 rounded-full text-sm font-bold shadow-lg animate-pulse-glow"
+          >
+            🇦🇪 UAE & India Compliant Payroll System
+          </motion.div>
+          <motion.h1
+            initial={{ opacity: 0, y: 30 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.7, delay: 0.2 }}
+            className="text-6xl md:text-7xl font-black mb-8"
+          >
             Payroll Management Made
-            <span className="text-blue-600"> Simple & Compliant</span>
-          </h1>
-          <p className="text-xl text-gray-600 mb-8">
-            Complete payroll solution for UAE businesses with WPS, GPSSA compliance, 
+            <span className="gradient-text neon-glow block mt-2"> Simple & Compliant</span>
+          </motion.h1>
+          <motion.p
+            initial={{ opacity: 0, y: 30 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.7, delay: 0.4 }}
+            className="text-2xl text-gray-700 mb-10 font-medium"
+          >
+            Complete payroll solution for UAE & India businesses with WPS, GPSSA, PF, ESIC compliance,
             automated calculations, and instant payslip generation.
-          </p>
-          <div className="flex gap-4 justify-center">
+          </motion.p>
+          <motion.div
+            initial={{ opacity: 0, y: 30 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.7, delay: 0.6 }}
+            className="flex gap-6 justify-center"
+          >
             <Link href="/auth/login">
-              <Button size="lg" className="text-lg px-8">
+              <Button3D variant="primary" magnetic className="text-lg px-10 py-6">
                 Start Free Trial
-                <ArrowRight className="ml-2 h-5 w-5" />
-              </Button>
+                <ArrowRight className="ml-2 h-6 w-6" />
+              </Button3D>
             </Link>
             <Link href="#demo">
-              <Button size="lg" variant="outline" className="text-lg px-8">
+              <Button3D variant="secondary" magnetic className="text-lg px-10 py-6">
                 Watch Demo
-              </Button>
+              </Button3D>
             </Link>
-          </div>
+          </motion.div>
         </div>
 
         {/* Stats */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mt-16 max-w-3xl mx-auto">
-          <div className="text-center">
-            <div className="text-4xl font-bold text-blue-600 mb-2">500+</div>
-            <div className="text-gray-600">Companies Trust Us</div>
-          </div>
-          <div className="text-center">
-            <div className="text-4xl font-bold text-blue-600 mb-2">10K+</div>
-            <div className="text-gray-600">Employees Managed</div>
-          </div>
-          <div className="text-center">
-            <div className="text-4xl font-bold text-blue-600 mb-2">100%</div>
-            <div className="text-gray-600">UAE Compliant</div>
-          </div>
-        </div>
+        <motion.div
+          initial={{ opacity: 0, y: 40 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.8, delay: 0.8 }}
+          className="grid grid-cols-1 md:grid-cols-3 gap-8 mt-20 max-w-4xl mx-auto"
+        >
+          {[
+            { value: '500+', label: 'Companies Trust Us', delay: 0.9 },
+            { value: '10K+', label: 'Employees Managed', delay: 1.0 },
+            { value: '100%', label: 'Compliant', delay: 1.1 }
+          ].map((stat, index) => (
+            <motion.div
+              key={index}
+              initial={{ opacity: 0, scale: 0.8 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ duration: 0.5, delay: stat.delay }}
+            >
+              <Card3D className="text-center p-8 border-0" glassEffect={true}>
+                <div className="text-5xl font-black gradient-text mb-3">{stat.value}</div>
+                <div className="text-gray-700 font-semibold text-lg">{stat.label}</div>
+              </Card3D>
+            </motion.div>
+          ))}
+        </motion.div>
       </section>
 
       {/* Features Section */}
-      <section id="features" className="container mx-auto px-4 py-20">
-        <div className="text-center mb-16">
-          <h2 className="text-4xl font-bold text-gray-900 mb-4">
-            Everything You Need for UAE Payroll
+      <section id="features" className="container mx-auto px-4 py-20 relative z-10">
+        <motion.div
+          initial={{ opacity: 0, y: 30 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.6 }}
+          className="text-center mb-16"
+        >
+          <h2 className="text-5xl font-black gradient-text neon-glow mb-6">
+            Everything You Need for Payroll
           </h2>
-          <p className="text-xl text-gray-600 max-w-2xl mx-auto">
-            Powerful features designed specifically for UAE labor law and compliance requirements
+          <p className="text-2xl text-gray-700 max-w-3xl mx-auto font-medium">
+            Powerful features designed for UAE & India labor law and compliance requirements
           </p>
-        </div>
+        </motion.div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
           {/* Feature 1 */}
-          <div className="bg-white p-8 rounded-xl shadow-sm border border-gray-100 hover:shadow-md transition">
-            <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center mb-4">
-              <Users className="h-6 w-6 text-blue-600" />
-            </div>
-            <h3 className="text-xl font-semibold mb-3">Employee Management</h3>
-            <p className="text-gray-600">
-              Complete employee database with Emirates ID, passport details, and contract management.
-            </p>
-          </div>
+          <motion.div
+            initial={{ opacity: 0, y: 50 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.5, delay: 0.1 }}
+          >
+            <Card3D className="p-8 border-0 h-full" glassEffect={true}>
+              <motion.div
+                className="w-16 h-16 bg-gradient-to-br from-blue-500 to-blue-600 rounded-2xl flex items-center justify-center mb-6 shadow-xl"
+                whileHover={{ scale: 1.1, rotate: 5 }}
+              >
+                <Users className="h-8 w-8 text-white" />
+              </motion.div>
+              <h3 className="text-2xl font-bold mb-4 bg-gradient-to-r from-blue-600 to-cyan-600 bg-clip-text text-transparent">
+                Employee Management
+              </h3>
+              <p className="text-gray-700 font-medium">
+                Complete employee database with Emirates ID, passport details, and contract management.
+              </p>
+            </Card3D>
+          </motion.div>
 
           {/* Feature 2 */}
           <div className="bg-white p-8 rounded-xl shadow-sm border border-gray-100 hover:shadow-md transition">
