@@ -402,10 +402,14 @@ export default function SalaryManagementPage() {
                               <div className="flex items-center gap-2">
                                 <span className="text-sm font-medium text-gray-900">{elem.name}</span>
                                 {elem.type === 'temporary' && (
-                                  <Clock className="h-3 w-3 text-orange-500" title="Temporary" />
+                                  <span title="Temporary">
+                                    <Clock className="h-3 w-3 text-orange-500" />
+                                  </span>
                                 )}
                                 {elem.isStatutory && (
-                                  <Shield className="h-3 w-3 text-blue-500" title="Statutory" />
+                                  <span title="Statutory">
+                                    <Shield className="h-3 w-3 text-blue-500" />
+                                  </span>
                                 )}
                               </div>
                               <span className="text-sm font-semibold text-green-700">
@@ -430,10 +434,14 @@ export default function SalaryManagementPage() {
                               <div className="flex items-center gap-2">
                                 <span className="text-sm font-medium text-gray-900">{elem.name}</span>
                                 {elem.type === 'temporary' && (
-                                  <Clock className="h-3 w-3 text-orange-500" title="Temporary" />
+                                  <span title="Temporary">
+                                    <Clock className="h-3 w-3 text-orange-500" />
+                                  </span>
                                 )}
                                 {elem.isStatutory && (
-                                  <Shield className="h-3 w-3 text-blue-500" title="Statutory" />
+                                  <span title="Statutory">
+                                    <Shield className="h-3 w-3 text-blue-500" />
+                                  </span>
                                 )}
                               </div>
                               <span className="text-sm font-semibold text-red-700">
