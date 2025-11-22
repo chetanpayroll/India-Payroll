@@ -360,6 +360,8 @@ function EmployeeModal({
   onSave: () => void
 }) {
   const { toast } = useToast()
+  const formatCurrency = useCurrencyFormatter()
+  const currencySymbol = useCurrencySymbol()
   const [errors, setErrors] = useState<Record<string, string>>({})
 
   const [formData, setFormData] = useState<Partial<Employee>>(employee || {
