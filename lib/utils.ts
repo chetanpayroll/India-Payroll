@@ -8,15 +8,28 @@ export function cn(...inputs: ClassValue[]) {
 }
 
 /**
- * Format a number or numeric string into AED currency.
- * Returns a safe formatted string; invalid values return "AED 0.00".
+ * @deprecated This function is deprecated and should not be used.
+ * Use the useCurrencyFormatter() hook instead to get context-aware currency formatting.
+ *
+ * This function returns a neutral number format without currency symbol.
+ * For proper currency display that respects the selected country module, use:
+ *
+ * @example
+ * ```tsx
+ * import { useCurrencyFormatter } from '@/lib/hooks/use-currency-formatter';
+ *
+ * function MyComponent() {
+ *   const formatCurrency = useCurrencyFormatter(); // This will format as INR or AED based on selected country
+ *   return <div>{formatCurrency(1000)}</div>;
+ * }
+ * ```
  */
 export function formatCurrency(amount: number | string | undefined | null): string {
   const n = amount == null ? 0 : (typeof amount === 'string' ? parseFloat(amount) : Number(amount))
   const value = Number.isFinite(n) ? n : 0
-  return new Intl.NumberFormat('en-AE', {
-    style: 'currency',
-    currency: 'AED',
+  // Return neutral format - use useCurrencyFormatter() hook for country-specific formatting
+  return new Intl.NumberFormat('en-US', {
+    style: 'decimal',
     minimumFractionDigits: 2,
     maximumFractionDigits: 2,
   }).format(value)
