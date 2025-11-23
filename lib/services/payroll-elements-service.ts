@@ -4,9 +4,8 @@
  * with compliance rules, calculation engine, and validation
  */
 
-import { PrismaClient, SalaryElement, ElementType, ElementCategory, CalculationMethod, RuleType } from '@prisma/client'
-
-const prisma = new PrismaClient()
+import { SalaryElement, ElementType, ElementCategory, CalculationMethod, RuleType } from '@prisma/client'
+import { prisma } from '@/lib/prisma'
 
 export interface PayrollElementInput {
   name: string
