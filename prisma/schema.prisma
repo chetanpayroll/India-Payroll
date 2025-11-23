@@ -20,11 +20,12 @@ model User {
   image         String?
   organizationId String?
   organization   Organization? @relation(fields: [organizationId], references: [id])
-  
+
   accounts      Account[]
   sessions      Session[]
   auditLogs     AuditLog[]
-  
+  leaveApprovals Leave[]  @relation("LeaveApprovals")
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
@@ -95,7 +96,10 @@ model Entity {
   
   employees         Employee[]
   payrollRuns       PayrollRun[]
-  
+  shifts            Shift[]
+  leavePolicies     LeavePolicy[]
+  publicHolidays    PublicHoliday[]
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
@@ -145,7 +149,12 @@ model Employee {
   salaryElements    EmployeeSalaryElement[]
   payrollItems      PayrollItem[]
   payslips          Payslip[]
-  
+  leaves            Leave[]
+  leaveBalances     LeaveBalance[]
+  shifts            EmployeeShift[]
+  attendances       Attendance[]
+  overtimeRequests  OvertimeRequest[]
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
@@ -554,6 +563,361 @@ model AuditLog {
   @@index([userId])
   @@index([entity, entityId])
   @@index([createdAt])
+}
+
+// ==================== LEAVE MANAGEMENT ====================
+
+model Leave {
+  id              String   @id @default(cuid())
+
+  employeeId      String
+  employee        Employee @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+
+  leaveType       LeaveType
+  startDate       DateTime
+  endDate         DateTime
+  numberOfDays    Decimal  @db.Decimal(5, 2)  // Support half-day leaves
+
+  reason          String?  @db.Text
+  status          LeaveStatus @default(PENDING)
+
+  appliedDate     DateTime @default(now())
+  approvedBy      String?
+  approver        User?    @relation("LeaveApprovals", fields: [approvedBy], references: [id])
+  approvedDate    DateTime?
+  rejectionReason String?  @db.Text
+
+  // Attachment support (medical certificate, etc.)
+  attachmentUrl   String?
+
+  // Workflow
+  currentApprovalLevel Int @default(1)
+  approvalChain   Json?    // Store approval workflow
+
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@index([employeeId])
+  @@index([status])
+  @@index([startDate, endDate])
+  @@index([leaveType])
+}
+
+enum LeaveType {
+  ANNUAL
+  SICK
+  MATERNITY
+  PATERNITY
+  UNPAID
+  EMERGENCY
+  COMPASSIONATE
+  STUDY
+  HAJJ
+}
+
+enum LeaveStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  CANCELLED
+  WITHDRAWN
+}
+
+model LeaveBalance {
+  id                    String   @id @default(cuid())
+
+  employeeId            String
+  employee              Employee @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+
+  year                  Int
+
+  // Annual Leave
+  annualLeaveEntitled   Decimal  @db.Decimal(5, 2) @default(30)
+  annualLeaveTaken      Decimal  @db.Decimal(5, 2) @default(0)
+  annualLeaveBalance    Decimal  @db.Decimal(5, 2) @default(30)
+  annualLeaveCarryForward Decimal @db.Decimal(5, 2) @default(0)
+
+  // Sick Leave
+  sickLeaveEntitled     Decimal  @db.Decimal(5, 2) @default(15)
+  sickLeaveTaken        Decimal  @db.Decimal(5, 2) @default(0)
+  sickLeaveBalance      Decimal  @db.Decimal(5, 2) @default(15)
+
+  // Unpaid Leave
+  unpaidLeaveTaken      Decimal  @db.Decimal(5, 2) @default(0)
+
+  // Other Leave Types
+  maternityLeaveTaken   Decimal  @db.Decimal(5, 2) @default(0)
+  paternityLeaveTaken   Decimal  @db.Decimal(5, 2) @default(0)
+  emergencyLeaveTaken   Decimal  @db.Decimal(5, 2) @default(0)
+
+  // Encashment tracking
+  leaveEncashed         Decimal  @db.Decimal(5, 2) @default(0)
+  encashmentAmount      Decimal  @db.Decimal(10, 2) @default(0)
+
+  // Audit
+  lastUpdated           DateTime @updatedAt
+  createdAt             DateTime @default(now())
+
+  @@unique([employeeId, year])
+  @@index([employeeId])
+  @@index([year])
+}
+
+model LeavePolicy {
+  id                    String   @id @default(cuid())
+
+  entityId              String?
+  entity                Entity?  @relation(fields: [entityId], references: [id])
+
+  policyName            String
+  leaveType             LeaveType
+
+  // Entitlement
+  annualEntitlement     Decimal  @db.Decimal(5, 2)
+  accrualMethod         AccrualMethod @default(YEARLY)
+  accrualFrequency      Int      @default(12)  // months
+
+  // Eligibility
+  minimumServiceMonths  Int      @default(0)
+  applicableGender      String?  // "MALE", "FEMALE", "ALL"
+
+  // Carry Forward
+  allowCarryForward     Boolean  @default(true)
+  maxCarryForward       Decimal? @db.Decimal(5, 2)
+  carryForwardExpiry    Int?     // months
+
+  // Encashment
+  allowEncashment       Boolean  @default(false)
+  maxEncashmentDays     Decimal? @db.Decimal(5, 2)
+  encashmentRate        Decimal? @db.Decimal(5, 2)  // multiplier of daily salary
+
+  // Restrictions
+  minDaysPerRequest     Decimal  @db.Decimal(5, 2) @default(0.5)
+  maxDaysPerRequest     Decimal? @db.Decimal(5, 2)
+  advanceNoticeDays     Int      @default(0)
+
+  // Weekend/Holiday treatment
+  includeWeekends       Boolean  @default(false)
+  includeHolidays       Boolean  @default(false)
+
+  isActive              Boolean  @default(true)
+
+  createdAt             DateTime @default(now())
+  updatedAt             DateTime @updatedAt
+
+  @@index([entityId])
+  @@index([leaveType])
+}
+
+enum AccrualMethod {
+  YEARLY        // All leaves at start of year
+  MONTHLY       // Accrue monthly
+  QUARTERLY     // Accrue quarterly
+  ON_COMPLETION // After probation/tenure
+}
+
+// ==================== ATTENDANCE & SHIFT MANAGEMENT ====================
+
+model Shift {
+  id                  String   @id @default(cuid())
+
+  entityId            String?
+  entity              Entity?  @relation(fields: [entityId], references: [id])
+
+  shiftCode           String   @unique
+  shiftName           String
+
+  // Timing
+  startTime           String   // HH:mm format
+  endTime             String   // HH:mm format
+  breakDuration       Int      @default(0)  // minutes
+  workingHours        Decimal  @db.Decimal(5, 2)
+
+  // Grace period
+  lateGracePeriod     Int      @default(15)  // minutes
+  earlyOutGracePeriod Int      @default(15)  // minutes
+
+  // Shift type
+  isNightShift        Boolean  @default(false)
+  nightShiftAllowance Decimal? @db.Decimal(10, 2)
+
+  // Weekly off
+  weeklyOffDays       Int[]    @default([5, 6])  // 0=Sunday, 6=Saturday
+
+  // Overtime rules
+  overtimeApplicable  Boolean  @default(true)
+  overtimeMultiplier  Decimal  @db.Decimal(5, 2) @default(1.5)
+
+  isActive            Boolean  @default(true)
+
+  employeeShifts      EmployeeShift[]
+  attendances         Attendance[]
+
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+
+  @@index([entityId])
+  @@index([isActive])
+}
+
+model EmployeeShift {
+  id              String   @id @default(cuid())
+
+  employeeId      String
+  employee        Employee @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+
+  shiftId         String
+  shift           Shift    @relation(fields: [shiftId], references: [id])
+
+  effectiveFrom   DateTime
+  effectiveTo     DateTime?
+
+  isActive        Boolean  @default(true)
+
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@index([employeeId])
+  @@index([shiftId])
+  @@index([effectiveFrom])
+}
+
+model Attendance {
+  id                String   @id @default(cuid())
+
+  employeeId        String
+  employee          Employee @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+
+  date              DateTime
+
+  shiftId           String?
+  shift             Shift?   @relation(fields: [shiftId], references: [id])
+
+  // Check-in/out
+  checkInTime       DateTime?
+  checkOutTime      DateTime?
+  checkInLocation   String?  // GPS coordinates or location name
+  checkOutLocation  String?
+
+  // Calculated hours
+  workingHours      Decimal  @db.Decimal(5, 2) @default(0)
+
+  // Status
+  status            AttendanceStatus @default(PRESENT)
+  attendanceType    AttendanceType @default(REGULAR)
+
+  // Late/Early tracking
+  lateBy            Int?     // minutes
+  earlyOutBy        Int?     // minutes
+
+  // Overtime
+  overtimeHours     Decimal? @db.Decimal(5, 2)
+  overtimeApproved  Boolean  @default(false)
+
+  // Approval workflow
+  requiresApproval  Boolean  @default(false)
+  approvedBy        String?
+  approvedDate      DateTime?
+
+  // Notes
+  remarks           String?  @db.Text
+
+  // Manual entry
+  isManualEntry     Boolean  @default(false)
+  enteredBy         String?
+
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  @@unique([employeeId, date])
+  @@index([employeeId])
+  @@index([date])
+  @@index([status])
+  @@index([attendanceType])
+}
+
+enum AttendanceStatus {
+  PRESENT
+  ABSENT
+  LEAVE
+  WEEKEND
+  HOLIDAY
+  HALF_DAY
+  LATE
+  EARLY_OUT
+}
+
+enum AttendanceType {
+  REGULAR
+  LATE
+  EARLY_OUT
+  OVERTIME
+  WEEKEND_WORK
+  HOLIDAY_WORK
+}
+
+model OvertimeRequest {
+  id              String   @id @default(cuid())
+
+  employeeId      String
+  employee        Employee @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+
+  requestDate     DateTime @default(now())
+  overtimeDate    DateTime
+
+  startTime       String   // HH:mm
+  endTime         String   // HH:mm
+  hours           Decimal  @db.Decimal(5, 2)
+
+  reason          String   @db.Text
+
+  status          OvertimeStatus @default(PENDING)
+
+  approvedBy      String?
+  approvedDate    DateTime?
+  rejectionReason String?  @db.Text
+
+  // Calculation
+  overtimeRate    Decimal? @db.Decimal(5, 2)  // multiplier (1.5x, 2x)
+  amount          Decimal? @db.Decimal(10, 2)
+
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@index([employeeId])
+  @@index([status])
+  @@index([overtimeDate])
+}
+
+enum OvertimeStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  CANCELLED
+}
+
+model PublicHoliday {
+  id              String   @id @default(cuid())
+
+  entityId        String?
+  entity          Entity?  @relation(fields: [entityId], references: [id])
+
+  name            String
+  nameArabic      String?
+  date            DateTime
+  year            Int
+
+  isOptional      Boolean  @default(false)
+  countryCode     String?  // "UAE", "INDIA", etc.
+
+  description     String?  @db.Text
+
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@index([entityId])
+  @@index([date])
+  @@index([year])
 }
 
 // ============================================================================
