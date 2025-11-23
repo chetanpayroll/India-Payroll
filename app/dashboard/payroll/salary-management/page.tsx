@@ -52,7 +52,7 @@ interface SalaryStructure {
 }
 
 export default function SalaryManagementPage() {
-  const { country } = useCountry();
+  const { country, setCountry } = useCountry();
   const formatCurrency = useCurrencyFormatter();
   const selectedCountry = (country || 'INDIA') as CountryCode;
   const [salaryStructures, setSalaryStructures] = useState<SalaryStructure[]>([]);
@@ -197,7 +197,6 @@ export default function SalaryManagementPage() {
     setEmployeeName(structure.employeeName);
     setEffectiveDate(structure.effectiveDate);
     setPayElements(structure.payElements);
-    setSelectedCountry(structure.country);
     setShowAddModal(true);
   };
 
@@ -301,7 +300,7 @@ export default function SalaryManagementPage() {
         <div className="flex gap-3">
           <Button
             variant={selectedCountry === 'INDIA' ? 'default' : 'outline'}
-            onClick={() => setSelectedCountry('INDIA')}
+            onClick={() => setCountry('INDIA')}
             className="flex items-center gap-2"
           >
             <span className="text-xl">🇮🇳</span>
@@ -309,7 +308,7 @@ export default function SalaryManagementPage() {
           </Button>
           <Button
             variant={selectedCountry === 'UAE' ? 'default' : 'outline'}
-            onClick={() => setSelectedCountry('UAE')}
+            onClick={() => setCountry('UAE')}
             className="flex items-center gap-2"
           >
             <span className="text-xl">🇦🇪</span>

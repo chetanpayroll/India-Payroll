@@ -441,7 +441,7 @@ export class LeaveService {
       }
     });
 
-    const holidayDates = new Set(holidays.map(h => h.date.toISOString().split('T')[0]));
+    const holidayDates = new Set(holidays.map((h: { date: Date }) => h.date.toISOString().split('T')[0]));
 
     while (currentDate <= endDate) {
       const dayOfWeek = currentDate.getDay();

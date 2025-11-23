@@ -4,8 +4,37 @@
  * with compliance rules, calculation engine, and validation
  */
 
-import { SalaryElement, ElementType, ElementCategory, CalculationMethod, RuleType } from '@prisma/client'
 import { prisma } from '@/lib/prisma'
+
+// Define types locally since Prisma client may not be fully generated
+type ElementType = 'EARNING' | 'DEDUCTION'
+type ElementCategory = 'BASIC_SALARY' | 'HOUSING_ALLOWANCE' | 'TRANSPORT_ALLOWANCE' | 'FOOD_ALLOWANCE' | 'OTHER_ALLOWANCE' | 'BONUS' | 'COMMISSION' | 'OVERTIME' | 'INCENTIVE' | 'PROVIDENT_FUND' | 'INSURANCE' | 'TAX' | 'LOAN' | 'OTHER_DEDUCTION'
+type CalculationMethod = 'FIXED' | 'PERCENTAGE' | 'PRORATED'
+type RuleType = 'STATUTORY_CALCULATION' | 'CONDITIONAL_FORMULA' | 'TIERED_CALCULATION' | 'ATTENDANCE_BASED' | 'PERFORMANCE_BASED' | 'CUSTOM'
+
+interface SalaryElement {
+  id: string
+  name: string
+  nameArabic?: string | null
+  code: string
+  type: ElementType
+  category: ElementCategory
+  isRecurring: boolean
+  isTaxable: boolean
+  calculationMethod: CalculationMethod
+  percentageOf?: string | null
+  percentage?: any
+  defaultAmount?: any
+  description?: string | null
+  countryCode?: string | null
+  isStatutory: boolean
+  isSystemDefined: boolean
+  isActive: boolean
+  displayOrder?: number | null
+  showInPayslip: boolean
+  createdAt: Date
+  updatedAt: Date
+}
 
 export interface PayrollElementInput {
   name: string
@@ -169,7 +198,7 @@ export class PayrollElementsService {
         category: input.category,
         isRecurring: input.isRecurring ?? true,
         isTaxable: input.isTaxable ?? true,
-        calculationMethod: input.calculationMethod ?? CalculationMethod.FIXED,
+        calculationMethod: input.calculationMethod ?? 'FIXED',
         percentageOf: input.percentageOf,
         percentage: input.percentage,
         defaultAmount: input.defaultAmount,
