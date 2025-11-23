@@ -18,95 +18,192 @@ import {
   Users,
   TrendingUp,
   FileText,
-  Settings
+  Settings,
+  Loader2
 } from 'lucide-react'
 import Link from 'next/link'
-import { employeeService } from '@/lib/services/data-service'
 import { formatDate } from '@/lib/utils'
-import { LeaveRequest, Employee } from '@/lib/types'
+import { toast } from 'sonner'
+
+interface LeaveRequest {
+  id: string
+  employeeId: string
+  employee?: {
+    id: string
+    employeeNumber: string
+    firstName: string
+    lastName: string
+    email: string
+    designation: string
+    department: string
+  }
+  leaveType: string
+  startDate: string
+  endDate: string
+  numberOfDays: number
+  reason?: string
+  status: string
+  appliedDate: string
+  approvedBy?: string
+  approver?: {
+    id: string
+    name: string
+    email: string
+  }
+  approvedDate?: string
+  rejectionReason?: string
+  attachmentUrl?: string
+  createdAt: string
+  updatedAt: string
+}
+
+interface LeaveStatistics {
+  total: number
+  pending: number
+  approved: number
+  rejected: number
+}
 
 export default function LeaveManagementPage() {
   const [leaveRequests, setLeaveRequests] = useState<LeaveRequest[]>([])
   const [filteredRequests, setFilteredRequests] = useState<LeaveRequest[]>([])
+  const [statistics, setStatistics] = useState<LeaveStatistics>({
+    total: 0,
+    pending: 0,
+    approved: 0,
+    rejected: 0
+  })
   const [searchQuery, setSearchQuery] = useState('')
   const [statusFilter, setStatusFilter] = useState<string>('all')
-  const [showNewRequestModal, setShowNewRequestModal] = useState(false)
+  const [loading, setLoading] = useState(true)
+  const [actionLoading, setActionLoading] = useState<string | null>(null)
 
   // Load data
   useEffect(() => {
     loadLeaveData()
+    loadStatistics()
   }, [])
 
   useEffect(() => {
     let filtered = leaveRequests
 
     if (statusFilter !== 'all') {
-      filtered = filtered.filter(req => req.status === statusFilter)
+      filtered = filtered.filter(req => req.status.toUpperCase() === statusFilter.toUpperCase())
     }
 
     if (searchQuery) {
       filtered = filtered.filter(req =>
         req.employeeId.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        req.employee?.firstName.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        req.employee?.lastName.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        req.employee?.employeeNumber.toLowerCase().includes(searchQuery.toLowerCase()) ||
         req.leaveType.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        req.reason.toLowerCase().includes(searchQuery.toLowerCase())
+        req.reason?.toLowerCase().includes(searchQuery.toLowerCase())
       )
     }
 
     setFilteredRequests(filtered)
   }, [searchQuery, statusFilter, leaveRequests])
 
-  const loadLeaveData = () => {
-    // Sample leave requests data
-    const sampleRequests: LeaveRequest[] = [
-      {
-        id: '1',
-        employeeId: 'emp-001',
-        leaveType: 'annual',
-        startDate: '2024-12-20',
-        endDate: '2024-12-24',
-        numberOfDays: 5,
-        reason: 'Family vacation during holidays',
-        status: 'pending',
-        appliedDate: '2024-11-15',
-        createdAt: '2024-11-15',
-        updatedAt: '2024-11-15'
-      },
-      {
-        id: '2',
-        employeeId: 'emp-002',
-        leaveType: 'sick',
-        startDate: '2024-11-18',
-        endDate: '2024-11-19',
-        numberOfDays: 2,
-        reason: 'Medical appointment and recovery',
-        status: 'approved',
-        appliedDate: '2024-11-17',
-        approvedBy: 'manager-001',
-        approvedDate: '2024-11-17',
-        createdAt: '2024-11-17',
-        updatedAt: '2024-11-17'
-      },
-      {
-        id: '3',
-        employeeId: 'emp-003',
-        leaveType: 'annual',
-        startDate: '2024-12-01',
-        endDate: '2024-12-05',
-        numberOfDays: 5,
-        reason: 'Personal matters',
-        status: 'rejected',
-        appliedDate: '2024-11-10',
-        approvedBy: 'manager-002',
-        rejectionReason: 'Critical project deadline',
-        createdAt: '2024-11-10',
-        updatedAt: '2024-11-12'
-      },
-    ]
-    setLeaveRequests(sampleRequests)
+  const loadLeaveData = async () => {
+    try {
+      setLoading(true)
+      const response = await fetch('/api/leave/requests')
+      const result = await response.json()
+
+      if (result.success) {
+        setLeaveRequests(result.data || [])
+      } else {
+        toast.error('Failed to load leave requests')
+        console.error('Error:', result.error)
+      }
+    } catch (error) {
+      console.error('Error loading leave requests:', error)
+      toast.error('Failed to load leave requests')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const loadStatistics = async () => {
+    try {
+      const response = await fetch('/api/leave/statistics')
+      const result = await response.json()
+
+      if (result.success) {
+        setStatistics(result.data)
+      }
+    } catch (error) {
+      console.error('Error loading statistics:', error)
+    }
+  }
+
+  const handleApprove = async (leaveId: string) => {
+    try {
+      setActionLoading(leaveId)
+      const response = await fetch(`/api/leave/requests/${leaveId}/approve`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          approvedBy: 'current-user-id' // Replace with actual user ID from session
+        })
+      })
+
+      const result = await response.json()
+
+      if (result.success) {
+        toast.success('Leave request approved successfully')
+        loadLeaveData()
+        loadStatistics()
+      } else {
+        toast.error(result.error || 'Failed to approve leave request')
+      }
+    } catch (error) {
+      console.error('Error approving leave:', error)
+      toast.error('Failed to approve leave request')
+    } finally {
+      setActionLoading(null)
+    }
+  }
+
+  const handleReject = async (leaveId: string) => {
+    const rejectionReason = prompt('Please enter rejection reason:')
+    if (!rejectionReason) return
+
+    try {
+      setActionLoading(leaveId)
+      const response = await fetch(`/api/leave/requests/${leaveId}/reject`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          approvedBy: 'current-user-id', // Replace with actual user ID from session
+          rejectionReason
+        })
+      })
+
+      const result = await response.json()
+
+      if (result.success) {
+        toast.success('Leave request rejected')
+        loadLeaveData()
+        loadStatistics()
+      } else {
+        toast.error(result.error || 'Failed to reject leave request')
+      }
+    } catch (error) {
+      console.error('Error rejecting leave:', error)
+      toast.error('Failed to reject leave request')
+    } finally {
+      setActionLoading(null)
+    }
   }
 
   const getStatusColor = (status: string) => {
-    switch (status) {
+    switch (status.toLowerCase()) {
       case 'approved': return 'bg-green-100 text-green-700'
       case 'rejected': return 'bg-red-100 text-red-700'
       case 'pending': return 'bg-yellow-100 text-yellow-700'
@@ -116,7 +213,7 @@ export default function LeaveManagementPage() {
   }
 
   const getLeaveTypeColor = (type: string) => {
-    switch (type) {
+    switch (type.toLowerCase()) {
       case 'annual': return 'bg-blue-100 text-blue-700'
       case 'sick': return 'bg-red-100 text-red-700'
       case 'maternity': return 'bg-pink-100 text-pink-700'
@@ -127,11 +224,12 @@ export default function LeaveManagementPage() {
     }
   }
 
-  const stats = {
-    pending: leaveRequests.filter(r => r.status === 'pending').length,
-    approved: leaveRequests.filter(r => r.status === 'approved').length,
-    rejected: leaveRequests.filter(r => r.status === 'rejected').length,
-    total: leaveRequests.length
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-96">
+        <Loader2 className="h-8 w-8 animate-spin text-purple-600" />
+      </div>
+    )
   }
 
   return (
@@ -165,7 +263,7 @@ export default function LeaveManagementPage() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-gray-600">Pending Approvals</p>
-                <p className="mt-2 text-3xl font-bold text-gray-900">{stats.pending}</p>
+                <p className="mt-2 text-3xl font-bold text-gray-900">{statistics.pending}</p>
                 <p className="text-xs text-gray-500 mt-1">Awaiting decision</p>
               </div>
               <div className="p-3 rounded-xl bg-yellow-100">
@@ -180,8 +278,8 @@ export default function LeaveManagementPage() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-gray-600">Approved</p>
-                <p className="mt-2 text-3xl font-bold text-gray-900">{stats.approved}</p>
-                <p className="text-xs text-gray-500 mt-1">This month</p>
+                <p className="mt-2 text-3xl font-bold text-gray-900">{statistics.approved}</p>
+                <p className="text-xs text-gray-500 mt-1">This period</p>
               </div>
               <div className="p-3 rounded-xl bg-green-100">
                 <CheckCircle className="h-6 w-6 text-green-600" />
@@ -195,8 +293,8 @@ export default function LeaveManagementPage() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-gray-600">Rejected</p>
-                <p className="mt-2 text-3xl font-bold text-gray-900">{stats.rejected}</p>
-                <p className="text-xs text-gray-500 mt-1">This month</p>
+                <p className="mt-2 text-3xl font-bold text-gray-900">{statistics.rejected}</p>
+                <p className="text-xs text-gray-500 mt-1">This period</p>
               </div>
               <div className="p-3 rounded-xl bg-red-100">
                 <XCircle className="h-6 w-6 text-red-600" />
@@ -210,7 +308,7 @@ export default function LeaveManagementPage() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-gray-600">Total Requests</p>
-                <p className="mt-2 text-3xl font-bold text-gray-900">{stats.total}</p>
+                <p className="mt-2 text-3xl font-bold text-gray-900">{statistics.total}</p>
                 <p className="text-xs text-gray-500 mt-1">All time</p>
               </div>
               <div className="p-3 rounded-xl bg-blue-100">
@@ -245,148 +343,142 @@ export default function LeaveManagementPage() {
                 className="w-full rounded-md border border-gray-300 p-2"
               >
                 <option value="all">All Status</option>
-                <option value="pending">Pending</option>
-                <option value="approved">Approved</option>
-                <option value="rejected">Rejected</option>
-                <option value="cancelled">Cancelled</option>
+                <option value="PENDING">Pending</option>
+                <option value="APPROVED">Approved</option>
+                <option value="REJECTED">Rejected</option>
+                <option value="CANCELLED">Cancelled</option>
               </select>
             </div>
-            <div className="flex items-end gap-2">
-              <Button variant="outline" className="flex-1">
-                <Filter className="h-4 w-4 mr-2" />
-                More Filters
-              </Button>
-              <Button variant="outline">
+            <div className="flex items-end">
+              <Button variant="outline" className="w-full">
                 <Download className="h-4 w-4 mr-2" />
-                Export
+                Export Report
               </Button>
             </div>
           </div>
         </CardContent>
       </Card>
 
-      {/* Leave Requests Table */}
+      {/* Leave Requests List */}
       <Card>
         <CardHeader>
           <CardTitle>Leave Requests</CardTitle>
-          <CardDescription>Manage and approve leave requests</CardDescription>
+          <CardDescription>
+            {filteredRequests.length} request{filteredRequests.length !== 1 ? 's' : ''} found
+          </CardDescription>
         </CardHeader>
         <CardContent>
           <div className="space-y-4">
-            {filteredRequests.map((request) => (
-              <div
-                key={request.id}
-                className="p-4 rounded-lg border border-gray-200 hover:shadow-md transition-all bg-white"
-              >
-                <div className="flex items-start justify-between">
-                  <div className="flex-1">
-                    <div className="flex items-center gap-3 mb-2">
-                      <span className={`px-3 py-1 rounded-full text-xs font-semibold ${getLeaveTypeColor(request.leaveType)}`}>
-                        {request.leaveType.toUpperCase()}
-                      </span>
-                      <span className={`px-3 py-1 rounded-full text-xs font-semibold ${getStatusColor(request.status)}`}>
-                        {request.status.toUpperCase()}
-                      </span>
-                      <span className="text-sm text-gray-500">
-                        {request.numberOfDays} {request.numberOfDays === 1 ? 'day' : 'days'}
-                      </span>
-                    </div>
-                    <p className="font-semibold text-gray-900 mb-1">
-                      Employee: {request.employeeId}
-                    </p>
-                    <p className="text-sm text-gray-600 mb-2">
-                      <Calendar className="inline h-4 w-4 mr-1" />
-                      {formatDate(request.startDate)} - {formatDate(request.endDate)}
-                    </p>
-                    <p className="text-sm text-gray-600 mb-2">
-                      Reason: {request.reason}
-                    </p>
-                    <p className="text-xs text-gray-500">
-                      Applied on: {formatDate(request.appliedDate)}
-                      {request.approvedDate && ` • Approved on: ${formatDate(request.approvedDate)}`}
-                    </p>
-                    {request.rejectionReason && (
-                      <div className="mt-2 p-2 bg-red-50 rounded-md">
-                        <p className="text-xs text-red-700">
-                          <AlertCircle className="inline h-3 w-3 mr-1" />
-                          Rejection reason: {request.rejectionReason}
+            {filteredRequests.length === 0 ? (
+              <div className="text-center py-12">
+                <FileText className="h-12 w-12 mx-auto text-gray-400 mb-4" />
+                <h3 className="text-lg font-medium text-gray-900 mb-2">No leave requests found</h3>
+                <p className="text-gray-500">
+                  {statusFilter !== 'all'
+                    ? 'Try changing the status filter'
+                    : 'There are no leave requests to display'}
+                </p>
+              </div>
+            ) : (
+              filteredRequests.map((request) => (
+                <div
+                  key={request.id}
+                  className="p-4 border rounded-lg hover:shadow-md transition-shadow"
+                >
+                  <div className="flex items-start justify-between">
+                    <div className="flex-1">
+                      <div className="flex items-center gap-3 mb-2">
+                        <span className={`px-3 py-1 rounded-full text-xs font-medium ${getLeaveTypeColor(request.leaveType)}`}>
+                          {request.leaveType.toUpperCase()}
+                        </span>
+                        <span className={`px-3 py-1 rounded-full text-xs font-medium ${getStatusColor(request.status)}`}>
+                          {request.status.toUpperCase()}
+                        </span>
+                        {request.employee && (
+                          <span className="text-sm text-gray-600">
+                            {request.employee.firstName} {request.employee.lastName} ({request.employee.employeeNumber})
+                          </span>
+                        )}
+                      </div>
+
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-3">
+                        <div className="flex items-center text-sm text-gray-600">
+                          <Calendar className="h-4 w-4 mr-2" />
+                          <span>
+                            {new Date(request.startDate).toLocaleDateString()} - {new Date(request.endDate).toLocaleDateString()}
+                          </span>
+                          <span className="ml-2 font-medium">({request.numberOfDays} days)</span>
+                        </div>
+                        <div className="flex items-center text-sm text-gray-600">
+                          <Clock className="h-4 w-4 mr-2" />
+                          Applied: {new Date(request.appliedDate).toLocaleDateString()}
+                        </div>
+                      </div>
+
+                      {request.reason && (
+                        <p className="mt-2 text-sm text-gray-700">
+                          <strong>Reason:</strong> {request.reason}
                         </p>
+                      )}
+
+                      {request.status.toLowerCase() === 'approved' && request.approver && (
+                        <p className="mt-2 text-sm text-green-600">
+                          <CheckCircle className="h-4 w-4 inline mr-1" />
+                          Approved by {request.approver.name} on {new Date(request.approvedDate!).toLocaleDateString()}
+                        </p>
+                      )}
+
+                      {request.status.toLowerCase() === 'rejected' && request.rejectionReason && (
+                        <p className="mt-2 text-sm text-red-600">
+                          <XCircle className="h-4 w-4 inline mr-1" />
+                          Rejected: {request.rejectionReason}
+                        </p>
+                      )}
+                    </div>
+
+                    {request.status.toLowerCase() === 'pending' && (
+                      <div className="flex gap-2 ml-4">
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          className="text-green-600 hover:text-green-700 hover:bg-green-50"
+                          onClick={() => handleApprove(request.id)}
+                          disabled={actionLoading === request.id}
+                        >
+                          {actionLoading === request.id ? (
+                            <Loader2 className="h-4 w-4 animate-spin" />
+                          ) : (
+                            <>
+                              <CheckCircle className="h-4 w-4 mr-1" />
+                              Approve
+                            </>
+                          )}
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                          onClick={() => handleReject(request.id)}
+                          disabled={actionLoading === request.id}
+                        >
+                          {actionLoading === request.id ? (
+                            <Loader2 className="h-4 w-4 animate-spin" />
+                          ) : (
+                            <>
+                              <XCircle className="h-4 w-4 mr-1" />
+                              Reject
+                            </>
+                          )}
+                        </Button>
                       </div>
                     )}
                   </div>
-                  <div className="flex gap-2">
-                    {request.status === 'pending' && (
-                      <>
-                        <Button size="sm" className="bg-green-600 hover:bg-green-700">
-                          <CheckCircle className="h-4 w-4 mr-1" />
-                          Approve
-                        </Button>
-                        <Button size="sm" variant="outline" className="text-red-600 hover:bg-red-50">
-                          <XCircle className="h-4 w-4 mr-1" />
-                          Reject
-                        </Button>
-                      </>
-                    )}
-                    <Button size="sm" variant="outline">
-                      View Details
-                    </Button>
-                  </div>
                 </div>
-              </div>
-            ))}
-
-            {filteredRequests.length === 0 && (
-              <div className="text-center py-12 text-gray-500">
-                <FileText className="h-12 w-12 mx-auto mb-3 text-gray-300" />
-                <p className="font-medium">No leave requests found</p>
-                <p className="text-sm mt-1">Try adjusting your filters or create a new request</p>
-              </div>
+              ))
             )}
           </div>
         </CardContent>
       </Card>
-
-      {/* Quick Actions */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <Card className="hover:shadow-lg transition-all cursor-pointer">
-          <CardContent className="p-6">
-            <Calendar className="h-10 w-10 text-purple-600 mb-3" />
-            <h3 className="font-semibold text-lg mb-2">Leave Calendar</h3>
-            <p className="text-sm text-gray-600 mb-4">
-              View team leave schedule and availability
-            </p>
-            <Button variant="outline" className="w-full">
-              Open Calendar
-            </Button>
-          </CardContent>
-        </Card>
-
-        <Card className="hover:shadow-lg transition-all cursor-pointer">
-          <CardContent className="p-6">
-            <Users className="h-10 w-10 text-blue-600 mb-3" />
-            <h3 className="font-semibold text-lg mb-2">Leave Balances</h3>
-            <p className="text-sm text-gray-600 mb-4">
-              Check employee leave balances and entitlements
-            </p>
-            <Button variant="outline" className="w-full">
-              View Balances
-            </Button>
-          </CardContent>
-        </Card>
-
-        <Card className="hover:shadow-lg transition-all cursor-pointer">
-          <CardContent className="p-6">
-            <TrendingUp className="h-10 w-10 text-green-600 mb-3" />
-            <h3 className="font-semibold text-lg mb-2">Leave Analytics</h3>
-            <p className="text-sm text-gray-600 mb-4">
-              Analyze leave patterns and trends
-            </p>
-            <Button variant="outline" className="w-full">
-              View Analytics
-            </Button>
-          </CardContent>
-        </Card>
-      </div>
     </div>
   )
 }
