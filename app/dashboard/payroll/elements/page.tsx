@@ -672,19 +672,19 @@ export default function PayrollElementsPage() {
                       <td className="px-4 py-3 text-sm">{element.category.replace(/_/g, ' ')}</td>
                       <td className="px-4 py-3 text-center">
                         {element.isRecurring ? (
-                          <span className="inline-flex items-center text-orange-600">
-                            <Calendar className="h-4 w-4" title="Permanent" />
+                          <span className="inline-flex items-center text-orange-600" title="Permanent">
+                            <Calendar className="h-4 w-4" />
                           </span>
                         ) : (
-                          <span className="inline-flex items-center text-pink-600">
-                            <Zap className="h-4 w-4" title="Temporary" />
+                          <span className="inline-flex items-center text-pink-600" title="Temporary">
+                            <Zap className="h-4 w-4" />
                           </span>
                         )}
                       </td>
                       <td className="px-4 py-3 text-center">
                         {element.isStatutory ? (
-                          <span className="inline-flex items-center text-purple-600">
-                            <Shield className="h-4 w-4" title="Statutory" />
+                          <span className="inline-flex items-center text-purple-600" title="Statutory">
+                            <Shield className="h-4 w-4" />
                           </span>
                         ) : (
                           <span className="text-gray-400">-</span>
