@@ -22,6 +22,16 @@ export async function POST(request: NextRequest) {
 
     const attendance = await attendanceService.checkOut(employeeId, checkOutLocation);
 
+    if (!attendance) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: 'Failed to process check-out'
+        },
+        { status: 400 }
+      );
+    }
+
     let message = 'Checked out successfully';
     if (attendance.earlyOutBy && attendance.earlyOutBy > 0) {
       message += ` (Early out by ${attendance.earlyOutBy} minutes)`;

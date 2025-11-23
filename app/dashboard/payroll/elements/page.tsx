@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { useCountry } from '@/lib/context/CountryContext'
 import { useCurrencyFormatter, useCurrencySymbol } from '@/lib/hooks/use-currency-formatter'
 import { Button } from '@/components/ui/button'
@@ -153,17 +153,7 @@ export default function PayrollElementsPage() {
     showInPayslip: true,
   })
 
-  // Load elements
-  useEffect(() => {
-    loadElements()
-  }, [])
-
-  // Apply filters
-  useEffect(() => {
-    applyFilters()
-  }, [elements, searchTerm, filterType, filterCategory, filterCountry, filterStatutory, filterRecurring])
-
-  const loadElements = async () => {
+  const loadElements = useCallback(async () => {
     try {
       setLoading(true)
       const params = new URLSearchParams()
@@ -191,9 +181,14 @@ export default function PayrollElementsPage() {
     } finally {
       setLoading(false)
     }
-  }
+  }, [country, toast])
 
-  const applyFilters = () => {
+  // Load elements
+  useEffect(() => {
+    loadElements()
+  }, [loadElements])
+
+  const applyFilters = useCallback(() => {
     let filtered = [...elements]
 
     // Search filter
@@ -235,7 +230,12 @@ export default function PayrollElementsPage() {
     }
 
     setFilteredElements(filtered)
-  }
+  }, [elements, searchTerm, filterType, filterCategory, filterCountry, filterStatutory, filterRecurring])
+
+  // Apply filters
+  useEffect(() => {
+    applyFilters()
+  }, [applyFilters])
 
   const handleSave = async () => {
     try {
