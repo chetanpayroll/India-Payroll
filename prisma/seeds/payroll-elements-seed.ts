@@ -1,4 +1,58 @@
-import { PrismaClient, ElementType, ElementCategory, CalculationMethod, RuleType } from '@prisma/client'
+import { PrismaClient } from '@prisma/client'
+
+// Define types locally since Prisma client may not be fully generated
+const ElementType = {
+  EARNING: 'EARNING' as const,
+  DEDUCTION: 'DEDUCTION' as const
+}
+
+const ElementCategory = {
+  BASIC_SALARY: 'BASIC_SALARY' as const,
+  HOUSING_ALLOWANCE: 'HOUSING_ALLOWANCE' as const,
+  TRANSPORT_ALLOWANCE: 'TRANSPORT_ALLOWANCE' as const,
+  FOOD_ALLOWANCE: 'FOOD_ALLOWANCE' as const,
+  OTHER_ALLOWANCE: 'OTHER_ALLOWANCE' as const,
+  BONUS: 'BONUS' as const,
+  COMMISSION: 'COMMISSION' as const,
+  OVERTIME: 'OVERTIME' as const,
+  INCENTIVE: 'INCENTIVE' as const,
+  ARREARS: 'ARREARS' as const,
+  HRA: 'HRA' as const,
+  LTA: 'LTA' as const,
+  SPECIAL_ALLOWANCE: 'SPECIAL_ALLOWANCE' as const,
+  CONVEYANCE: 'CONVEYANCE' as const,
+  MEDICAL_ALLOWANCE: 'MEDICAL_ALLOWANCE' as const,
+  EDUCATION_ALLOWANCE: 'EDUCATION_ALLOWANCE' as const,
+  LOAN_DEDUCTION: 'LOAN_DEDUCTION' as const,
+  ADVANCE_DEDUCTION: 'ADVANCE_DEDUCTION' as const,
+  PENALTY: 'PENALTY' as const,
+  OTHER_DEDUCTION: 'OTHER_DEDUCTION' as const,
+  GPSSA_EMPLOYEE: 'GPSSA_EMPLOYEE' as const,
+  GPSSA_EMPLOYER: 'GPSSA_EMPLOYER' as const,
+  PF_EMPLOYEE: 'PF_EMPLOYEE' as const,
+  PF_EMPLOYER: 'PF_EMPLOYER' as const,
+  ESIC_EMPLOYEE: 'ESIC_EMPLOYEE' as const,
+  ESIC_EMPLOYER: 'ESIC_EMPLOYER' as const,
+  PROFESSIONAL_TAX: 'PROFESSIONAL_TAX' as const,
+  TDS: 'TDS' as const,
+  LWF_EMPLOYEE: 'LWF_EMPLOYEE' as const,
+  LWF_EMPLOYER: 'LWF_EMPLOYER' as const
+}
+
+const CalculationMethod = {
+  FIXED: 'FIXED' as const,
+  PERCENTAGE: 'PERCENTAGE' as const,
+  PRORATED: 'PRORATED' as const
+}
+
+const RuleType = {
+  STATUTORY_CALCULATION: 'STATUTORY_CALCULATION' as const,
+  CONDITIONAL_FORMULA: 'CONDITIONAL_FORMULA' as const,
+  TIERED_CALCULATION: 'TIERED_CALCULATION' as const,
+  ATTENDANCE_BASED: 'ATTENDANCE_BASED' as const,
+  PERFORMANCE_BASED: 'PERFORMANCE_BASED' as const,
+  CUSTOM: 'CUSTOM' as const
+}
 
 const prisma = new PrismaClient()
 
