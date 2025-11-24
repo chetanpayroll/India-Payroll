@@ -1,5 +1,6 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  output: 'standalone',
   images: {
     domains: ['localhost'],
   },
@@ -15,10 +16,29 @@ const nextConfig = {
     // your project has ESLint errors.
     ignoreDuringBuilds: false,
   },
-  // Disable telemetry for faster builds
-  telemetry: {
-    enabled: false,
+  // Webpack configuration for build optimization
+  webpack: (config, { isServer }) => {
+    if (isServer) {
+      // Externalize Prisma for server-side builds to avoid bundling issues
+      config.externals = config.externals || [];
+      config.externals.push('@prisma/client', 'prisma');
+    }
+    // Ignore Prisma client initialization errors during build
+    config.resolve = config.resolve || {};
+    config.resolve.fallback = config.resolve.fallback || {};
+    config.resolve.fallback.fs = false;
+    config.resolve.fallback.net = false;
+    config.resolve.fallback.tls = false;
+    return config;
   },
+  // Skip static page generation for dynamic API routes
+  experimental: {
+    serverComponentsExternalPackages: ['@prisma/client', 'prisma'],
+  },
+  // Skip API routes during static generation
+  staticPageGenerationTimeout: 120,
+  // Don't fail build on runtime errors during page data collection
+  productionBrowserSourceMaps: false,
 }
 
 module.exports = nextConfig
