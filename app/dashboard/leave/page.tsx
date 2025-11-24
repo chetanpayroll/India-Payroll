@@ -77,12 +77,36 @@ export default function LeaveManagementPage() {
   const [statusFilter, setStatusFilter] = useState<string>('all')
   const [loading, setLoading] = useState(true)
   const [actionLoading, setActionLoading] = useState<string | null>(null)
+  const [showApplyLeaveDialog, setShowApplyLeaveDialog] = useState(false)
+  const [employees, setEmployees] = useState<any[]>([])
+  const [applyLeaveForm, setApplyLeaveForm] = useState({
+    employeeId: '',
+    leaveType: 'ANNUAL',
+    startDate: new Date().toISOString().split('T')[0],
+    endDate: new Date().toISOString().split('T')[0],
+    numberOfDays: 1,
+    reason: ''
+  })
 
   // Load data
   useEffect(() => {
     loadLeaveData()
     loadStatistics()
+    loadEmployees()
   }, [])
+
+  const loadEmployees = async () => {
+    try {
+      const response = await fetch('/api/employees')
+      const result = await response.json()
+
+      if (result.success) {
+        setEmployees(result.data || [])
+      }
+    } catch (error) {
+      console.error('Error loading employees:', error)
+    }
+  }
 
   useEffect(() => {
     let filtered = leaveRequests
@@ -202,6 +226,55 @@ export default function LeaveManagementPage() {
     }
   }
 
+  const calculateDays = () => {
+    if (applyLeaveForm.startDate && applyLeaveForm.endDate) {
+      const start = new Date(applyLeaveForm.startDate)
+      const end = new Date(applyLeaveForm.endDate)
+      const diffTime = Math.abs(end.getTime() - start.getTime())
+      const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1
+      setApplyLeaveForm({ ...applyLeaveForm, numberOfDays: diffDays })
+    }
+  }
+
+  const handleApplyLeave = async () => {
+    try {
+      if (!applyLeaveForm.employeeId || !applyLeaveForm.startDate || !applyLeaveForm.endDate) {
+        toast.error('Please fill all required fields')
+        return
+      }
+
+      const response = await fetch('/api/leave/requests', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(applyLeaveForm)
+      })
+
+      const result = await response.json()
+
+      if (result.success) {
+        toast.success('Leave request submitted successfully')
+        setShowApplyLeaveDialog(false)
+        setApplyLeaveForm({
+          employeeId: '',
+          leaveType: 'ANNUAL',
+          startDate: new Date().toISOString().split('T')[0],
+          endDate: new Date().toISOString().split('T')[0],
+          numberOfDays: 1,
+          reason: ''
+        })
+        loadLeaveData()
+        loadStatistics()
+      } else {
+        toast.error(result.error || 'Failed to submit leave request')
+      }
+    } catch (error) {
+      console.error('Error applying leave:', error)
+      toast.error('Failed to submit leave request')
+    }
+  }
+
   const getStatusColor = (status: string) => {
     switch (status.toLowerCase()) {
       case 'approved': return 'bg-green-100 text-green-700'
@@ -249,7 +322,10 @@ export default function LeaveManagementPage() {
             <Settings className="h-4 w-4 mr-2" />
             Leave Policies
           </Button>
-          <Button className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700">
+          <Button
+            className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700"
+            onClick={() => setShowApplyLeaveDialog(true)}
+          >
             <Plus className="h-4 w-4 mr-2" />
             New Leave Request
           </Button>
@@ -479,6 +555,113 @@ export default function LeaveManagementPage() {
           </div>
         </CardContent>
       </Card>
+
+      {/* Apply Leave Dialog */}
+      {showApplyLeaveDialog && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg p-6 max-w-md w-full m-4">
+            <h2 className="text-xl font-bold mb-4">Apply for Leave</h2>
+            <p className="text-sm text-gray-600 mb-4">Submit a new leave request</p>
+
+            <div className="space-y-4">
+              <div>
+                <Label>Employee *</Label>
+                <select
+                  value={applyLeaveForm.employeeId}
+                  onChange={(e) => setApplyLeaveForm({ ...applyLeaveForm, employeeId: e.target.value })}
+                  className="w-full rounded-md border border-gray-300 p-2"
+                  required
+                >
+                  <option value="">Select Employee</option>
+                  {employees.map((emp) => (
+                    <option key={emp.id} value={emp.id}>
+                      {emp.firstName} {emp.lastName} ({emp.employeeNumber})
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div>
+                <Label>Leave Type *</Label>
+                <select
+                  value={applyLeaveForm.leaveType}
+                  onChange={(e) => setApplyLeaveForm({ ...applyLeaveForm, leaveType: e.target.value })}
+                  className="w-full rounded-md border border-gray-300 p-2"
+                >
+                  <option value="ANNUAL">Annual Leave</option>
+                  <option value="SICK">Sick Leave</option>
+                  <option value="MATERNITY">Maternity Leave</option>
+                  <option value="PATERNITY">Paternity Leave</option>
+                  <option value="UNPAID">Unpaid Leave</option>
+                  <option value="EMERGENCY">Emergency Leave</option>
+                  <option value="COMPASSIONATE">Compassionate Leave</option>
+                </select>
+              </div>
+
+              <div>
+                <Label>Start Date *</Label>
+                <Input
+                  type="date"
+                  value={applyLeaveForm.startDate}
+                  onChange={(e) => {
+                    setApplyLeaveForm({ ...applyLeaveForm, startDate: e.target.value })
+                    setTimeout(calculateDays, 0)
+                  }}
+                  required
+                />
+              </div>
+
+              <div>
+                <Label>End Date *</Label>
+                <Input
+                  type="date"
+                  value={applyLeaveForm.endDate}
+                  onChange={(e) => {
+                    setApplyLeaveForm({ ...applyLeaveForm, endDate: e.target.value })
+                    setTimeout(calculateDays, 0)
+                  }}
+                  required
+                />
+              </div>
+
+              <div>
+                <Label>Number of Days</Label>
+                <Input
+                  type="number"
+                  value={applyLeaveForm.numberOfDays}
+                  readOnly
+                  className="bg-gray-50"
+                />
+              </div>
+
+              <div>
+                <Label>Reason (Optional)</Label>
+                <Input
+                  placeholder="Enter reason for leave"
+                  value={applyLeaveForm.reason}
+                  onChange={(e) => setApplyLeaveForm({ ...applyLeaveForm, reason: e.target.value })}
+                />
+              </div>
+            </div>
+
+            <div className="flex gap-2 mt-6">
+              <Button
+                variant="outline"
+                onClick={() => setShowApplyLeaveDialog(false)}
+                className="flex-1"
+              >
+                Cancel
+              </Button>
+              <Button
+                onClick={handleApplyLeave}
+                className="flex-1 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700"
+              >
+                Submit Request
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
