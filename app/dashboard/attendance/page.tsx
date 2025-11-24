@@ -80,6 +80,7 @@ export default function AttendancePage() {
   const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0])
   const [loading, setLoading] = useState(true)
   const [showMarkAttendanceDialog, setShowMarkAttendanceDialog] = useState(false)
+  const [employees, setEmployees] = useState<any[]>([])
   const [markAttendanceForm, setMarkAttendanceForm] = useState<MarkAttendanceForm>({
     employeeId: '',
     date: new Date().toISOString().split('T')[0],
@@ -89,7 +90,21 @@ export default function AttendancePage() {
   useEffect(() => {
     loadAttendanceData()
     loadStatistics()
+    loadEmployees()
   }, [selectedDate])
+
+  const loadEmployees = async () => {
+    try {
+      const response = await fetch('/api/employees')
+      const result = await response.json()
+
+      if (result.success) {
+        setEmployees(result.data || [])
+      }
+    } catch (error) {
+      console.error('Error loading employees:', error)
+    }
+  }
 
   const loadAttendanceData = async () => {
     try {
@@ -452,12 +467,20 @@ export default function AttendancePage() {
 
             <div className="space-y-4">
               <div>
-                <Label>Employee ID</Label>
-                <Input
-                  placeholder="Enter employee ID"
+                <Label>Employee *</Label>
+                <select
                   value={markAttendanceForm.employeeId}
                   onChange={(e) => setMarkAttendanceForm({ ...markAttendanceForm, employeeId: e.target.value })}
-                />
+                  className="w-full rounded-md border border-gray-300 p-2"
+                  required
+                >
+                  <option value="">Select Employee</option>
+                  {employees.map((emp) => (
+                    <option key={emp.id} value={emp.id}>
+                      {emp.firstName} {emp.lastName} ({emp.employeeNumber})
+                    </option>
+                  ))}
+                </select>
               </div>
 
               <div>
