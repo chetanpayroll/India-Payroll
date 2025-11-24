@@ -87,12 +87,6 @@ export default function AttendancePage() {
     status: 'PRESENT'
   })
 
-  useEffect(() => {
-    loadAttendanceData()
-    loadStatistics()
-    loadEmployees()
-  }, [selectedDate])
-
   const loadEmployees = async () => {
     try {
       const response = await fetch('/api/employees')
@@ -145,6 +139,13 @@ export default function AttendancePage() {
       console.error('Error loading statistics:', error)
     }
   }
+
+  useEffect(() => {
+    loadAttendanceData()
+    loadStatistics()
+    loadEmployees()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedDate])
 
   const handleMarkAttendance = async () => {
     try {
