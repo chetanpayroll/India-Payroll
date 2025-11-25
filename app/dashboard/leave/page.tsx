@@ -64,6 +64,25 @@ interface LeaveStatistics {
   rejected: number
 }
 
+interface LeaveBalance {
+  id: string
+  employeeId: string
+  year: number
+  annualLeaveEntitled: number
+  annualLeaveTaken: number
+  annualLeaveBalance: number
+  annualLeaveCarryForward: number
+  sickLeaveEntitled: number
+  sickLeaveTaken: number
+  sickLeaveBalance: number
+  unpaidLeaveTaken: number
+  maternityLeaveTaken: number
+  paternityLeaveTaken: number
+  emergencyLeaveTaken: number
+  leaveEncashed: number
+  encashmentAmount: number
+}
+
 export default function LeaveManagementPage() {
   const [leaveRequests, setLeaveRequests] = useState<LeaveRequest[]>([])
   const [filteredRequests, setFilteredRequests] = useState<LeaveRequest[]>([])
@@ -79,6 +98,9 @@ export default function LeaveManagementPage() {
   const [actionLoading, setActionLoading] = useState<string | null>(null)
   const [showApplyLeaveDialog, setShowApplyLeaveDialog] = useState(false)
   const [employees, setEmployees] = useState<any[]>([])
+  const [selectedEmployeeForBalance, setSelectedEmployeeForBalance] = useState<string>('')
+  const [leaveBalance, setLeaveBalance] = useState<LeaveBalance | null>(null)
+  const [balanceLoading, setBalanceLoading] = useState(false)
   const [applyLeaveForm, setApplyLeaveForm] = useState({
     employeeId: '',
     leaveType: 'ANNUAL',
@@ -162,6 +184,38 @@ export default function LeaveManagementPage() {
     }
   }
 
+  const loadLeaveBalance = async (employeeId: string) => {
+    if (!employeeId) {
+      setLeaveBalance(null)
+      return
+    }
+
+    try {
+      setBalanceLoading(true)
+      const currentYear = new Date().getFullYear()
+      const response = await fetch(`/api/leave/balance?employeeId=${employeeId}&year=${currentYear}`)
+      const result = await response.json()
+
+      if (result.success) {
+        setLeaveBalance(result.data)
+      } else {
+        toast.error('Failed to load leave balance')
+        console.error('Error:', result.error)
+      }
+    } catch (error) {
+      console.error('Error loading leave balance:', error)
+      toast.error('Failed to load leave balance')
+    } finally {
+      setBalanceLoading(false)
+    }
+  }
+
+  useEffect(() => {
+    if (selectedEmployeeForBalance) {
+      loadLeaveBalance(selectedEmployeeForBalance)
+    }
+  }, [selectedEmployeeForBalance])
+
   const handleApprove = async (leaveId: string) => {
     try {
       setActionLoading(leaveId)
@@ -181,6 +235,10 @@ export default function LeaveManagementPage() {
         toast.success('Leave request approved successfully')
         loadLeaveData()
         loadStatistics()
+        // Reload balance if viewing the approved employee's balance
+        if (selectedEmployeeForBalance) {
+          loadLeaveBalance(selectedEmployeeForBalance)
+        }
       } else {
         toast.error(result.error || 'Failed to approve leave request')
       }
@@ -215,6 +273,10 @@ export default function LeaveManagementPage() {
         toast.success('Leave request rejected')
         loadLeaveData()
         loadStatistics()
+        // Reload balance if viewing the rejected employee's balance
+        if (selectedEmployeeForBalance) {
+          loadLeaveBalance(selectedEmployeeForBalance)
+        }
       } else {
         toast.error(result.error || 'Failed to reject leave request')
       }
@@ -256,6 +318,7 @@ export default function LeaveManagementPage() {
       if (result.success) {
         toast.success('Leave request submitted successfully')
         setShowApplyLeaveDialog(false)
+        const submittedEmployeeId = applyLeaveForm.employeeId
         setApplyLeaveForm({
           employeeId: '',
           leaveType: 'ANNUAL',
@@ -266,6 +329,10 @@ export default function LeaveManagementPage() {
         })
         loadLeaveData()
         loadStatistics()
+        // Reload balance if viewing the submitted employee's balance
+        if (selectedEmployeeForBalance === submittedEmployeeId) {
+          loadLeaveBalance(selectedEmployeeForBalance)
+        }
       } else {
         toast.error(result.error || 'Failed to submit leave request')
       }
@@ -394,6 +461,179 @@ export default function LeaveManagementPage() {
           </CardContent>
         </Card>
       </div>
+
+      {/* Leave Balance Viewer */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Employee Leave Balance</CardTitle>
+          <CardDescription>View leave balance for individual employees</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-6">
+            {/* Employee Selector */}
+            <div className="max-w-md">
+              <Label>Select Employee</Label>
+              <select
+                value={selectedEmployeeForBalance}
+                onChange={(e) => setSelectedEmployeeForBalance(e.target.value)}
+                className="w-full rounded-md border border-gray-300 p-2 mt-1"
+              >
+                <option value="">-- Select an employee to view balance --</option>
+                {employees.map((emp) => (
+                  <option key={emp.id} value={emp.id}>
+                    {emp.firstName} {emp.lastName} ({emp.employeeNumber})
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            {/* Loading State */}
+            {balanceLoading && (
+              <div className="flex items-center justify-center py-12">
+                <Loader2 className="h-8 w-8 animate-spin text-purple-600" />
+              </div>
+            )}
+
+            {/* Balance Display */}
+            {!balanceLoading && leaveBalance && (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {/* Annual Leave */}
+                <div className="p-4 border rounded-lg bg-blue-50">
+                  <div className="flex items-center justify-between mb-2">
+                    <h3 className="font-semibold text-blue-900">Annual Leave</h3>
+                    <Calendar className="h-5 w-5 text-blue-600" />
+                  </div>
+                  <div className="space-y-2">
+                    <div className="flex justify-between text-sm">
+                      <span className="text-gray-600">Entitled:</span>
+                      <span className="font-medium">{Number(leaveBalance.annualLeaveEntitled)} days</span>
+                    </div>
+                    <div className="flex justify-between text-sm">
+                      <span className="text-gray-600">Taken:</span>
+                      <span className="font-medium text-red-600">{Number(leaveBalance.annualLeaveTaken)} days</span>
+                    </div>
+                    <div className="flex justify-between text-sm">
+                      <span className="text-gray-600">Carry Forward:</span>
+                      <span className="font-medium text-green-600">+{Number(leaveBalance.annualLeaveCarryForward)} days</span>
+                    </div>
+                    <div className="pt-2 border-t border-blue-200">
+                      <div className="flex justify-between text-sm font-bold">
+                        <span className="text-gray-900">Balance:</span>
+                        <span className="text-blue-600">{Number(leaveBalance.annualLeaveBalance)} days</span>
+                      </div>
+                    </div>
+                    {/* Progress Bar */}
+                    <div className="mt-3">
+                      <div className="w-full bg-blue-200 rounded-full h-2">
+                        <div
+                          className="bg-blue-600 h-2 rounded-full"
+                          style={{
+                            width: `${Math.min((Number(leaveBalance.annualLeaveTaken) / Number(leaveBalance.annualLeaveEntitled)) * 100, 100)}%`
+                          }}
+                        ></div>
+                      </div>
+                      <p className="text-xs text-gray-500 mt-1">
+                        {Math.round((Number(leaveBalance.annualLeaveTaken) / Number(leaveBalance.annualLeaveEntitled)) * 100)}% used
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Sick Leave */}
+                <div className="p-4 border rounded-lg bg-red-50">
+                  <div className="flex items-center justify-between mb-2">
+                    <h3 className="font-semibold text-red-900">Sick Leave</h3>
+                    <AlertCircle className="h-5 w-5 text-red-600" />
+                  </div>
+                  <div className="space-y-2">
+                    <div className="flex justify-between text-sm">
+                      <span className="text-gray-600">Entitled:</span>
+                      <span className="font-medium">{Number(leaveBalance.sickLeaveEntitled)} days</span>
+                    </div>
+                    <div className="flex justify-between text-sm">
+                      <span className="text-gray-600">Taken:</span>
+                      <span className="font-medium text-red-600">{Number(leaveBalance.sickLeaveTaken)} days</span>
+                    </div>
+                    <div className="pt-2 border-t border-red-200">
+                      <div className="flex justify-between text-sm font-bold">
+                        <span className="text-gray-900">Balance:</span>
+                        <span className="text-red-600">{Number(leaveBalance.sickLeaveBalance)} days</span>
+                      </div>
+                    </div>
+                    {/* Progress Bar */}
+                    <div className="mt-3">
+                      <div className="w-full bg-red-200 rounded-full h-2">
+                        <div
+                          className="bg-red-600 h-2 rounded-full"
+                          style={{
+                            width: `${Math.min((Number(leaveBalance.sickLeaveTaken) / Number(leaveBalance.sickLeaveEntitled)) * 100, 100)}%`
+                          }}
+                        ></div>
+                      </div>
+                      <p className="text-xs text-gray-500 mt-1">
+                        {Math.round((Number(leaveBalance.sickLeaveTaken) / Number(leaveBalance.sickLeaveEntitled)) * 100)}% used
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Other Leave Types */}
+                <div className="p-4 border rounded-lg bg-purple-50">
+                  <div className="flex items-center justify-between mb-2">
+                    <h3 className="font-semibold text-purple-900">Other Leave</h3>
+                    <FileText className="h-5 w-5 text-purple-600" />
+                  </div>
+                  <div className="space-y-2">
+                    <div className="flex justify-between text-sm">
+                      <span className="text-gray-600">Unpaid:</span>
+                      <span className="font-medium">{Number(leaveBalance.unpaidLeaveTaken)} days</span>
+                    </div>
+                    <div className="flex justify-between text-sm">
+                      <span className="text-gray-600">Maternity:</span>
+                      <span className="font-medium">{Number(leaveBalance.maternityLeaveTaken)} days</span>
+                    </div>
+                    <div className="flex justify-between text-sm">
+                      <span className="text-gray-600">Paternity:</span>
+                      <span className="font-medium">{Number(leaveBalance.paternityLeaveTaken)} days</span>
+                    </div>
+                    <div className="flex justify-between text-sm">
+                      <span className="text-gray-600">Emergency:</span>
+                      <span className="font-medium">{Number(leaveBalance.emergencyLeaveTaken)} days</span>
+                    </div>
+                    {Number(leaveBalance.leaveEncashed) > 0 && (
+                      <div className="pt-2 border-t border-purple-200">
+                        <div className="flex justify-between text-sm">
+                          <span className="text-gray-600">Encashed:</span>
+                          <span className="font-medium text-green-600">{Number(leaveBalance.leaveEncashed)} days</span>
+                        </div>
+                        <div className="flex justify-between text-sm">
+                          <span className="text-gray-600">Amount:</span>
+                          <span className="font-medium text-green-600">AED {Number(leaveBalance.encashmentAmount).toLocaleString()}</span>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Empty State */}
+            {!balanceLoading && !leaveBalance && selectedEmployeeForBalance && (
+              <div className="text-center py-8">
+                <Users className="h-12 w-12 mx-auto text-gray-400 mb-4" />
+                <p className="text-gray-500">No leave balance found for this employee</p>
+              </div>
+            )}
+
+            {!selectedEmployeeForBalance && (
+              <div className="text-center py-8">
+                <Users className="h-12 w-12 mx-auto text-gray-400 mb-4" />
+                <p className="text-gray-500">Select an employee to view their leave balance</p>
+              </div>
+            )}
+          </div>
+        </CardContent>
+      </Card>
 
       {/* Filters */}
       <Card>
