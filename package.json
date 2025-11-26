@@ -9,7 +9,9 @@
     "lint": "next lint",
     "postinstall": "prisma generate || echo 'Prisma generate failed, continuing...'",
     "db:seed": "tsx prisma/seed.ts",
-    "db:reset": "prisma migrate reset --force && npm run db:seed"
+    "db:reset": "prisma migrate reset --force && npm run db:seed",
+    "db:setup": "npx prisma db push && npx prisma generate && npm run db:seed",
+    "check": "node scripts/check-setup.js"
   },
   "prisma": {
     "seed": "tsx prisma/seed.ts"
