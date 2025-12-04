@@ -28,7 +28,8 @@ import {
   BarChart3,
   Calendar,
   TrendingUp,
-  Globe
+  Globe,
+  CheckCircle
 } from 'lucide-react'
 
 const navigationSections = [
