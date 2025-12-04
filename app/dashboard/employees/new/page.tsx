@@ -37,8 +37,9 @@ export default function NewEmployeePage() {
     // Personal Information
     firstName: '',
     lastName: '',
-    nationality: 'UAE',
-    emiratesIdNo: '',
+    nationality: 'India',
+    pan: '',
+    aadhaar: '',
     passportNo: '',
     dateOfBirth: '',
     gender: 'male',
@@ -46,7 +47,7 @@ export default function NewEmployeePage() {
     email: '',
     phone: '',
     address: '',
-    
+
     // Employment Details
     employeeNumber: '',
     entity: '',
@@ -56,23 +57,22 @@ export default function NewEmployeePage() {
     joinDate: '',
     contractType: 'UNLIMITED',
     probationPeriod: '6',
-    
+
     // Salary Structure
     basicSalary: '',
-    housingAllowance: '',
-    transportAllowance: '',
-    foodAllowance: '',
+    hra: '',
+    specialAllowance: '',
+    medicalAllowance: '',
     otherAllowances: '',
-    
+
     // Bank Details
     bankName: '',
-    iban: '',
+    ifsc: '',
     bankAccountNo: '',
-    swiftCode: '',
-    
-    // GPSSA (for UAE Nationals)
-    isEmirati: false,
-    gpssaNumber: '',
+
+    // Statutory (India)
+    uan: '',
+    esicNumber: '',
   })
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
@@ -140,13 +140,12 @@ export default function NewEmployeePage() {
                 <div key={step.id} className="flex items-center flex-1">
                   <div className="flex flex-col items-center flex-1">
                     <div
-                      className={`flex items-center justify-center w-12 h-12 rounded-full border-2 transition-colors ${
-                        isCompleted
-                          ? 'bg-green-500 border-green-500 text-white'
-                          : isCurrent
+                      className={`flex items-center justify-center w-12 h-12 rounded-full border-2 transition-colors ${isCompleted
+                        ? 'bg-green-500 border-green-500 text-white'
+                        : isCurrent
                           ? 'bg-blue-500 border-blue-500 text-white'
                           : 'bg-white border-gray-300 text-gray-500'
-                      }`}
+                        }`}
                     >
                       {isCompleted ? (
                         <Check className="h-6 w-6" />
@@ -155,18 +154,16 @@ export default function NewEmployeePage() {
                       )}
                     </div>
                     <span
-                      className={`mt-2 text-sm font-medium text-center ${
-                        isCurrent ? 'text-blue-600' : isCompleted ? 'text-green-600' : 'text-gray-500'
-                      }`}
+                      className={`mt-2 text-sm font-medium text-center ${isCurrent ? 'text-blue-600' : isCompleted ? 'text-green-600' : 'text-gray-500'
+                        }`}
                     >
                       {step.name}
                     </span>
                   </div>
                   {!isLast && (
                     <div
-                      className={`h-0.5 flex-1 mx-2 ${
-                        isCompleted ? 'bg-green-500' : 'bg-gray-300'
-                      }`}
+                      className={`h-0.5 flex-1 mx-2 ${isCompleted ? 'bg-green-500' : 'bg-gray-300'
+                        }`}
                     />
                   )}
                 </div>
@@ -227,10 +224,7 @@ export default function NewEmployeePage() {
                     onChange={handleInputChange}
                     className="w-full h-10 px-3 py-2 border border-gray-300 rounded-md"
                   >
-                    <option value="UAE">United Arab Emirates</option>
                     <option value="India">India</option>
-                    <option value="Pakistan">Pakistan</option>
-                    <option value="Philippines">Philippines</option>
                     <option value="USA">United States</option>
                     <option value="UK">United Kingdom</option>
                     <option value="Other">Other</option>
@@ -250,21 +244,22 @@ export default function NewEmployeePage() {
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
-                  <Label htmlFor="emiratesIdNo">Emirates ID Number</Label>
+                  <Label htmlFor="pan">PAN Number *</Label>
                   <Input
-                    id="emiratesIdNo"
-                    name="emiratesIdNo"
-                    placeholder="784-XXXX-XXXXXXX-X"
-                    value={formData.emiratesIdNo}
+                    id="pan"
+                    name="pan"
+                    placeholder="ABCDE1234F"
+                    value={formData.pan}
                     onChange={handleInputChange}
                   />
                 </div>
                 <div>
-                  <Label htmlFor="passportNo">Passport Number *</Label>
+                  <Label htmlFor="aadhaar">Aadhaar Number *</Label>
                   <Input
-                    id="passportNo"
-                    name="passportNo"
-                    value={formData.passportNo}
+                    id="aadhaar"
+                    name="aadhaar"
+                    placeholder="1234 5678 9012"
+                    value={formData.aadhaar}
                     onChange={handleInputChange}
                   />
                 </div>
@@ -317,7 +312,7 @@ export default function NewEmployeePage() {
                   <Input
                     id="phone"
                     name="phone"
-                    placeholder="+971 XX XXX XXXX"
+                    placeholder="+91 XXXXX XXXXX"
                     value={formData.phone}
                     onChange={handleInputChange}
                   />
@@ -336,31 +331,26 @@ export default function NewEmployeePage() {
                 />
               </div>
 
-              <div className="flex items-center gap-2 p-4 bg-blue-50 border border-blue-200 rounded-lg">
-                <input
-                  type="checkbox"
-                  id="isEmirati"
-                  name="isEmirati"
-                  checked={formData.isEmirati}
-                  onChange={handleInputChange}
-                  className="w-4 h-4"
-                />
-                <Label htmlFor="isEmirati" className="cursor-pointer">
-                  This employee is a UAE National (GPSSA applicable)
-                </Label>
-              </div>
-
-              {formData.isEmirati && (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
-                  <Label htmlFor="gpssaNumber">GPSSA Number</Label>
+                  <Label htmlFor="uan">UAN (Universal Account Number)</Label>
                   <Input
-                    id="gpssaNumber"
-                    name="gpssaNumber"
-                    value={formData.gpssaNumber}
+                    id="uan"
+                    name="uan"
+                    value={formData.uan}
                     onChange={handleInputChange}
                   />
                 </div>
-              )}
+                <div>
+                  <Label htmlFor="esicNumber">ESIC Number</Label>
+                  <Input
+                    id="esicNumber"
+                    name="esicNumber"
+                    value={formData.esicNumber}
+                    onChange={handleInputChange}
+                  />
+                </div>
+              </div>
             </div>
           )}
 
@@ -389,8 +379,7 @@ export default function NewEmployeePage() {
                     className="w-full h-10 px-3 py-2 border border-gray-300 rounded-md"
                   >
                     <option value="">Select Entity</option>
-                    <option value="gmp-trading">GMP Trading LLC</option>
-                    <option value="gmp-services">GMP Services FZE</option>
+                    <option value="gmp-tech">GMP Technologies India Pvt Ltd</option>
                   </select>
                 </div>
               </div>
@@ -437,9 +426,8 @@ export default function NewEmployeePage() {
                     className="w-full h-10 px-3 py-2 border border-gray-300 rounded-md"
                   >
                     <option value="">Select Manager</option>
-                    <option value="ahmed">Ahmed Mohammed - CEO</option>
-                    <option value="sarah">Sarah Johnson - HR Manager</option>
-                    <option value="fatima">Fatima Ali - Finance Manager</option>
+                    <option value="priya">Priya Sharma - HR Manager</option>
+                    <option value="rajesh">Rajesh Kumar - Senior Manager</option>
                   </select>
                 </div>
                 <div>
@@ -464,9 +452,10 @@ export default function NewEmployeePage() {
                     onChange={handleInputChange}
                     className="w-full h-10 px-3 py-2 border border-gray-300 rounded-md"
                   >
-                    <option value="UNLIMITED">Unlimited Contract</option>
-                    <option value="LIMITED">Limited Contract (2 years)</option>
-                    <option value="PART_TIME">Part-Time Contract</option>
+                    <option value="UNLIMITED">Permanent</option>
+                    <option value="LIMITED">Contract</option>
+                    <option value="PART_TIME">Part-Time</option>
+                    <option value="INTERN">Internship</option>
                   </select>
                 </div>
                 <div>
@@ -489,14 +478,14 @@ export default function NewEmployeePage() {
           {currentStep === 3 && (
             <div className="space-y-6">
               <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg">
-                <h4 className="font-semibold text-blue-900 mb-2">UAE Salary Structure</h4>
+                <h4 className="font-semibold text-blue-900 mb-2">India Salary Structure</h4>
                 <p className="text-sm text-blue-700">
                   Define the employee&apos;s monthly salary breakdown including basic salary and allowances
                 </p>
               </div>
 
               <div>
-                <Label htmlFor="basicSalary">Basic Salary (AED) *</Label>
+                <Label htmlFor="basicSalary">Basic Salary (₹) *</Label>
                 <Input
                   id="basicSalary"
                   name="basicSalary"
@@ -506,49 +495,51 @@ export default function NewEmployeePage() {
                   onChange={handleInputChange}
                 />
                 <p className="text-xs text-gray-500 mt-1">
-                  Basic salary is used for end-of-service calculations and GPSSA
+                  Basic salary is used for PF and Gratuity calculations
                 </p>
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
-                  <Label htmlFor="housingAllowance">Housing Allowance (AED)</Label>
-                  <Input
-                    id="housingAllowance"
-                    name="housingAllowance"
-                    type="number"
-                    placeholder="0.00"
-                    value={formData.housingAllowance}
-                    onChange={handleInputChange}
-                  />
-                </div>
-                <div>
-                  <Label htmlFor="transportAllowance">Transport Allowance (AED)</Label>
-                  <Input
-                    id="transportAllowance"
-                    name="transportAllowance"
-                    type="number"
-                    placeholder="0.00"
-                    value={formData.transportAllowance}
-                    onChange={handleInputChange}
-                  />
+                  <div>
+                    <Label htmlFor="hra">HRA (₹)</Label>
+                    <Input
+                      id="hra"
+                      name="hra"
+                      type="number"
+                      placeholder="0.00"
+                      value={formData.hra}
+                      onChange={handleInputChange}
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="specialAllowance">Special Allowance (₹)</Label>
+                    <Input
+                      id="specialAllowance"
+                      name="specialAllowance"
+                      type="number"
+                      placeholder="0.00"
+                      value={formData.specialAllowance}
+                      onChange={handleInputChange}
+                    />
+                  </div>
                 </div>
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
-                  <Label htmlFor="foodAllowance">Food Allowance (AED)</Label>
+                  <Label htmlFor="medicalAllowance">Medical Allowance (₹)</Label>
                   <Input
-                    id="foodAllowance"
-                    name="foodAllowance"
+                    id="medicalAllowance"
+                    name="medicalAllowance"
                     type="number"
                     placeholder="0.00"
-                    value={formData.foodAllowance}
+                    value={formData.medicalAllowance}
                     onChange={handleInputChange}
                   />
                 </div>
                 <div>
-                  <Label htmlFor="otherAllowances">Other Allowances (AED)</Label>
+                  <Label htmlFor="otherAllowances">Other Allowances (₹)</Label>
                   <Input
                     id="otherAllowances"
                     name="otherAllowances"
@@ -564,11 +555,11 @@ export default function NewEmployeePage() {
                 <div className="flex justify-between items-center mb-2">
                   <span className="font-medium text-gray-700">Total Monthly Salary</span>
                   <span className="text-2xl font-bold text-gray-900">
-                    AED {(
+                    ₹ {(
                       parseFloat(formData.basicSalary || '0') +
-                      parseFloat(formData.housingAllowance || '0') +
-                      parseFloat(formData.transportAllowance || '0') +
-                      parseFloat(formData.foodAllowance || '0') +
+                      parseFloat(formData.hra || '0') +
+                      parseFloat(formData.specialAllowance || '0') +
+                      parseFloat(formData.medicalAllowance || '0') +
                       parseFloat(formData.otherAllowances || '0')
                     ).toLocaleString()}
                   </span>
@@ -578,25 +569,23 @@ export default function NewEmployeePage() {
                 </p>
               </div>
 
-              {formData.isEmirati && (
-                <div className="p-4 bg-green-50 border border-green-200 rounded-lg">
-                  <h4 className="font-semibold text-green-900 mb-2">GPSSA Contribution</h4>
-                  <div className="space-y-2 text-sm">
-                    <div className="flex justify-between">
-                      <span className="text-green-700">Employee Share (5%)</span>
-                      <span className="font-medium text-green-900">
-                        AED {(parseFloat(formData.basicSalary || '0') * 0.05).toFixed(2)}
-                      </span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-green-700">Employer Share (12.5%)</span>
-                      <span className="font-medium text-green-900">
-                        AED {(parseFloat(formData.basicSalary || '0') * 0.125).toFixed(2)}
-                      </span>
-                    </div>
+              <div className="p-4 bg-green-50 border border-green-200 rounded-lg">
+                <h4 className="font-semibold text-green-900 mb-2">PF Contribution</h4>
+                <div className="space-y-2 text-sm">
+                  <div className="flex justify-between">
+                    <span className="text-green-700">Employee Share (12%)</span>
+                    <span className="font-medium text-green-900">
+                      ₹ {(parseFloat(formData.basicSalary || '0') * 0.12).toFixed(2)}
+                    </span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-green-700">Employer Share (12%)</span>
+                    <span className="font-medium text-green-900">
+                      ₹ {(parseFloat(formData.basicSalary || '0') * 0.12).toFixed(2)}
+                    </span>
                   </div>
                 </div>
-              )}
+              </div>
             </div>
           )}
 
@@ -606,7 +595,7 @@ export default function NewEmployeePage() {
               <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg">
                 <h4 className="font-semibold text-blue-900 mb-2">Bank Account Information</h4>
                 <p className="text-sm text-blue-700">
-                  Required for WPS (Wage Protection System) compliance and salary transfers
+                  Required for salary transfers and direct deposit
                 </p>
               </div>
 
@@ -620,28 +609,27 @@ export default function NewEmployeePage() {
                   className="w-full h-10 px-3 py-2 border border-gray-300 rounded-md"
                 >
                   <option value="">Select Bank</option>
-                  <option value="Emirates NBD">Emirates NBD</option>
-                  <option value="First Abu Dhabi Bank">First Abu Dhabi Bank (FAB)</option>
-                  <option value="Dubai Islamic Bank">Dubai Islamic Bank</option>
-                  <option value="Abu Dhabi Commercial Bank">Abu Dhabi Commercial Bank (ADCB)</option>
-                  <option value="Mashreq Bank">Mashreq Bank</option>
-                  <option value="Commercial Bank of Dubai">Commercial Bank of Dubai</option>
-                  <option value="RAKBANK">RAKBANK</option>
-                  <option value="Sharjah Islamic Bank">Sharjah Islamic Bank</option>
+                  <option value="HDFC Bank">HDFC Bank</option>
+                  <option value="SBI">State Bank of India</option>
+                  <option value="ICICI Bank">ICICI Bank</option>
+                  <option value="Axis Bank">Axis Bank</option>
+                  <option value="Kotak Mahindra Bank">Kotak Mahindra Bank</option>
+                  <option value="Punjab National Bank">Punjab National Bank</option>
+                  <option value="Bank of Baroda">Bank of Baroda</option>
                 </select>
               </div>
 
               <div>
-                <Label htmlFor="iban">IBAN *</Label>
+                <Label htmlFor="ifsc">IFSC Code *</Label>
                 <Input
-                  id="iban"
-                  name="iban"
-                  placeholder="AE07 0331 2345 6789 0123 456"
-                  value={formData.iban}
+                  id="ifsc"
+                  name="ifsc"
+                  placeholder="HDFC0001234"
+                  value={formData.ifsc}
                   onChange={handleInputChange}
                 />
                 <p className="text-xs text-gray-500 mt-1">
-                  23-character IBAN starting with AE
+                  11-character IFSC code
                 </p>
               </div>
 
@@ -655,15 +643,6 @@ export default function NewEmployeePage() {
                     onChange={handleInputChange}
                   />
                 </div>
-                <div>
-                  <Label htmlFor="swiftCode">SWIFT/BIC Code</Label>
-                  <Input
-                    id="swiftCode"
-                    name="swiftCode"
-                    value={formData.swiftCode}
-                    onChange={handleInputChange}
-                  />
-                </div>
               </div>
 
               <div className="p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
@@ -672,7 +651,7 @@ export default function NewEmployeePage() {
                   Important
                 </h4>
                 <p className="text-sm text-yellow-800">
-                  Bank details must be verified before first salary payment. WPS registration requires accurate IBAN.
+                  Bank details must be verified before first salary payment.
                 </p>
               </div>
             </div>
@@ -690,12 +669,12 @@ export default function NewEmployeePage() {
 
               <div className="space-y-4">
                 {[
-                  { id: 'emirates-id', name: 'Emirates ID (Both Sides)', required: true },
-                  { id: 'passport', name: 'Passport Copy', required: true },
-                  { id: 'visa', name: 'UAE Visa / Residence Permit', required: true },
+                  { id: 'pan-card', name: 'PAN Card', required: true },
+                  { id: 'aadhaar-card', name: 'Aadhaar Card', required: true },
                   { id: 'contract', name: 'Employment Contract', required: true },
                   { id: 'certificate', name: 'Educational Certificates', required: false },
                   { id: 'experience', name: 'Experience Letters', required: false },
+                  { id: 'photo', name: 'Passport Size Photo', required: true },
                 ].map((doc) => (
                   <div key={doc.id} className="border border-gray-200 rounded-lg p-4">
                     <div className="flex items-center justify-between mb-3">

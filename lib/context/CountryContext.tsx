@@ -64,11 +64,17 @@ export function CountryProvider({ children, defaultCountry }: CountryProviderPro
         const stored = localStorage.getItem(COUNTRY_STORAGE_KEY);
         if (stored && isValidCountryCode(stored)) {
           setCountryState(stored as CountryCode);
-        } else if (defaultCountry) {
-          setCountryState(defaultCountry);
+        } else {
+          // Default to INDIA if no valid country found
+          setCountryState('INDIA');
+          // Update storage to reflect the default
+          localStorage.setItem(COUNTRY_STORAGE_KEY, 'INDIA');
+          document.cookie = `selected_country=INDIA; path=/; max-age=${60 * 60 * 24 * 365}`;
         }
       } catch (error) {
         console.error('Error loading country from storage:', error);
+        // Fallback to INDIA on error
+        setCountryState('INDIA');
       } finally {
         setIsLoading(false);
       }

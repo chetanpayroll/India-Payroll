@@ -1,0 +1,17 @@
+# Copy these values to Vercel Project Settings -> Environment Variables
+
+# 1. Database Connection
+# If using Vercel Postgres, this is auto-populated.
+# If using External (Neon/Supabase), paste the connection string here.
+DATABASE_URL="postgresql://user:password@host:5432/dbname?sslmode=require"
+
+# 2. Authentication
+# The full URL of your deployment (e.g., https://gmppayroll.vercel.app)
+# IMPORTANT: No trailing slash
+NEXTAUTH_URL="https://your-deployment-url.vercel.app"
+
+# Generate a random string: openssl rand -base64 32
+NEXTAUTH_SECRET="CHANGE_ME_TO_A_SECURE_RANDOM_STRING"
+
+# 3. Timezone (Optional but recommended for Payroll)
+TZ="Asia/Dubai"

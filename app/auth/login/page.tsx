@@ -9,6 +9,7 @@ import { Label } from '@/components/ui/label'
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card'
 import { Calculator, Lock, Mail, Globe, Shield, Zap, Check } from 'lucide-react'
 import { useToast } from '@/components/ui/use-toast'
+import { signIn } from 'next-auth/react'
 
 export default function LoginPage() {
   const router = useRouter()
@@ -24,30 +25,29 @@ export default function LoginPage() {
     setLoading(true)
 
     try {
-      // For demo purposes, simulate login
-      // In production, this would call your API
-      await new Promise(resolve => setTimeout(resolve, 1000))
-
-      // For now, accept any login (demo mode)
-      toast({
-        title: "Welcome back!",
-        description: "Login successful. Redirecting to dashboard...",
+      const result = await signIn('credentials', {
+        redirect: false,
+        email: formData.email,
+        password: formData.password,
       })
 
-      // Store demo session
-      localStorage.setItem('demoUser', JSON.stringify({
-        email: formData.email,
-        name: formData.email.split('@')[0]
-      }))
-
-      setTimeout(() => {
+      if (result?.error) {
+        toast({
+          title: "Login failed",
+          description: "Invalid email or password",
+          variant: "destructive"
+        })
+      } else {
+        toast({
+          title: "Welcome back!",
+          description: "Login successful. Redirecting to dashboard...",
+        })
         router.push('/dashboard')
-      }, 500)
-
+      }
     } catch (error) {
       toast({
         title: "Login failed",
-        description: "Please check your credentials and try again.",
+        description: "An unexpected error occurred",
         variant: "destructive"
       })
     } finally {
@@ -59,14 +59,14 @@ export default function LoginPage() {
     <div className="min-h-screen relative overflow-hidden flex items-center justify-center p-4">
       {/* Animated Gradient Background */}
       <div className="absolute inset-0 bg-gradient-to-br from-purple-900 via-blue-900 to-pink-900 animate-gradient-shift"
-           style={{ backgroundSize: '400% 400%' }}></div>
+        style={{ backgroundSize: '400% 400%' }}></div>
 
       {/* Animated Orbs */}
       <div className="absolute top-20 left-20 w-72 h-72 bg-purple-500 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-float"></div>
       <div className="absolute top-40 right-20 w-72 h-72 bg-pink-500 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-float"
-           style={{ animationDelay: '2s' }}></div>
+        style={{ animationDelay: '2s' }}></div>
       <div className="absolute -bottom-10 left-1/2 w-72 h-72 bg-blue-500 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-float"
-           style={{ animationDelay: '4s' }}></div>
+        style={{ animationDelay: '4s' }}></div>
 
       {/* Grid Pattern Overlay */}
       <div className="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,.05)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,.05)_1px,transparent_1px)] bg-[size:100px_100px] [mask-image:radial-gradient(ellipse_80%_50%_at_50%_50%,#000_70%,transparent_110%)]"></div>

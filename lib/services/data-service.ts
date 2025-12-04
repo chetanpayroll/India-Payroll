@@ -12,11 +12,9 @@ import {
   Loan,
   SalaryAdvance,
   Payslip,
-  WPSFile,
   CompanySettings,
   PublicHoliday,
   GratuityCalculation,
-  WPSRecord,
 } from '../types';
 import { Collection, storage, StorageKeys } from '../storage';
 import { generateId } from '../utils';
@@ -104,13 +102,11 @@ export class EmployeeService {
 
     this.getActive().forEach((emp) => {
       const docs = [
-        { type: 'Visa', date: emp.visaExpiry },
-        { type: 'Emirates ID', date: emp.emiratesIdExpiry },
         { type: 'Passport', date: emp.passportExpiry },
-        { type: 'Labor Card', date: emp.laborCardExpiry },
       ];
 
       docs.forEach(({ type, date }) => {
+        if (!date) return;
         const expiryDate = new Date(date);
         if (expiryDate <= futureDate && expiryDate >= today) {
           const daysUntilExpiry = Math.floor(
@@ -513,41 +509,7 @@ export class PayslipService {
   }
 }
 
-/**
- * WPS Service
- */
-export class WPSService {
-  private collection: Collection<WPSFile>;
 
-  constructor() {
-    this.collection = new Collection<WPSFile>(StorageKeys.WPS_FILES, storage);
-  }
-
-  getAll(): WPSFile[] {
-    return this.collection.getAll();
-  }
-
-  getById(id: string): WPSFile | undefined {
-    return this.collection.getById(id);
-  }
-
-  getByPayrollRun(payrollRunId: string): WPSFile | undefined {
-    return this.collection.find((file) => file.payrollRunId === payrollRunId);
-  }
-
-  create(file: Omit<WPSFile, 'id'>): WPSFile {
-    const newFile: WPSFile = {
-      ...file,
-      id: generateId(),
-    };
-
-    return this.collection.add(newFile);
-  }
-
-  updateStatus(id: string, status: WPSFile['status']): WPSFile {
-    return this.collection.update(id, { status });
-  }
-}
 
 /**
  * Company Settings Service
@@ -572,24 +534,24 @@ export class CompanySettingsService {
     const now = new Date().toISOString();
     return {
       id: 'default',
-      companyName: 'Demo Company LLC',
-      tradeLicenseNumber: '123456',
-      establishmentNumber: 'EST-123456',
-      wpsRegistrationNumber: 'WPS-123456',
-      mohreCompanyId: 'MOHRE-123456',
-      address: 'Business Bay',
-      city: 'Dubai',
-      emirate: 'Dubai',
-      poBox: 'P.O. Box 12345',
-      phone: '+971 4 123 4567',
-      email: 'hr@democompany.ae',
+      companyName: 'GMP Technologies India Pvt Ltd',
+      pfRegistrationNumber: 'PF/123456',
+      esicRegistrationNumber: 'ESIC/123456',
+      panNumber: 'ABCDE1234F',
+      gstin: '27ABCDE1234F1Z5',
+      address: 'Business Park, Mumbai',
+      city: 'Mumbai',
+      state: 'Maharashtra',
+      pinCode: '400001',
+      phone: '+91 22 1234 5678',
+      email: 'hr@gmptechnologies.in',
       payrollDayOfMonth: 28,
-      weekendDays: [5, 6], // Friday, Saturday
+      weekendDays: [0, 6], // Sunday, Saturday
       publicHolidays: [],
-      annualLeavePerYear: 30,
-      sickLeaveFullPay: 90,
-      maternityLeaveDays: 60,
-      paternityLeaveDays: 5,
+      annualLeavePerYear: 21,
+      sickLeaveFullPay: 12,
+      maternityLeaveDays: 182,
+      paternityLeaveDays: 15,
       createdAt: now,
       updatedAt: now,
     };
@@ -637,6 +599,5 @@ export const leaveService = new LeaveService();
 export const loanService = new LoanService();
 export const salaryAdvanceService = new SalaryAdvanceService();
 export const payslipService = new PayslipService();
-export const wpsService = new WPSService();
 export const companySettingsService = new CompanySettingsService();
 export const publicHolidaysService = new PublicHolidaysService();

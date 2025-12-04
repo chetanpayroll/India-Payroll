@@ -7,7 +7,7 @@
 // EMPLOYEE TYPES
 // ============================================================================
 
-export type EmploymentType = 'limited' | 'unlimited';
+export type EmploymentType = 'permanent' | 'contract' | 'intern';
 export type VisaType = 'employment' | 'investor' | 'partner' | 'dependent' | 'golden';
 export type EmploymentStatus = 'active' | 'probation' | 'notice_period' | 'terminated' | 'resigned';
 export type Gender = 'male' | 'female';
@@ -21,7 +21,7 @@ export interface Employee {
   firstName: string;
   middleName?: string;
   lastName: string;
-  fullNameArabic?: string;
+
   dateOfBirth: string;
   gender: Gender;
   maritalStatus: MaritalStatus;
@@ -34,18 +34,15 @@ export interface Employee {
   alternatePhone?: string;
   address: string;
   city: string;
-  emirate: string;
+  state: string;
 
-  // UAE-Specific Documents
-  emiratesId: string;
-  emiratesIdExpiry: string;
-  passportNumber: string;
-  passportExpiry: string;
-  visaNumber: string;
-  visaType: VisaType;
-  visaExpiry: string;
-  laborCardNumber: string;
-  laborCardExpiry: string;
+  // India-Specific Documents
+  pan: string;
+  aadhaar: string;
+  uan?: string;
+  esicNumber?: string;
+  passportNumber?: string;
+  passportExpiry?: string;
 
   // Employment Details
   department: string;
@@ -62,13 +59,14 @@ export interface Employee {
   // Bank Details
   bankName: string;
   bankAccountNumber: string;
-  ibanNumber: string;
+  ifscCode: string;
   bankBranch?: string;
 
   // Salary Information
   basicSalary: number;
-  housingAllowance: number;
-  transportationAllowance: number;
+  hra: number;
+  specialAllowance: number;
+  medicalAllowance: number;
   otherAllowances: SalaryAllowance[];
 
   // Leave Balances
@@ -90,7 +88,7 @@ export interface SalaryAllowance {
   amount: number;
   type: 'fixed' | 'variable';
   isTaxable: boolean;
-  isWPSIncluded: boolean;
+
 }
 
 // ============================================================================
@@ -312,34 +310,7 @@ export interface GratuityCalculation {
   notes: string;
 }
 
-export interface WPSRecord {
-  employeeId: string;
-  employeeCode: string;
-  employeeName: string;
-  emiratesId: string;
-  laborCardNumber: string;
-  basicSalary: number;
-  allowances: number;
-  deductions: number;
-  netSalary: number;
-  bankName: string;
-  accountNumber: string;
-  ibanNumber: string;
-  payrollMonth: string;
-  paymentDate: string;
-}
 
-export interface WPSFile {
-  id: string;
-  fileName: string;
-  payrollRunId: string;
-  generatedDate: string;
-  totalEmployees: number;
-  totalAmount: number;
-  fileContent: string; // SIF format content
-  status: 'generated' | 'submitted' | 'processed';
-  createdAt: string;
-}
 
 // ============================================================================
 // REPORT TYPES
@@ -423,17 +394,16 @@ export interface PayslipLine {
 export interface CompanySettings {
   id: string;
   companyName: string;
-  companyNameArabic?: string;
-  tradeLicenseNumber: string;
-  establishmentNumber: string;
-  wpsRegistrationNumber: string;
-  mohreCompanyId: string;
+  pfRegistrationNumber?: string;
+  esicRegistrationNumber?: string;
+  panNumber?: string;
+  gstin?: string;
 
   // Contact
   address: string;
   city: string;
-  emirate: string;
-  poBox: string;
+  state: string;
+  pinCode: string;
   phone: string;
   email: string;
   website?: string;
@@ -460,7 +430,7 @@ export interface CompanySettings {
 export interface PublicHoliday {
   id: string;
   name: string;
-  nameArabic?: string;
+
   date: string;
   isRecurring: boolean;
   year?: number;

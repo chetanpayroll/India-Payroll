@@ -2,9 +2,9 @@
 // MULTI-COUNTRY PAYROLL SYSTEM - CORE TYPES
 // ============================================================================
 
-export type CountryCode = 'UAE' | 'INDIA';
+export type CountryCode = 'INDIA';
 
-export type Currency = 'AED' | 'INR' | 'SAR' | 'OMR' | 'QAR';
+export type Currency = 'INR';
 
 // ============================================================================
 // VALIDATION TYPES

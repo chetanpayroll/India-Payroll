@@ -30,6 +30,16 @@ model User {
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
+  role          Role      @default(USER)
+}
+
+enum Role {
+  SUPER_ADMIN
+  ADMIN
+  HR_MANAGER
+  EMPLOYEE
+  USER
 }
 
 model Account {
@@ -89,9 +99,7 @@ model Organization {
 model Entity {
   id                String   @id @default(cuid())
   name              String
-  establishmentNo   String?  @unique  // UAE Establishment Card Number
-  laborCardNo       String?
-  wpsRegistrationNo String?  // WPS Registration Number
+
   
   organizationId    String
   organization      Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
@@ -116,8 +124,7 @@ model Employee {
   firstName         String
   lastName          String
   nationality       String
-  emiratesIdNo      String?  @unique
-  passportNo        String?
+
   
   // Contact Information
   email             String?
@@ -143,8 +150,7 @@ model Employee {
   bankAccountNo     String?
   
   // GPSSA Information
-  isEmirati         Boolean  @default(false)
-  gpssaNumber       String?
+
   
   // Relations
   contracts         EmploymentContract[]
@@ -198,7 +204,7 @@ model SalaryElement {
   id             String   @id @default(cuid())
 
   name           String
-  nameArabic     String?
+
   code           String   @unique
 
   type           ElementType
@@ -428,8 +434,7 @@ model PayrollRun {
   
   payrollItems   PayrollItem[]
   payslips       Payslip[]
-  wpsFiles       WPSFile[]
-  gpssaReports   GPSSAReport[]
+
   
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -462,8 +467,7 @@ model PayrollItem {
   netSalary      Decimal  @db.Decimal(10, 2)
   
   // GPSSA
-  gpssaEmployee  Decimal  @db.Decimal(10, 2) @default(0)
-  gpssaEmployer  Decimal  @db.Decimal(10, 2) @default(0)
+
   
   // Proration
   workingDays    Int      @default(30)
@@ -510,39 +514,7 @@ model Payslip {
   @@unique([payrollRunId, employeeId])
 }
 
-// ==================== WPS & GPSSA COMPLIANCE ====================
 
-model WPSFile {
-  id             String   @id @default(cuid())
-  
-  payrollRunId   String
-  payrollRun     PayrollRun @relation(fields: [payrollRunId], references: [id])
-  
-  fileName       String
-  fileContent    String   @db.Text  // SIF file content
-  
-  recordCount    Int
-  totalAmount    Decimal  @db.Decimal(12, 2)
-  
-  generatedAt    DateTime @default(now())
-}
-
-model GPSSAReport {
-  id             String   @id @default(cuid())
-  
-  payrollRunId   String
-  payrollRun     PayrollRun @relation(fields: [payrollRunId], references: [id])
-  
-  reportType     String   // "MONTHLY_CONTRIBUTION"
-  
-  totalEmployees Int
-  totalEmployeeContribution Decimal @db.Decimal(12, 2)
-  totalEmployerContribution Decimal @db.Decimal(12, 2)
-  
-  fileContent    String?  @db.Text
-  
-  generatedAt    DateTime @default(now())
-}
 
 // ==================== AUDIT LOG ====================
 
