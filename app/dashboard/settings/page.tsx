@@ -99,11 +99,10 @@ export default function SettingsPage() {
                     <button
                       key={section.id}
                       onClick={() => setActiveSection(section.id)}
-                      className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg text-left transition-colors ${
-                        isActive
+                      className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg text-left transition-colors ${isActive
                           ? 'bg-blue-50 text-blue-700 font-medium'
                           : 'text-gray-700 hover:bg-gray-50'
-                      }`}
+                        }`}
                     >
                       <Icon className="h-5 w-5" />
                       <span className="text-sm">{section.name}</span>
@@ -130,35 +129,35 @@ export default function SettingsPage() {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div>
                     <Label htmlFor="company-name">Company Name</Label>
-                    <Input id="company-name" defaultValue="GMP Trading LLC" />
+                    <Input id="company-name" defaultValue="GMP Technologies India Pvt Ltd" />
                   </div>
                   <div>
-                    <Label htmlFor="trade-license">Trade License Number</Label>
-                    <Input id="trade-license" defaultValue="TL-234567" />
+                    <Label htmlFor="trade-license">CIN</Label>
+                    <Input id="trade-license" defaultValue="U72200KA2020PTC123456" />
                   </div>
                   <div>
-                    <Label htmlFor="tax-registration">Tax Registration Number</Label>
-                    <Input id="tax-registration" defaultValue="TRN-987654321" />
+                    <Label htmlFor="tax-registration">GSTIN</Label>
+                    <Input id="tax-registration" defaultValue="29AAACG1234H1Z5" />
                   </div>
                   <div>
                     <Label htmlFor="industry">Industry</Label>
-                    <Input id="industry" defaultValue="Trading & Services" />
+                    <Input id="industry" defaultValue="Technology Services" />
                   </div>
                 </div>
 
                 <div>
                   <Label htmlFor="address">Business Address</Label>
-                  <Input id="address" defaultValue="Business Bay, Dubai, UAE" />
+                  <Input id="address" defaultValue="Tech Park, Electronic City, Bangalore, India" />
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div>
                     <Label htmlFor="contact-email">Contact Email</Label>
-                    <Input id="contact-email" type="email" defaultValue="info@gmptrading.ae" />
+                    <Input id="contact-email" type="email" defaultValue="info@gmptech.in" />
                   </div>
                   <div>
                     <Label htmlFor="contact-phone">Contact Phone</Label>
-                    <Input id="contact-phone" defaultValue="+971 4 123 4567" />
+                    <Input id="contact-phone" defaultValue="+91 80 1234 5678" />
                   </div>
                 </div>
 
@@ -204,18 +203,8 @@ export default function SettingsPage() {
                     <div>
                       <Label htmlFor="currency">Currency</Label>
                       <select id="currency" className="w-full h-10 px-3 py-2 border border-gray-300 rounded-md">
-                        {country === 'INDIA' ? (
-                          <>
-                            <option>INR - Indian Rupee</option>
-                            <option>USD - US Dollar</option>
-                          </>
-                        ) : (
-                          <>
-                            <option>AED - UAE Dirham</option>
-                            <option>USD - US Dollar</option>
-                            <option>EUR - Euro</option>
-                          </>
-                        )}
+                        <option>INR - Indian Rupee</option>
+                        <option>USD - US Dollar</option>
                       </select>
                     </div>
                     <div>
@@ -226,76 +215,49 @@ export default function SettingsPage() {
 
                   <div className="space-y-4">
                     <h4 className="font-semibold text-gray-900">
-                      {country === 'INDIA' ? 'India Compliance Settings' : 'UAE Compliance Settings'}
+                      India Compliance Settings
                     </h4>
 
-                    {country === 'INDIA' ? (
-                      <>
-                        <div className="flex items-center justify-between p-4 border border-gray-200 rounded-lg">
-                          <div>
-                            <p className="font-medium text-gray-900">PF Calculations</p>
-                            <p className="text-sm text-gray-600">Auto-calculate EPF/EPS contributions</p>
-                          </div>
-                          <div className="flex items-center gap-2">
-                            <input type="checkbox" defaultChecked className="w-4 h-4" />
-                            <span className="text-sm text-green-600">Enabled</span>
-                          </div>
-                        </div>
-                        <div className="flex items-center justify-between p-4 border border-gray-200 rounded-lg">
-                          <div>
-                            <p className="font-medium text-gray-900">ESIC Calculations</p>
-                            <p className="text-sm text-gray-600">Auto-calculate ESIC for eligible employees</p>
-                          </div>
-                          <div className="flex items-center gap-2">
-                            <input type="checkbox" defaultChecked className="w-4 h-4" />
-                            <span className="text-sm text-green-600">Enabled</span>
-                          </div>
-                        </div>
-                        <div className="flex items-center justify-between p-4 border border-gray-200 rounded-lg">
-                          <div>
-                            <p className="font-medium text-gray-900">TDS Calculations</p>
-                            <p className="text-sm text-gray-600">Auto-calculate income tax deductions</p>
-                          </div>
-                          <div className="flex items-center gap-2">
-                            <input type="checkbox" defaultChecked className="w-4 h-4" />
-                            <span className="text-sm text-green-600">Enabled</span>
-                          </div>
-                        </div>
-                        <div className="flex items-center justify-between p-4 border border-gray-200 rounded-lg">
-                          <div>
-                            <p className="font-medium text-gray-900">Professional Tax</p>
-                            <p className="text-sm text-gray-600">Auto-calculate PT based on state</p>
-                          </div>
-                          <div className="flex items-center gap-2">
-                            <input type="checkbox" defaultChecked className="w-4 h-4" />
-                            <span className="text-sm text-green-600">Enabled</span>
-                          </div>
-                        </div>
-                      </>
-                    ) : (
-                      <>
-                        <div className="flex items-center justify-between p-4 border border-gray-200 rounded-lg">
-                          <div>
-                            <p className="font-medium text-gray-900">WPS File Generation</p>
-                            <p className="text-sm text-gray-600">Automatically generate WPS files after finalization</p>
-                          </div>
-                          <div className="flex items-center gap-2">
-                            <input type="checkbox" defaultChecked className="w-4 h-4" />
-                            <span className="text-sm text-green-600">Enabled</span>
-                          </div>
-                        </div>
-                        <div className="flex items-center justify-between p-4 border border-gray-200 rounded-lg">
-                          <div>
-                            <p className="font-medium text-gray-900">GPSSA Calculations</p>
-                            <p className="text-sm text-gray-600">Auto-calculate GPSSA for Emirati employees</p>
-                          </div>
-                          <div className="flex items-center gap-2">
-                            <input type="checkbox" defaultChecked className="w-4 h-4" />
-                            <span className="text-sm text-green-600">Enabled</span>
-                          </div>
-                        </div>
-                      </>
-                    )}
+                    <div className="flex items-center justify-between p-4 border border-gray-200 rounded-lg">
+                      <div>
+                        <p className="font-medium text-gray-900">PF Calculations</p>
+                        <p className="text-sm text-gray-600">Auto-calculate EPF/EPS contributions</p>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <input type="checkbox" defaultChecked className="w-4 h-4" />
+                        <span className="text-sm text-green-600">Enabled</span>
+                      </div>
+                    </div>
+                    <div className="flex items-center justify-between p-4 border border-gray-200 rounded-lg">
+                      <div>
+                        <p className="font-medium text-gray-900">ESIC Calculations</p>
+                        <p className="text-sm text-gray-600">Auto-calculate ESIC for eligible employees</p>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <input type="checkbox" defaultChecked className="w-4 h-4" />
+                        <span className="text-sm text-green-600">Enabled</span>
+                      </div>
+                    </div>
+                    <div className="flex items-center justify-between p-4 border border-gray-200 rounded-lg">
+                      <div>
+                        <p className="font-medium text-gray-900">TDS Calculations</p>
+                        <p className="text-sm text-gray-600">Auto-calculate income tax deductions</p>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <input type="checkbox" defaultChecked className="w-4 h-4" />
+                        <span className="text-sm text-green-600">Enabled</span>
+                      </div>
+                    </div>
+                    <div className="flex items-center justify-between p-4 border border-gray-200 rounded-lg">
+                      <div>
+                        <p className="font-medium text-gray-900">Professional Tax</p>
+                        <p className="text-sm text-gray-600">Auto-calculate PT based on state</p>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <input type="checkbox" defaultChecked className="w-4 h-4" />
+                        <span className="text-sm text-green-600">Enabled</span>
+                      </div>
+                    </div>
                   </div>
 
                   <div className="flex justify-end gap-2">
@@ -317,10 +279,7 @@ export default function SettingsPage() {
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-3">
-                    {(country === 'INDIA'
-                      ? ['Basic Salary', 'HRA (House Rent Allowance)', 'Special Allowance', 'PF Deduction', 'ESIC Deduction', 'Professional Tax', 'TDS']
-                      : ['Basic Salary', 'Housing Allowance', 'Transport Allowance', 'GPSSA Deduction']
-                    ).map((element, idx) => (
+                    {['Basic Salary', 'HRA (House Rent Allowance)', 'Special Allowance', 'PF Deduction', 'ESIC Deduction', 'Professional Tax', 'TDS'].map((element, idx) => (
                       <div key={idx} className="flex items-center justify-between p-3 border border-gray-200 rounded-lg">
                         <div className="flex items-center gap-3">
                           <CheckCircle2 className="h-5 w-5 text-green-600" />
@@ -521,9 +480,8 @@ export default function SettingsPage() {
                           </div>
                         </div>
                         <div className="flex items-center gap-2">
-                          <span className={`text-sm font-medium ${
-                            integration.status === 'Connected' ? 'text-green-600' : 'text-gray-500'
-                          }`}>
+                          <span className={`text-sm font-medium ${integration.status === 'Connected' ? 'text-green-600' : 'text-gray-500'
+                            }`}>
                             {integration.status}
                           </span>
                           <Button variant="outline" size="sm">
@@ -556,7 +514,7 @@ export default function SettingsPage() {
                         <p className="text-blue-700">Up to 100 employees</p>
                       </div>
                       <div className="text-right">
-                        <p className="text-3xl font-bold text-blue-900">AED 499</p>
+                        <p className="text-3xl font-bold text-blue-900">₹ 4,999</p>
                         <p className="text-sm text-blue-700">per month</p>
                       </div>
                     </div>
@@ -607,9 +565,9 @@ export default function SettingsPage() {
                 <CardContent>
                   <div className="space-y-3">
                     {[
-                      { date: 'Nov 1, 2024', amount: 'AED 499.00', status: 'Paid', invoice: 'INV-2024-11' },
-                      { date: 'Oct 1, 2024', amount: 'AED 499.00', status: 'Paid', invoice: 'INV-2024-10' },
-                      { date: 'Sep 1, 2024', amount: 'AED 499.00', status: 'Paid', invoice: 'INV-2024-09' },
+                      { date: 'Nov 1, 2024', amount: '₹ 4,999.00', status: 'Paid', invoice: 'INV-2024-11' },
+                      { date: 'Oct 1, 2024', amount: '₹ 4,999.00', status: 'Paid', invoice: 'INV-2024-10' },
+                      { date: 'Sep 1, 2024', amount: '₹ 4,999.00', status: 'Paid', invoice: 'INV-2024-09' },
                     ].map((payment, idx) => (
                       <div key={idx} className="flex items-center justify-between p-4 border border-gray-200 rounded-lg">
                         <div>

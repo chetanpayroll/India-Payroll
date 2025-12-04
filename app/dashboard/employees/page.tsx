@@ -99,9 +99,9 @@ export default function EmployeesPage() {
       'Department': emp.department,
       'Designation': emp.designation,
       'Basic Salary': emp.basicSalary,
-      'Housing Allowance': emp.housingAllowance,
-      'Transport Allowance': emp.transportationAllowance,
-      'Emirates ID': emp.emiratesId,
+      'HRA': emp.hra,
+      'Special Allowance': emp.specialAllowance,
+      'PAN': emp.pan,
       'Nationality': emp.nationality,
       'Date of Joining': emp.dateOfJoining,
     }))
@@ -116,11 +116,7 @@ export default function EmployeesPage() {
 
   const nationals = employees.filter(e => {
     const nat = e.nationality.toLowerCase()
-    if (country === 'INDIA') {
-      return nat === 'indian' || nat === 'india'
-    } else {
-      return nat === 'uae' || nat === 'emirati'
-    }
+    return nat === 'indian' || nat === 'india'
   }).length
 
   const avgSalary = employees.length > 0
@@ -139,7 +135,7 @@ export default function EmployeesPage() {
             Manage your organization&apos;s employees and their information
           </p>
         </div>
-        <Link href={country === 'INDIA' ? '/dashboard/employees/india/new' : '/dashboard/employees/new'}>
+        <Link href="/dashboard/employees/new">
           <Button
             size="lg"
             className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700"
@@ -162,11 +158,11 @@ export default function EmployeesPage() {
         <Card className="border-l-4 border-l-green-500">
           <CardContent className="p-6">
             <div className="text-sm font-medium text-gray-600">
-              {country === 'INDIA' ? 'Indian Nationals' : 'UAE Nationals'}
+              Indian Nationals
             </div>
             <div className="mt-2 text-3xl font-bold text-gray-900">{nationals}</div>
             <div className="mt-2 text-sm text-gray-500">
-              {country === 'INDIA' ? 'EPF/ESI applicable' : 'GPSSA applicable'}
+              EPF/ESI applicable
             </div>
           </CardContent>
         </Card>
@@ -249,7 +245,7 @@ export default function EmployeesPage() {
               </thead>
               <tbody>
                 {filteredEmployees.map((employee) => {
-                  const totalSalary = employee.basicSalary + employee.housingAllowance + employee.transportationAllowance
+                  const totalSalary = employee.basicSalary + employee.hra + employee.specialAllowance
                   return (
                     <tr key={employee.id} className="border-b border-gray-100 hover:bg-blue-50 transition-colors">
                       <td className="py-4">
@@ -288,13 +284,12 @@ export default function EmployeesPage() {
                         <div className="text-xs text-gray-500">Basic: {formatCurrency(employee.basicSalary)}</div>
                       </td>
                       <td className="py-4">
-                        <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                          employee.employmentStatus === 'active'
-                            ? 'bg-green-100 text-green-800'
-                            : employee.employmentStatus === 'probation'
+                        <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${employee.employmentStatus === 'active'
+                          ? 'bg-green-100 text-green-800'
+                          : employee.employmentStatus === 'probation'
                             ? 'bg-yellow-100 text-yellow-800'
                             : 'bg-gray-100 text-gray-800'
-                        }`}>
+                          }`}>
                           {employee.employmentStatus}
                         </span>
                       </td>
@@ -374,30 +369,26 @@ function EmployeeModal({
     department: '',
     designation: '',
     basicSalary: 0,
-    housingAllowance: 0,
-    transportationAllowance: 0,
+    hra: 0,
+    specialAllowance: 0,
+    medicalAllowance: 0,
     dateOfJoining: new Date().toISOString().split('T')[0],
     dateOfBirth: '',
     gender: 'male',
     maritalStatus: 'single',
-    emiratesId: '',
-    emiratesIdExpiry: '',
-    passportNumber: '',
-    passportExpiry: '',
-    visaNumber: '',
-    visaType: 'employment',
-    visaExpiry: '',
-    laborCardNumber: '',
-    laborCardExpiry: '',
-    employmentType: 'limited',
+    pan: '',
+    aadhaar: '',
+    uan: '',
+    esicNumber: '',
+    employmentType: 'permanent',
     employmentStatus: 'active',
     contractStartDate: new Date().toISOString().split('T')[0],
     address: '',
-    city: 'Dubai',
-    emirate: 'Dubai',
+    city: 'Mumbai',
+    state: 'Maharashtra',
     bankName: '',
     bankAccountNumber: '',
-    ibanNumber: '',
+    ifscCode: '',
     annualLeaveBalance: 30,
     sickLeaveBalance: 90,
     otherAllowances: [],
@@ -600,8 +591,9 @@ function EmployeeModal({
                   value={formData.employmentType}
                   onChange={(e) => updateField('employmentType', e.target.value)}
                 >
-                  <option value="limited">Limited Contract</option>
-                  <option value="unlimited">Unlimited Contract</option>
+                  <option value="permanent">Permanent</option>
+                  <option value="contract">Contract</option>
+                  <option value="intern">Internship</option>
                 </select>
               </div>
             </div>
@@ -621,78 +613,62 @@ function EmployeeModal({
                 />
               </div>
               <div>
-                <Label>Housing Allowance ({currencySymbol})</Label>
+                <Label>HRA ({currencySymbol})</Label>
                 <Input
                   type="number"
-                  value={formData.housingAllowance}
-                  onChange={(e) => updateField('housingAllowance', parseFloat(e.target.value) || 0)}
+                  value={formData.hra}
+                  onChange={(e) => updateField('hra', parseFloat(e.target.value) || 0)}
                 />
               </div>
               <div>
-                <Label>Transport Allowance ({currencySymbol})</Label>
+                <Label>Special Allowance ({currencySymbol})</Label>
                 <Input
                   type="number"
-                  value={formData.transportationAllowance}
-                  onChange={(e) => updateField('transportationAllowance', parseFloat(e.target.value) || 0)}
+                  value={formData.specialAllowance}
+                  onChange={(e) => updateField('specialAllowance', parseFloat(e.target.value) || 0)}
                 />
               </div>
             </div>
             <div className="mt-4 p-4 bg-blue-50 rounded-lg">
               <div className="text-sm font-medium text-gray-700">Total Monthly Salary:</div>
               <div className="text-2xl font-bold text-blue-600">
-                {formatCurrency((formData.basicSalary || 0) + (formData.housingAllowance || 0) + (formData.transportationAllowance || 0))}
+                {formatCurrency((formData.basicSalary || 0) + (formData.hra || 0) + (formData.specialAllowance || 0))}
               </div>
             </div>
           </div>
 
-          {/* UAE Documents */}
+          {/* India Documents */}
           <div>
-            <h3 className="text-lg font-semibold text-gray-900 mb-4">UAE Documents</h3>
+            <h3 className="text-lg font-semibold text-gray-900 mb-4">India Documents</h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <Label>Emirates ID</Label>
+                <Label>PAN Number</Label>
                 <Input
-                  value={formData.emiratesId}
-                  onChange={(e) => updateField('emiratesId', e.target.value)}
-                  placeholder="784-YYYY-NNNNNNN-N"
+                  value={formData.pan}
+                  onChange={(e) => updateField('pan', e.target.value)}
+                  placeholder="ABCDE1234F"
                 />
               </div>
               <div>
-                <Label>Emirates ID Expiry</Label>
+                <Label>Aadhaar Number</Label>
                 <Input
-                  type="date"
-                  value={formData.emiratesIdExpiry}
-                  onChange={(e) => updateField('emiratesIdExpiry', e.target.value)}
+                  value={formData.aadhaar}
+                  onChange={(e) => updateField('aadhaar', e.target.value)}
+                  placeholder="1234 5678 9012"
                 />
               </div>
               <div>
-                <Label>Passport Number</Label>
+                <Label>UAN</Label>
                 <Input
-                  value={formData.passportNumber}
-                  onChange={(e) => updateField('passportNumber', e.target.value)}
+                  value={formData.uan}
+                  onChange={(e) => updateField('uan', e.target.value)}
                 />
               </div>
               <div>
-                <Label>Passport Expiry</Label>
+                <Label>ESIC Number</Label>
                 <Input
-                  type="date"
-                  value={formData.passportExpiry}
-                  onChange={(e) => updateField('passportExpiry', e.target.value)}
-                />
-              </div>
-              <div>
-                <Label>Labor Card Number</Label>
-                <Input
-                  value={formData.laborCardNumber}
-                  onChange={(e) => updateField('laborCardNumber', e.target.value)}
-                />
-              </div>
-              <div>
-                <Label>Labor Card Expiry</Label>
-                <Input
-                  type="date"
-                  value={formData.laborCardExpiry}
-                  onChange={(e) => updateField('laborCardExpiry', e.target.value)}
+                  value={formData.esicNumber}
+                  onChange={(e) => updateField('esicNumber', e.target.value)}
                 />
               </div>
             </div>
@@ -717,11 +693,11 @@ function EmployeeModal({
                 />
               </div>
               <div className="md:col-span-2">
-                <Label>IBAN</Label>
+                <Label>IFSC Code</Label>
                 <Input
-                  value={formData.ibanNumber}
-                  onChange={(e) => updateField('ibanNumber', e.target.value)}
-                  placeholder="AE070331234567890123456"
+                  value={formData.ifscCode}
+                  onChange={(e) => updateField('ifscCode', e.target.value)}
+                  placeholder="HDFC0001234"
                 />
               </div>
             </div>

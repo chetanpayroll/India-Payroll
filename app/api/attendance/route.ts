@@ -1,51 +1,77 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { attendanceService } from '@/lib/services/attendance-service';
+import { getServerSession } from 'next-auth';
+import { authOptions } from '@/lib/auth';
+import { prisma } from '@/lib/prisma';
+import { startOfMonth, endOfMonth } from 'date-fns';
 
-/**
- * GET /api/attendance
- * Get attendance records with filtering
- */
 export async function GET(request: NextRequest) {
   try {
-    const searchParams = request.nextUrl.searchParams;
-
-    const filters: any = {};
-
-    if (searchParams.get('employeeId')) {
-      filters.employeeId = searchParams.get('employeeId');
+    const session = await getServerSession(authOptions);
+    if (!session) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    if (searchParams.get('status')) {
-      filters.status = searchParams.get('status');
+    const { searchParams } = new URL(request.url);
+    const employeeId = searchParams.get('employeeId');
+    const from = searchParams.get('from');
+    const to = searchParams.get('to');
+    const month = searchParams.get('month');
+    const year = searchParams.get('year');
+
+    if (session.user.role === 'EMPLOYEE') {
+      if (employeeId && employeeId !== session.user.id) {
+        return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+      }
     }
 
-    if (searchParams.get('attendanceType')) {
-      filters.attendanceType = searchParams.get('attendanceType');
+    const whereClause: any = {};
+
+    if (employeeId) {
+      whereClause.employeeId = employeeId;
+    } else if (session.user.role === 'EMPLOYEE') {
+      whereClause.employeeId = session.user.id;
     }
 
-    if (searchParams.get('startDate')) {
-      filters.startDate = new Date(searchParams.get('startDate')!);
+    if (from && to) {
+      whereClause.date = {
+        gte: new Date(from),
+        lte: new Date(to)
+      };
+    } else if (month && year) {
+      const date = new Date(parseInt(year), parseInt(month) - 1, 1);
+      whereClause.date = {
+        gte: startOfMonth(date),
+        lte: endOfMonth(date)
+      };
     }
 
-    if (searchParams.get('endDate')) {
-      filters.endDate = new Date(searchParams.get('endDate')!);
-    }
-
-    const attendance = await attendanceService.getAttendance(filters);
-
-    return NextResponse.json({
-      success: true,
-      data: attendance,
-      count: attendance.length
-    });
-  } catch (error: any) {
-    console.error('Error fetching attendance:', error);
-    return NextResponse.json(
-      {
-        success: false,
-        error: error.message || 'Failed to fetch attendance records'
+    const attendance = await prisma.attendance.findMany({
+      where: whereClause,
+      include: {
+        employee: {
+          select: {
+            firstName: true,
+            lastName: true,
+            employeeNumber: true
+          }
+        },
+        shift: {
+          select: {
+            shiftName: true,
+            startTime: true,
+            endTime: true
+          }
+        }
       },
-      { status: 500 }
-    );
+      orderBy: {
+        date: 'desc'
+      }
+    });
+
+    return NextResponse.json(attendance);
+
+  } catch (error: any) {
+    console.error('[ATTENDANCE_GET_ERROR]', error);
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }

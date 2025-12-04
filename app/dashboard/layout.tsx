@@ -4,6 +4,7 @@ import { useState } from 'react'
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
+import { useSession, signOut } from 'next-auth/react'
 import { CountryProvider, useCountry } from '@/lib/context/CountryContext'
 import { COUNTRY_CONFIGS } from '@/lib/payroll/core/countryConfig'
 import AnimatedBackground from '@/components/AnimatedBackground'
@@ -45,6 +46,7 @@ const navigationSections = [
       { name: 'HR Management', href: '/dashboard/hr', icon: Briefcase },
       { name: 'Attendance', href: '/dashboard/attendance', icon: UserCheck },
       { name: 'Leave', href: '/dashboard/leave', icon: Calendar },
+      { name: 'Approvals', href: '/dashboard/approvals', icon: CheckCircle },
     ]
   },
   {
@@ -93,10 +95,10 @@ function DashboardLayoutContent({ children }: { children: React.ReactNode }) {
   const pathname = usePathname()
   const router = useRouter()
   const [sidebarOpen, setSidebarOpen] = useState(false)
+  const { data: session } = useSession()
 
   const handleLogout = () => {
-    localStorage.removeItem('demoUser')
-    router.push('/auth/login')
+    signOut({ callbackUrl: '/auth/login' })
   }
 
   return (
@@ -183,8 +185,10 @@ function DashboardLayoutContent({ children }: { children: React.ReactNode }) {
         {/* User Section */}
         <div className="p-4 border-t border-purple-500/30 relative z-10">
           <div className="px-4 py-3 bg-gradient-to-br from-blue-600/20 to-purple-600/20 rounded-lg mb-3 shadow-lg border border-purple-400/30 backdrop-blur-sm">
-            <p className="text-sm font-bold bg-gradient-to-r from-blue-300 to-purple-300 bg-clip-text text-transparent drop-shadow-lg">Demo User</p>
-            <p className="text-xs text-gray-300">demo@gmppayroll.org</p>
+            <p className="text-sm font-bold bg-gradient-to-r from-blue-300 to-purple-300 bg-clip-text text-transparent drop-shadow-lg">
+              {session?.user?.name || 'User'}
+            </p>
+            <p className="text-xs text-gray-300">{session?.user?.email || ''}</p>
           </div>
           <Button
             variant="ghost"

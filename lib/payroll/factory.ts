@@ -56,72 +56,9 @@ export class PayrollEngineFactory {
       case 'INDIA':
         return new IndiaPayrollEngine();
 
-      case 'UAE':
-        // For now, return a placeholder or wrapper for existing UAE logic
-        // This can be updated to use UAEPayrollEngine when implemented
-        return this.createUAEEngineWrapper();
-
       default:
         throw new Error(`Payroll engine not available for country: ${countryCode}`);
     }
-  }
-
-  /**
-   * Create a wrapper for existing UAE payroll logic
-   * This maintains backward compatibility with existing code
-   */
-  private static createUAEEngineWrapper(): IPayrollEngine {
-    // Temporary wrapper that delegates to existing UAE logic
-    // This will be replaced with full UAEPayrollEngine implementation
-    return {
-      countryCode: 'UAE',
-      version: '1.0.0',
-
-      validateEmployee: () => ({ isValid: true, errors: [] }),
-      validateSalaryStructure: () => ({ isValid: true, errors: [] }),
-      validatePayrollPeriod: () => ({ isValid: true, errors: [] }),
-
-      calculateGrossSalary: (components) => {
-        return components.basic +
-          Object.values(components.allowances).reduce((a, b) => a + b, 0) +
-          Object.values(components.earnings).reduce((a, b) => a + b, 0);
-      },
-
-      calculateDeductions: () => ({
-        statutory: {},
-        voluntary: {},
-        total: 0,
-      }),
-
-      calculateNetSalary: (gross, deductions) => gross - deductions.total,
-
-      calculateEmployerContributions: () => ({}),
-
-      processPayroll: async () => {
-        throw new Error('Use existing UAE payroll processing');
-      },
-
-      processBulkPayroll: async () => {
-        throw new Error('Use existing UAE payroll processing');
-      },
-
-      generatePayslip: () => {
-        throw new Error('Use existing UAE payslip generation');
-      },
-
-      generateComplianceReports: () => [],
-
-      getWorkingDays: () => 22,
-
-      getFinancialYear: (date) => date.getFullYear().toString(),
-
-      formatCurrency: (amount) => `AED ${amount.toLocaleString('en-AE', { minimumFractionDigits: 2 })}`,
-
-      amountToWords: (amount) => {
-        // Basic implementation
-        return `AED ${amount}`;
-      },
-    };
   }
 
   /**
@@ -140,7 +77,7 @@ export class PayrollEngineFactory {
    * Get all supported countries
    */
   static getSupportedCountries(): CountryCode[] {
-    return ['UAE', 'INDIA'];
+    return ['INDIA'];
   }
 
   /**

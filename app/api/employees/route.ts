@@ -1,63 +1,95 @@
-import { NextRequest, NextResponse } from 'next/server'
-import { prisma } from '@/lib/prisma'
+import { NextResponse } from 'next/server';
+import { prisma } from '@/lib/prisma';
+import { getServerSession } from 'next-auth';
+import { authOptions } from '@/lib/auth';
 
-export async function GET(request: NextRequest) {
+export async function GET(request: Request) {
+  const session = await getServerSession(authOptions);
+  if (!session) {
+    return new NextResponse('Unauthorized', { status: 401 });
+  }
+
   try {
-    const { searchParams } = new URL(request.url)
-    const status = searchParams.get('status')
-    const entityId = searchParams.get('entityId')
+    const { searchParams } = new URL(request.url);
+    const query = searchParams.get('query');
+    const department = searchParams.get('department');
+    const status = searchParams.get('status');
 
-    // Build where clause
-    const where: any = {}
+    const where: any = {};
+
+    if (query) {
+      where.OR = [
+        { firstName: { contains: query, mode: 'insensitive' } },
+        { lastName: { contains: query, mode: 'insensitive' } },
+        { employeeNumber: { contains: query, mode: 'insensitive' } },
+        { email: { contains: query, mode: 'insensitive' } },
+      ];
+    }
+
+    if (department) {
+      where.department = department;
+    }
 
     if (status) {
-      where.status = status
+      where.status = status;
     }
 
-    if (entityId) {
-      where.entityId = entityId
-    }
-
-    // Fetch employees with basic information
     const employees = await prisma.employee.findMany({
       where,
-      select: {
-        id: true,
-        employeeNumber: true,
-        firstName: true,
-        lastName: true,
-        email: true,
-        phone: true,
-        designation: true,
-        department: true,
-        status: true,
-        joinDate: true,
-        endDate: true,
-        entityId: true,
-        entity: {
-          select: {
-            id: true,
-            name: true
-          }
-        }
-      },
-      orderBy: {
-        firstName: 'asc'
+      orderBy: { createdAt: 'desc' },
+      include: {
+        entity: true,
       }
-    })
+    });
 
-    return NextResponse.json({
-      success: true,
-      data: employees
-    })
+    return NextResponse.json(employees);
   } catch (error) {
-    console.error('Error fetching employees:', error)
-    return NextResponse.json(
-      {
-        success: false,
-        error: 'Failed to fetch employees'
-      },
-      { status: 500 }
-    )
+    console.error('[EMPLOYEES_GET]', error);
+    return new NextResponse('Internal Error', { status: 500 });
+  }
+}
+
+export async function POST(request: Request) {
+  const session = await getServerSession(authOptions);
+  if (!session) {
+    return new NextResponse('Unauthorized', { status: 401 });
+  }
+
+  try {
+    const body = await request.json();
+
+    // Basic validation
+    if (!body.firstName || !body.lastName || !body.employeeNumber || !body.entityId) {
+      return new NextResponse('Missing required fields', { status: 400 });
+    }
+
+    const employee = await prisma.employee.create({
+      data: {
+        employeeNumber: body.employeeNumber,
+        firstName: body.firstName,
+        lastName: body.lastName,
+        nationality: body.nationality,
+        emiratesIdNo: body.emiratesIdNo,
+        passportNo: body.passportNo,
+        email: body.email,
+        phone: body.phone,
+        entityId: body.entityId,
+        designation: body.designation,
+        department: body.department,
+        joinDate: new Date(body.joinDate),
+        status: body.status || 'ACTIVE',
+        basicSalary: body.basicSalary,
+        bankName: body.bankName,
+        iban: body.iban,
+        bankAccountNo: body.bankAccountNo,
+        isEmirati: body.isEmirati || false,
+        gpssaNumber: body.gpssaNumber,
+      }
+    });
+
+    return NextResponse.json(employee);
+  } catch (error) {
+    console.error('[EMPLOYEES_POST]', error);
+    return new NextResponse('Internal Error', { status: 500 });
   }
 }

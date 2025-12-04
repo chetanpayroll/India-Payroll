@@ -1,47 +1,33 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { attendanceService } from '@/lib/services/attendance-service';
+import { getServerSession } from 'next-auth';
+import { authOptions } from '@/lib/auth';
+import { prisma } from '@/lib/prisma';
 
-/**
- * POST /api/attendance/overtime/[id]/approve
- * Approve overtime request
- */
-export async function POST(
+export async function PUT(
   request: NextRequest,
   { params }: { params: { id: string } }
 ) {
   try {
-    const body = await request.json();
-    const { approvedBy, overtimeRate } = body;
-
-    if (!approvedBy) {
-      return NextResponse.json(
-        {
-          success: false,
-          error: 'approvedBy is required'
-        },
-        { status: 400 }
-      );
+    const session = await getServerSession(authOptions);
+    if (!session || session.user.role === 'EMPLOYEE') {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const overtimeRequest = await attendanceService.approveOvertimeRequest(
-      params.id,
-      approvedBy,
-      overtimeRate ? parseFloat(overtimeRate) : undefined
-    );
-
-    return NextResponse.json({
-      success: true,
-      data: overtimeRequest,
-      message: 'Overtime request approved successfully'
+    const updated = await prisma.overtimeRequest.update({
+      where: { id: params.id },
+      data: {
+        status: 'APPROVED',
+        approvedBy: session.user.id,
+        approvedDate: new Date(),
+      }
     });
+
+    // Optionally update Attendance record to reflect OT hours if not already there
+    // But usually OT request is separate for payout.
+
+    return NextResponse.json(updated);
+
   } catch (error: any) {
-    console.error('Error approving overtime request:', error);
-    return NextResponse.json(
-      {
-        success: false,
-        error: error.message || 'Failed to approve overtime request'
-      },
-      { status: 400 }
-    );
+    return NextResponse.json({ error: error.message }, { status: 500 });
   }
 }
