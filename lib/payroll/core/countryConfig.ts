@@ -98,6 +98,7 @@ export interface FeatureFlags {
 // COUNTRY CONFIGURATIONS
 // ============================================================================
 
+export const COUNTRY_CONFIGS: Record<CountryCode, CountryConfig> = {
   // -------------------------------------------------------------------------
   // INDIA CONFIGURATION
   // -------------------------------------------------------------------------
