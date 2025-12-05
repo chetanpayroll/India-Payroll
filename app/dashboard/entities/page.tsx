@@ -44,63 +44,8 @@ import { useCountry } from '@/lib/context/CountryContext'
 const entities = [
   {
     id: '1',
-    name: 'GMP Trading LLC',
-    country: 'UAE',
-    establishmentNo: 'EST-2345678',
-    laborCardNo: 'LC-2345678-01',
-    wpsRegistrationNo: 'WPS-AE-12345',
-    licenseNo: 'TL-234567',
-    // India fields
-    pan: '',
-    tan: '',
-    gstin: '',
-    pfRegistrationNo: '',
-    esiRegistrationNo: '',
-    ptRegistrationNo: '',
-    status: 'active',
-    employees: 32,
-    monthlyPayroll: 156780,
-    location: 'Dubai',
-    address: 'Business Bay, Dubai, UAE',
-    registrationDate: '2020-03-15',
-    contactPerson: 'Ahmed Mohammed',
-    contactEmail: 'ahmed@gmptrading.ae',
-    contactPhone: '+971 4 123 4567',
-  },
-  {
-    id: '2',
-    name: 'GMP Services FZE',
-    country: 'UAE',
-    establishmentNo: 'EST-3456789',
-    laborCardNo: 'LC-3456789-01',
-    wpsRegistrationNo: 'WPS-AE-23456',
-    licenseNo: 'FZ-345678',
-    // India fields
-    pan: '',
-    tan: '',
-    gstin: '',
-    pfRegistrationNo: '',
-    esiRegistrationNo: '',
-    ptRegistrationNo: '',
-    status: 'active',
-    employees: 16,
-    monthlyPayroll: 88900,
-    location: 'Sharjah',
-    address: 'Sharjah Airport Free Zone, Sharjah, UAE',
-    registrationDate: '2021-06-20',
-    contactPerson: 'Sarah Johnson',
-    contactEmail: 'sarah@gmpservices.ae',
-    contactPhone: '+971 6 234 5678',
-  },
-  {
-    id: '3',
     name: 'GMP Technologies India Pvt Ltd',
     country: 'INDIA',
-    // UAE fields
-    establishmentNo: '',
-    laborCardNo: '',
-    wpsRegistrationNo: '',
-    licenseNo: '',
     // India fields
     pan: 'ABCDE1234F',
     tan: 'DELE12345A',
@@ -118,6 +63,27 @@ const entities = [
     contactEmail: 'rajesh@gmptech.in',
     contactPhone: '+91 22 1234 5678',
   },
+  {
+    id: '2',
+    name: 'GMP Solutions Bangalore Pvt Ltd',
+    country: 'INDIA',
+    // India fields
+    pan: 'FGHIJ5678K',
+    tan: 'BANF56789B',
+    gstin: '29FGHIJ5678K1Z8',
+    pfRegistrationNo: 'KARCN5678901000',
+    esiRegistrationNo: '29002345670001888',
+    ptRegistrationNo: 'PT-KA-87654321',
+    status: 'active',
+    employees: 42,
+    monthlyPayroll: 2450000,
+    location: 'Karnataka',
+    address: 'Whitefield, Bangalore, Karnataka, India',
+    registrationDate: '2020-05-15',
+    contactPerson: 'Priya Sharma',
+    contactEmail: 'priya@gmpsolutions.in',
+    contactPhone: '+91 80 9876 5432',
+  },
 ]
 
 type Entity = typeof entities[0]
@@ -125,12 +91,7 @@ type Entity = typeof entities[0]
 const emptyEntity = {
   id: '',
   name: '',
-  country: '',
-  // UAE fields
-  establishmentNo: '',
-  laborCardNo: '',
-  wpsRegistrationNo: '',
-  licenseNo: '',
+  country: 'INDIA',
   // India fields
   pan: '',
   tan: '',
@@ -160,12 +121,13 @@ export default function EntitiesPage() {
 
   const filteredEntities = entities.filter(entity =>
     entity.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    entity.establishmentNo.toLowerCase().includes(searchQuery.toLowerCase())
+    entity.pan.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    entity.gstin.toLowerCase().includes(searchQuery.toLowerCase())
   )
 
   const handleAddEntity = () => {
     setEditingEntity(null)
-    setFormData({ ...emptyEntity, country: country || 'UAE' })
+    setFormData({ ...emptyEntity, country: 'INDIA' })
     setIsModalOpen(true)
   }
 
@@ -247,7 +209,7 @@ export default function EntitiesPage() {
               <div>
                 <p className="text-sm font-medium text-gray-600">Monthly Payroll</p>
                 <p className="mt-2 text-3xl font-bold text-gray-900">
-                  AED {entities.reduce((sum, e) => sum + e.monthlyPayroll, 0).toLocaleString()}
+                  ₹{entities.reduce((sum, e) => sum + e.monthlyPayroll, 0).toLocaleString()}
                 </p>
                 <p className="mt-2 text-sm text-gray-500">Combined</p>
               </div>
@@ -262,9 +224,9 @@ export default function EntitiesPage() {
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-gray-600">WPS Compliant</p>
+                <p className="text-sm font-medium text-gray-600">PF Registered</p>
                 <p className="mt-2 text-3xl font-bold text-gray-900">
-                  {entities.filter(e => e.wpsRegistrationNo).length}/{entities.length}
+                  {entities.filter(e => e.pfRegistrationNo).length}/{entities.length}
                 </p>
                 <p className="mt-2 text-sm text-green-600">100% compliant</p>
               </div>
@@ -284,7 +246,7 @@ export default function EntitiesPage() {
               <div className="relative">
                 <Search className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
                 <Input
-                  placeholder="Search entities by name or establishment number..."
+                  placeholder="Search entities by name, PAN, or GSTIN..."
                   className="pl-10"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
@@ -331,69 +293,43 @@ export default function EntitiesPage() {
               <div className="space-y-3 mb-6">
                 <div className="flex items-center gap-2 mb-2">
                   <span className="text-xs font-semibold text-gray-500 uppercase">
-                    {entity.country === 'INDIA' ? '🇮🇳 India Compliance' : '🇦🇪 UAE Compliance'}
+                    🇮🇳 India Compliance
                   </span>
                 </div>
 
-                {entity.country === 'INDIA' ? (
-                  // India Compliance Display
-                  <>
-                    <div className="grid grid-cols-2 gap-4">
-                      <div>
-                        <p className="text-sm text-gray-500">PAN</p>
-                        <p className="font-medium text-gray-900">{entity.pan || 'N/A'}</p>
-                      </div>
-                      <div>
-                        <p className="text-sm text-gray-500">TAN</p>
-                        <p className="font-medium text-gray-900">{entity.tan || 'N/A'}</p>
-                      </div>
+                {/* India Compliance Display */}
+                <>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <p className="text-sm text-gray-500">PAN</p>
+                      <p className="font-medium text-gray-900">{entity.pan || 'N/A'}</p>
                     </div>
-                    <div className="grid grid-cols-2 gap-4">
-                      <div>
-                        <p className="text-sm text-gray-500">GSTIN</p>
-                        <p className="font-medium text-gray-900">{entity.gstin || 'N/A'}</p>
-                      </div>
-                      <div>
-                        <p className="text-sm text-gray-500">PF Registration</p>
-                        <p className="font-medium text-gray-900">{entity.pfRegistrationNo || 'N/A'}</p>
-                      </div>
+                    <div>
+                      <p className="text-sm text-gray-500">TAN</p>
+                      <p className="font-medium text-gray-900">{entity.tan || 'N/A'}</p>
                     </div>
-                    <div className="grid grid-cols-2 gap-4">
-                      <div>
-                        <p className="text-sm text-gray-500">ESI Registration</p>
-                        <p className="font-medium text-gray-900">{entity.esiRegistrationNo || 'N/A'}</p>
-                      </div>
-                      <div>
-                        <p className="text-sm text-gray-500">PT Registration</p>
-                        <p className="font-medium text-gray-900">{entity.ptRegistrationNo || 'N/A'}</p>
-                      </div>
+                  </div>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <p className="text-sm text-gray-500">GSTIN</p>
+                      <p className="font-medium text-gray-900">{entity.gstin || 'N/A'}</p>
                     </div>
-                  </>
-                ) : (
-                  // UAE Compliance Display
-                  <>
-                    <div className="grid grid-cols-2 gap-4">
-                      <div>
-                        <p className="text-sm text-gray-500">Establishment No.</p>
-                        <p className="font-medium text-gray-900">{entity.establishmentNo}</p>
-                      </div>
-                      <div>
-                        <p className="text-sm text-gray-500">Labor Card No.</p>
-                        <p className="font-medium text-gray-900">{entity.laborCardNo}</p>
-                      </div>
+                    <div>
+                      <p className="text-sm text-gray-500">PF Registration</p>
+                      <p className="font-medium text-gray-900">{entity.pfRegistrationNo || 'N/A'}</p>
                     </div>
-                    <div className="grid grid-cols-2 gap-4">
-                      <div>
-                        <p className="text-sm text-gray-500">WPS Registration</p>
-                        <p className="font-medium text-gray-900">{entity.wpsRegistrationNo}</p>
-                      </div>
-                      <div>
-                        <p className="text-sm text-gray-500">License No.</p>
-                        <p className="font-medium text-gray-900">{entity.licenseNo}</p>
-                      </div>
+                  </div>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <p className="text-sm text-gray-500">ESI Registration</p>
+                      <p className="font-medium text-gray-900">{entity.esiRegistrationNo || 'N/A'}</p>
                     </div>
-                  </>
-                )}
+                    <div>
+                      <p className="text-sm text-gray-500">PT Registration</p>
+                      <p className="font-medium text-gray-900">{entity.ptRegistrationNo || 'N/A'}</p>
+                    </div>
+                  </div>
+                </>
               </div>
 
               {/* Statistics */}
@@ -405,10 +341,7 @@ export default function EntitiesPage() {
                 <div className="text-center">
                   <p className="text-sm text-gray-600 mb-1">Monthly Payroll</p>
                   <p className="text-2xl font-bold text-gray-900">
-                    {entity.country === 'INDIA'
-                      ? `₹${(entity.monthlyPayroll / 1000).toFixed(0)}K`
-                      : `AED ${(entity.monthlyPayroll / 1000).toFixed(0)}K`
-                    }
+                    ₹{(entity.monthlyPayroll / 1000).toFixed(0)}K
                   </p>
                 </div>
               </div>
@@ -440,10 +373,7 @@ export default function EntitiesPage() {
                 <div>
                   <p className="text-sm font-medium text-green-900">Fully Compliant</p>
                   <p className="text-xs text-green-700">
-                    {entity.country === 'INDIA'
-                      ? 'PF registered • ESI registered • GST compliant • All documents up to date'
-                      : 'WPS registered • Labor card valid • All documents up to date'
-                    }
+                    PF registered • ESI registered • GST compliant • All documents up to date
                   </p>
                 </div>
               </div>
@@ -561,7 +491,7 @@ export default function EntitiesPage() {
                   id="address"
                   value={formData.address}
                   onChange={(e) => handleInputChange('address', e.target.value)}
-                  placeholder={formData.country === 'INDIA' ? 'e.g., Bandra Kurla Complex, Mumbai, Maharashtra, India' : 'e.g., Business Bay, Dubai, UAE'}
+                  placeholder="e.g., Bandra Kurla Complex, Mumbai, Maharashtra, India"
                 />
               </div>
             </div>
@@ -569,12 +499,11 @@ export default function EntitiesPage() {
             {/* Registration Details - Country Specific */}
             <div className="space-y-4">
               <h3 className="font-semibold text-gray-900 border-b pb-2 flex items-center gap-2">
-                {formData.country === 'INDIA' ? '🇮🇳 India' : '🇦🇪 UAE'} Compliance & Registration
+                🇮🇳 India Compliance & Registration
               </h3>
 
-              {formData.country === 'INDIA' ? (
-                // India Compliance Fields
-                <div className="grid grid-cols-2 gap-4">
+              {/* India Compliance Fields */}
+              <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
                     <Label htmlFor="pan">PAN (Permanent Account Number) *</Label>
                     <Input
@@ -633,47 +562,6 @@ export default function EntitiesPage() {
                     />
                   </div>
                 </div>
-              ) : (
-                // UAE Compliance Fields
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="establishmentNo">Establishment Number *</Label>
-                    <Input
-                      id="establishmentNo"
-                      value={formData.establishmentNo}
-                      onChange={(e) => handleInputChange('establishmentNo', e.target.value)}
-                      placeholder="e.g., EST-2345678"
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="laborCardNo">Labor Card Number</Label>
-                    <Input
-                      id="laborCardNo"
-                      value={formData.laborCardNo}
-                      onChange={(e) => handleInputChange('laborCardNo', e.target.value)}
-                      placeholder="e.g., LC-2345678-01"
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="wpsRegistrationNo">WPS Registration Number *</Label>
-                    <Input
-                      id="wpsRegistrationNo"
-                      value={formData.wpsRegistrationNo}
-                      onChange={(e) => handleInputChange('wpsRegistrationNo', e.target.value)}
-                      placeholder="e.g., WPS-AE-12345"
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="licenseNo">Trade License Number *</Label>
-                    <Input
-                      id="licenseNo"
-                      value={formData.licenseNo}
-                      onChange={(e) => handleInputChange('licenseNo', e.target.value)}
-                      placeholder="e.g., TL-234567"
-                    />
-                  </div>
-                </div>
-              )}
 
               <div className="space-y-2">
                 <Label htmlFor="registrationDate">Registration Date</Label>
@@ -696,7 +584,7 @@ export default function EntitiesPage() {
                     id="contactPerson"
                     value={formData.contactPerson}
                     onChange={(e) => handleInputChange('contactPerson', e.target.value)}
-                    placeholder="e.g., Ahmed Mohammed"
+                    placeholder="e.g., Rajesh Kumar"
                   />
                 </div>
                 <div className="space-y-2">
@@ -706,7 +594,7 @@ export default function EntitiesPage() {
                     type="email"
                     value={formData.contactEmail}
                     onChange={(e) => handleInputChange('contactEmail', e.target.value)}
-                    placeholder={formData.country === 'INDIA' ? 'e.g., contact@company.in' : 'e.g., contact@company.ae'}
+                    placeholder="e.g., contact@company.in"
                   />
                 </div>
                 <div className="col-span-2 space-y-2">
@@ -765,58 +653,36 @@ export default function EntitiesPage() {
               {/* Registration Details - Country Specific */}
               <div className="p-4 bg-gray-50 rounded-lg">
                 <h4 className="font-semibold text-gray-900 mb-3 flex items-center gap-2">
-                  {viewingEntity.country === 'INDIA' ? '🇮🇳 India' : '🇦🇪 UAE'} Compliance Details
+                  🇮🇳 India Compliance Details
                 </h4>
 
-                {viewingEntity.country === 'INDIA' ? (
-                  // India Compliance
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <p className="text-sm text-gray-500">PAN</p>
-                      <p className="font-semibold text-gray-900">{viewingEntity.pan || 'N/A'}</p>
-                    </div>
-                    <div>
-                      <p className="text-sm text-gray-500">TAN</p>
-                      <p className="font-semibold text-gray-900">{viewingEntity.tan || 'N/A'}</p>
-                    </div>
-                    <div>
-                      <p className="text-sm text-gray-500">GSTIN</p>
-                      <p className="font-semibold text-gray-900">{viewingEntity.gstin || 'N/A'}</p>
-                    </div>
-                    <div>
-                      <p className="text-sm text-gray-500">PF Registration</p>
-                      <p className="font-semibold text-gray-900">{viewingEntity.pfRegistrationNo || 'N/A'}</p>
-                    </div>
-                    <div>
-                      <p className="text-sm text-gray-500">ESI Registration</p>
-                      <p className="font-semibold text-gray-900">{viewingEntity.esiRegistrationNo || 'N/A'}</p>
-                    </div>
-                    <div>
-                      <p className="text-sm text-gray-500">PT Registration</p>
-                      <p className="font-semibold text-gray-900">{viewingEntity.ptRegistrationNo || 'N/A'}</p>
-                    </div>
+                {/* India Compliance */}
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <p className="text-sm text-gray-500">PAN</p>
+                    <p className="font-semibold text-gray-900">{viewingEntity.pan || 'N/A'}</p>
                   </div>
-                ) : (
-                  // UAE Compliance
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <p className="text-sm text-gray-500">Establishment No.</p>
-                      <p className="font-semibold text-gray-900">{viewingEntity.establishmentNo}</p>
-                    </div>
-                    <div>
-                      <p className="text-sm text-gray-500">Labor Card No.</p>
-                      <p className="font-semibold text-gray-900">{viewingEntity.laborCardNo}</p>
-                    </div>
-                    <div>
-                      <p className="text-sm text-gray-500">WPS Registration</p>
-                      <p className="font-semibold text-gray-900">{viewingEntity.wpsRegistrationNo}</p>
-                    </div>
-                    <div>
-                      <p className="text-sm text-gray-500">License No.</p>
-                      <p className="font-semibold text-gray-900">{viewingEntity.licenseNo}</p>
-                    </div>
+                  <div>
+                    <p className="text-sm text-gray-500">TAN</p>
+                    <p className="font-semibold text-gray-900">{viewingEntity.tan || 'N/A'}</p>
                   </div>
-                )}
+                  <div>
+                    <p className="text-sm text-gray-500">GSTIN</p>
+                    <p className="font-semibold text-gray-900">{viewingEntity.gstin || 'N/A'}</p>
+                  </div>
+                  <div>
+                    <p className="text-sm text-gray-500">PF Registration</p>
+                    <p className="font-semibold text-gray-900">{viewingEntity.pfRegistrationNo || 'N/A'}</p>
+                  </div>
+                  <div>
+                    <p className="text-sm text-gray-500">ESI Registration</p>
+                    <p className="font-semibold text-gray-900">{viewingEntity.esiRegistrationNo || 'N/A'}</p>
+                  </div>
+                  <div>
+                    <p className="text-sm text-gray-500">PT Registration</p>
+                    <p className="font-semibold text-gray-900">{viewingEntity.ptRegistrationNo || 'N/A'}</p>
+                  </div>
+                </div>
               </div>
 
               {/* Statistics */}
@@ -829,10 +695,7 @@ export default function EntitiesPage() {
                 <div className="p-4 border rounded-lg text-center">
                   <DollarSign className="h-6 w-6 mx-auto text-green-600 mb-2" />
                   <p className="text-2xl font-bold text-gray-900">
-                    {viewingEntity.country === 'INDIA'
-                      ? `₹${viewingEntity.monthlyPayroll.toLocaleString()}`
-                      : `AED ${viewingEntity.monthlyPayroll.toLocaleString()}`
-                    }
+                    ₹{viewingEntity.monthlyPayroll.toLocaleString()}
                   </p>
                   <p className="text-sm text-gray-500">Monthly Payroll</p>
                 </div>

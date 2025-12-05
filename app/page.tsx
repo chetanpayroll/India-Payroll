@@ -59,7 +59,7 @@ export default function Home() {
             transition={{ duration: 0.6 }}
             className="inline-block mb-6 px-6 py-3 glass-effect border-blue-200 rounded-full text-sm font-bold shadow-lg animate-pulse-glow"
           >
-            🇦🇪 UAE & 🇮🇳 India Compliant Payroll System
+            🇮🇳 India Compliant Payroll System
           </motion.div>
           <motion.h1
             initial={{ opacity: 0, y: 30 }}
@@ -76,9 +76,8 @@ export default function Home() {
             transition={{ duration: 0.7, delay: 0.4 }}
             className="text-2xl text-gray-700 mb-10 font-medium"
           >
-            Complete payroll solution for 🇦🇪 UAE businesses (WPS, GPSSA, End of Service)
-            and 🇮🇳 India businesses (PF, ESI, PT, TDS) with automated compliance,
-            calculations, and instant payslip generation.
+            Complete payroll solution for 🇮🇳 India businesses (PF, ESI, PT, TDS) with
+            automated compliance, calculations, and instant payslip generation.
           </motion.p>
           <motion.div
             initial={{ opacity: 0, y: 30 }}
@@ -140,7 +139,7 @@ export default function Home() {
             Everything You Need for Payroll
           </h2>
           <p className="text-2xl text-gray-700 max-w-3xl mx-auto font-medium">
-            Powerful features designed for 🇦🇪 UAE & 🇮🇳 India labor law and compliance requirements
+            Powerful features designed for 🇮🇳 India labor law and compliance requirements
           </p>
         </motion.div>
 
@@ -163,7 +162,7 @@ export default function Home() {
                 Employee Management
               </h3>
               <p className="text-gray-700 font-medium">
-                Complete employee database with Emirates ID, passport details, and contract management.
+                Complete employee database with Aadhaar, PAN, passport details, and contract management.
               </p>
             </Card3D>
           </motion.div>
@@ -191,58 +190,12 @@ export default function Home() {
             </Card3D>
           </motion.div>
 
-          {/* Feature 3 - UAE WPS */}
+          {/* Feature 3 - India PF & ESI */}
           <motion.div
             initial={{ opacity: 0, y: 50 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 0.5, delay: 0.3 }}
-          >
-            <Card3D className="p-8 border-0 h-full" glassEffect={true}>
-              <motion.div
-                className="w-16 h-16 bg-gradient-to-br from-purple-500 to-purple-600 rounded-2xl flex items-center justify-center mb-6 shadow-xl"
-                whileHover={{ scale: 1.1, rotate: 5 }}
-              >
-                <Shield className="h-8 w-8 text-white" />
-              </motion.div>
-              <h3 className="text-2xl font-bold mb-4 bg-gradient-to-r from-purple-600 to-violet-600 bg-clip-text text-transparent">
-                🇦🇪 UAE WPS Compliance
-              </h3>
-              <p className="text-gray-700 font-medium">
-                Generate WPS SIF files in correct format for all UAE banks and wage protection system.
-              </p>
-            </Card3D>
-          </motion.div>
-
-          {/* Feature 4 - UAE GPSSA */}
-          <motion.div
-            initial={{ opacity: 0, y: 50 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.5, delay: 0.4 }}
-          >
-            <Card3D className="p-8 border-0 h-full" glassEffect={true}>
-              <motion.div
-                className="w-16 h-16 bg-gradient-to-br from-orange-500 to-orange-600 rounded-2xl flex items-center justify-center mb-6 shadow-xl"
-                whileHover={{ scale: 1.1, rotate: 5 }}
-              >
-                <Building2 className="h-8 w-8 text-white" />
-              </motion.div>
-              <h3 className="text-2xl font-bold mb-4 bg-gradient-to-r from-orange-600 to-amber-600 bg-clip-text text-transparent">
-                🇦🇪 UAE GPSSA Calculations
-              </h3>
-              <p className="text-gray-700 font-medium">
-                Automatic GPSSA contribution calculations for Emirati employees with detailed reports.
-              </p>
-            </Card3D>
-          </motion.div>
-
-          {/* Feature 5 - India PF & ESI */}
-          <motion.div
-            initial={{ opacity: 0, y: 50 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.5, delay: 0.5 }}
           >
             <Card3D className="p-8 border-0 h-full" glassEffect={true}>
               <motion.div
@@ -260,12 +213,12 @@ export default function Home() {
             </Card3D>
           </motion.div>
 
-          {/* Feature 6 - Professional Payslips */}
+          {/* Feature 4 - Professional Payslips */}
           <motion.div
             initial={{ opacity: 0, y: 50 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
-            transition={{ duration: 0.5, delay: 0.6 }}
+            transition={{ duration: 0.5, delay: 0.4 }}
           >
             <Card3D className="p-8 border-0 h-full" glassEffect={true}>
               <motion.div
@@ -307,14 +260,14 @@ export default function Home() {
               {[
                 'Save 10+ hours every month on payroll processing',
                 'Zero errors in salary calculations and compliance',
-                '🇦🇪 Instant WPS file generation for UAE bank transfers',
-                '🇦🇪 Automatic GPSSA & End of Service calculations',
-                '🇮🇳 Automated PF, ESI, PT, and TDS for India',
+                '🇮🇳 Automated PF, ESI, PT, and TDS calculations',
                 '🇮🇳 India Form 16 and compliance reports generation',
+                '🇮🇳 Professional Tax and TDS automation',
                 'Secure cloud storage with 7-year retention',
                 'Mobile-friendly access from anywhere',
                 'Multi-entity and multi-location support',
-                'Export reports in Excel, PDF, and CSV formats'
+                'Export reports in Excel, PDF, and CSV formats',
+                'Bank payment file generation for NEFT/RTGS'
               ].map((benefit, index) => (
                 <motion.div
                   key={index}
@@ -348,7 +301,7 @@ export default function Home() {
             Ready to Simplify Your Payroll?
           </h2>
           <p className="text-2xl mb-8 opacity-90 relative z-10 font-medium">
-            Join hundreds of 🇦🇪 UAE & 🇮🇳 India businesses who trust GMP Payroll
+            Join hundreds of 🇮🇳 India businesses who trust GMP Payroll
           </p>
           <Link href="/auth/login">
             <Button3D variant="secondary" magnetic className="text-lg px-10 py-6 relative z-10">
@@ -371,7 +324,7 @@ export default function Home() {
                 <span className="text-xl font-bold bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 bg-clip-text text-transparent">GMP Payroll</span>
               </div>
               <p className="text-gray-700 font-medium">
-                🇦🇪 UAE & 🇮🇳 India&apos;s most trusted payroll management system
+                🇮🇳 India&apos;s most trusted payroll management system
               </p>
             </div>
             <div>
@@ -400,7 +353,7 @@ export default function Home() {
           </div>
           <div className="border-t mt-8 pt-8 text-center">
             <p className="text-gray-700 font-medium">&copy; 2024 GMP Payroll. All rights reserved.</p>
-            <p className="text-gray-600 mt-2">Serving businesses in 🇦🇪 UAE & 🇮🇳 India with pride</p>
+            <p className="text-gray-600 mt-2">Serving businesses in 🇮🇳 India with pride</p>
           </div>
         </div>
       </footer>

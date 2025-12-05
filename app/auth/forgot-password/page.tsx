@@ -93,7 +93,7 @@ export default function ForgotPasswordPage() {
               <div className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
                 GMP Payroll
               </div>
-              <div className="text-sm text-gray-500">UAE Payroll System</div>
+              <div className="text-sm text-gray-500">India Payroll System</div>
             </div>
           </div>
         </div>

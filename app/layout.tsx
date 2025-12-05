@@ -6,8 +6,8 @@ import { Providers } from '@/components/Providers'
 
 export const metadata: Metadata = {
   title: 'GMP Payroll - Enterprise Payroll Management System',
-  description: 'Enterprise-grade payroll management system for UAE businesses with WPS and GPSSA compliance',
-  keywords: 'UAE payroll, WPS, GPSSA, salary management, payroll software, enterprise HR',
+  description: 'Enterprise-grade payroll management system for India businesses with PF, ESI, PT, and TDS compliance',
+  keywords: 'India payroll, PF, ESI, PT, TDS, salary management, payroll software, enterprise HR, Form 16',
 }
 
 export default function RootLayout({

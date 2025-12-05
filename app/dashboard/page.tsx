@@ -258,11 +258,9 @@ export default function DashboardPage() {
       bgGradient: 'from-purple-50 to-purple-100'
     },
     {
-      name: country === 'INDIA' ? 'Indian Nationals' : 'UAE Nationals',
+      name: 'Indian Nationals',
       value: stats.nationals.toString(),
-      change: country === 'INDIA'
-        ? `${((stats.nationals / stats.totalEmployees) * 100).toFixed(1)}% Local talent`
-        : `${((stats.nationals / stats.totalEmployees) * 100).toFixed(1)}% Emiratisation`,
+      change: `${((stats.nationals / stats.totalEmployees) * 100).toFixed(1)}% Local talent`,
       changeValue: '+2',
       changeType: 'positive',
       icon: Award,

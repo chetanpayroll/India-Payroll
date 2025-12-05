@@ -84,7 +84,7 @@ export default function LoginPage() {
               </div>
               <div>
                 <h1 className="text-2xl font-bold">GMP Payroll</h1>
-                <p className="text-sm text-purple-200">UAE & India Compliant</p>
+                <p className="text-sm text-purple-200">India Compliant</p>
               </div>
             </div>
 
@@ -108,7 +108,7 @@ export default function LoginPage() {
                 </div>
                 <div>
                   <h3 className="font-semibold text-lg">Multi-Country Support</h3>
-                  <p className="text-purple-200 text-sm">UAE & India payroll compliance built-in</p>
+                  <p className="text-purple-200 text-sm">India payroll compliance built-in</p>
                 </div>
               </div>
 
@@ -118,7 +118,7 @@ export default function LoginPage() {
                 </div>
                 <div>
                   <h3 className="font-semibold text-lg">Statutory Compliance</h3>
-                  <p className="text-purple-200 text-sm">PF, ESIC, WPS, GPSSA automated calculations</p>
+                  <p className="text-purple-200 text-sm">PF, ESI, PT, TDS automated calculations</p>
                 </div>
               </div>
 

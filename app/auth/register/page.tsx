@@ -87,7 +87,7 @@ export default function RegisterPage() {
               <div className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
                 GMP Payroll
               </div>
-              <div className="text-sm text-gray-500">UAE Payroll System</div>
+              <div className="text-sm text-gray-500">India Payroll System</div>
             </div>
           </div>
         </div>
@@ -162,7 +162,7 @@ export default function RegisterPage() {
                     type="tel"
                     value={formData.phone}
                     onChange={handleChange}
-                    placeholder="+971 XX XXX XXXX"
+                    placeholder="+91 XXXXX XXXXX"
                     className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
                     disabled={isLoading}
                   />
