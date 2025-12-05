@@ -209,11 +209,11 @@ export default function LoginPage() {
               </form>
 
               {/* Demo Note */}
-              <div className="mt-6 p-4 bg-blue-500/20 rounded-lg border border-blue-400/30 backdrop-blur-sm">
-                <p className="text-sm text-blue-200 font-medium mb-1">🎯 Demo Mode</p>
-                <p className="text-xs text-blue-100">
-                  You can use any email/password to test the system.
-                  In production, this connects to your secure database.
+              <div className="mt-6 p-4 bg-green-500/20 rounded-lg border border-green-400/30 backdrop-blur-sm">
+                <p className="text-sm text-green-200 font-bold mb-1">✨ Demo Mode Active</p>
+                <p className="text-xs text-green-100">
+                  <strong>Login with ANY email and password!</strong><br />
+                  No registration needed. Perfect for testing and demos.
                 </p>
               </div>
             </CardContent>
