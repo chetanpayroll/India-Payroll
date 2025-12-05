@@ -7,7 +7,9 @@ import CredentialsProvider from "next-auth/providers/credentials";
 import { prisma } from "@/lib/prisma";
 import bcrypt from "bcryptjs";
 
-const disableAuth = process.env.DISABLE_AUTH === "true";
+// ⚠️ DEMO MODE: Always enabled for testing/demo purposes
+// Set ENABLE_REAL_AUTH=true to use real database authentication
+const disableAuth = process.env.ENABLE_REAL_AUTH !== "true";
 
 // Validate required environment variables
 if (!disableAuth && !process.env.NEXTAUTH_SECRET) {
