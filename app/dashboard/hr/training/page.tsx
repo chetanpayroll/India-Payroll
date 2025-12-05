@@ -52,7 +52,7 @@ export default function TrainingPage() {
       enrolled: 15,
       capacity: 20,
       completed: 0,
-      location: 'Dubai Office',
+      location: 'Mumbai Office',
       mode: 'In-person'
     },
     {
@@ -82,12 +82,12 @@ export default function TrainingPage() {
       enrolled: 30,
       capacity: 30,
       completed: 28,
-      location: 'Abu Dhabi Office',
+      location: 'Bangalore Office',
       mode: 'Hybrid'
     },
     {
       id: 'T004',
-      title: 'UAE Labor Law Compliance',
+      title: 'India Labor Law Compliance',
       category: 'Compliance',
       instructor: 'Ahmed Al Mansoori',
       duration: '3 days',
@@ -97,7 +97,7 @@ export default function TrainingPage() {
       enrolled: 18,
       capacity: 25,
       completed: 5,
-      location: 'Dubai Office',
+      location: 'Mumbai Office',
       mode: 'In-person'
     },
     {
@@ -155,7 +155,7 @@ export default function TrainingPage() {
       employeeId: 'EMP004',
       employeeName: 'Aisha Abdullah',
       department: 'HR',
-      program: 'UAE Labor Law Compliance',
+      program: 'India Labor Law Compliance',
       enrolledDate: '2024-11-18',
       progress: 40,
       status: 'In Progress'

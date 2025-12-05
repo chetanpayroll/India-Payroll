@@ -1,4 +1,4 @@
-# GMP Payroll - UAE Payroll Management System
+# GMP Payroll - India Payroll Management System
 
 ## 🚀 Complete Deployment Guide for www.gmppayroll.org
 
@@ -18,7 +18,7 @@
    
 2. **Create New Repository:**
    - Repository name: `gmppayroll-system`
-   - Description: `UAE Payroll Management System`
+   - Description: `India Payroll Management System`
    - **IMPORTANT**: Keep it **PRIVATE** if you don't want others to see code
    - ✅ Click "Create repository"
 
@@ -52,7 +52,7 @@ git push -u origin main
    - Click "New project"
    - Name: `gmp-payroll`
    - Database Password: **SAVE THIS PASSWORD SECURELY!**
-   - Region: Select closest to UAE (e.g., ap-southeast-1)
+   - Region: Select closest to India (e.g., ap-south-1)
    - Click "Create new project"
    - Wait 2-3 minutes for setup
 
@@ -206,11 +206,11 @@ Visit: **https://www.gmppayroll.org**
 ✅ Dashboard with analytics
 ✅ Employee management (add/edit/view)
 ✅ Payroll processing
-✅ WPS file generation
-✅ GPSSA calculations
+✅ PF/ESI file generation
+✅ PT/TDS calculations
 ✅ Payslip generation
 ✅ Reports (G2N, etc.)
-✅ Full UAE compliance
+✅ Full India compliance
 
 ### Database:
 - All data is stored securely in Supabase PostgreSQL
@@ -259,10 +259,10 @@ Visit: **https://www.gmppayroll.org**
 2. ✅ Add your first organization
 3. ✅ Add employees
 4. ✅ Process first payroll
-5. ✅ Generate WPS file
+5. ✅ Generate PF/ESI files
 6. ✅ Generate payslips
 7. ✅ Share the link with your team!
 
 ---
 
-**Congratulations! Your UAE Payroll System is now live at www.gmppayroll.org! 🎉**
+**Congratulations! Your India Payroll System is now live at www.gmppayroll.org! 🎉**
