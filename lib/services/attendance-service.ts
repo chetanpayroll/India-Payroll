@@ -1,15 +1,25 @@
+// /lib/services/attendance-service.ts
 import { prisma } from '@/lib/prisma';
-import { startOfDay, endOfDay, differenceInMinutes, parse, addMinutes, subMinutes } from 'date-fns';
+import {
+  startOfDay,
+  endOfDay,
+  differenceInMinutes,
+  parse,
+  addMinutes,
+  subMinutes
+} from 'date-fns';
+
+type Location = { latitude?: number; longitude?: number; address?: string } | undefined;
 
 export const AttendanceService = {
   /**
    * Punch In for an employee
    */
-  async punchIn(employeeId: string, location?: { latitude?: number; longitude?: number; address?: string }) {
+  async punchIn(employeeId: string, location?: Location) {
     const today = startOfDay(new Date());
     const now = new Date();
 
-    // 1. Check existing
+    // 1. Check existing attendance row for today
     const existing = await prisma.attendance.findUnique({
       where: {
         employeeId_date: {
@@ -23,7 +33,7 @@ export const AttendanceService = {
       throw new Error('Already punched in today');
     }
 
-    // 2. Get Shift
+    // 2. Get employee active shift (closest match)
     const employeeShift = await prisma.employeeShift.findFirst({
       where: {
         employeeId,
@@ -39,14 +49,14 @@ export const AttendanceService = {
       throw new Error('No active shift found');
     }
 
-    // 3. Calculate Late
+    // 3. Calculate late
     const shiftStart = parse(shift.startTime, 'HH:mm', today);
-    const graceEnd = addMinutes(shiftStart, shift.lateGracePeriod);
+    const graceEnd = addMinutes(shiftStart, Number(shift.lateGracePeriod ?? 0));
     const isLate = now > graceEnd;
     const lateBy = isLate ? differenceInMinutes(now, shiftStart) : 0;
 
-    // 4. Create Attendance
-    return await prisma.attendance.upsert({
+    // 4. Upsert attendance record
+    const attendance = await prisma.attendance.upsert({
       where: {
         employeeId_date: { employeeId, date: today }
       },
@@ -62,22 +72,26 @@ export const AttendanceService = {
         isManualEntry: false
       },
       update: {
+        // If record exists but no checkInTime, update. If exists with checkInTime we already returned earlier.
         checkInTime: now,
         checkInLocation: location ? JSON.stringify(location) : null,
         status: isLate ? 'LATE' : 'PRESENT',
         attendanceType: isLate ? 'LATE' : 'REGULAR',
-        lateBy: isLate ? lateBy : null,
+        lateBy: isLate ? lateBy : null
       }
     });
+
+    return attendance;
   },
 
   /**
    * Punch Out for an employee
    */
-  async punchOut(employeeId: string, location?: { latitude?: number; longitude?: number; address?: string }) {
+  async punchOut(employeeId: string, location?: Location) {
     const today = startOfDay(new Date());
     const now = new Date();
 
+    // find today's attendance
     const attendance = await prisma.attendance.findUnique({
       where: {
         employeeId_date: { employeeId, date: today }
@@ -96,23 +110,26 @@ export const AttendanceService = {
     const shift = attendance.shift;
     if (!shift) throw new Error('Shift not found');
 
-    // Calculate Hours
+    // Calculate total minutes worked (from checkInTime to now)
     const totalMinutes = differenceInMinutes(now, attendance.checkInTime);
-    const workingHours = Number(Math.max(0, (totalMinutes - shift.breakDuration) / 60).toFixed(2));
+    // subtract break duration (ensure numeric)
+    const breakDuration = Number(shift.breakDuration ?? 0);
+    const workedMinutes = Math.max(0, totalMinutes - breakDuration);
+    const workingHours = Number((workedMinutes / 60).toFixed(2));
 
-    // Calculate Overtime
-    const expectedHours = Number(shift.workingHours);
-    const overtimeHours = Math.max(0, workingHours - expectedHours);
+    // expected working hours
+    const expectedHours = Number(shift.workingHours ?? 0);
+    const overtimeHours = Math.max(0, Number((workingHours - expectedHours).toFixed(2)));
 
-    // Calculate Early Out
+    // early out detection
     const shiftEnd = parse(shift.endTime, 'HH:mm', today);
-    const earlyOutThreshold = subMinutes(shiftEnd, shift.earlyOutGracePeriod);
+    const earlyOutThreshold = subMinutes(shiftEnd, Number(shift.earlyOutGracePeriod ?? 0));
     const isEarlyOut = now < earlyOutThreshold;
     const earlyOutBy = isEarlyOut ? differenceInMinutes(shiftEnd, now) : 0;
 
-    // Determine Status
-    let status = attendance.status;
-    let type = attendance.attendanceType;
+    // Determine status/type
+    let status = attendance.status ?? 'PRESENT';
+    let type = attendance.attendanceType ?? 'REGULAR';
 
     if (isEarlyOut) {
       status = 'EARLY_OUT';
@@ -125,7 +142,7 @@ export const AttendanceService = {
       status = 'HALF_DAY';
     }
 
-    return await prisma.attendance.update({
+    const updated = await prisma.attendance.update({
       where: { id: attendance.id },
       data: {
         checkOutTime: now,
@@ -137,19 +154,35 @@ export const AttendanceService = {
         attendanceType: type
       }
     });
+
+    return updated;
   },
 
   /**
-   * Get History
+   * Get attendance history for an employee between two dates (inclusive)
    */
   async getHistory(employeeId: string, from: Date, to: Date) {
-    return await prisma.attendance.findMany({
+    // ensure from <= to
+    const start = startOfDay(from);
+    const end = endOfDay(to);
+
+    const rows = await prisma.attendance.findMany({
       where: {
         employeeId,
-        date: { gte: from, lte: to }
+        date: { gte: start, lte: end }
       },
       include: { shift: true },
       orderBy: { date: 'desc' }
     });
+
+    return rows;
   }
 };
+
+// Provide the lowercase export most callers expect:
+//  - named export AttendanceService (already exported)
+//  - additional named export attendanceService
+export const attendanceService = AttendanceService;
+
+// default export too
+export default attendanceService;
