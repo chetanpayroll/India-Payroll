@@ -46,51 +46,72 @@ export default function NewPayrollPage() {
   const [isCalculated, setIsCalculated] = useState(false)
   const [isSaving, setIsSaving] = useState(false)
 
+  /* Updated to use Server-Side API */
   useEffect(() => {
-    loadEmployees()
+    // In a real app, we might fetch employee count here or just rely on backend calculation
+    // For now, we fetch to show the count of eligible employees
+    fetch('/api/employees?status=Active')
+      .then(res => res.json())
+      .then(data => setEmployees(data))
+      .catch(err => console.error("Failed to load employees", err))
   }, [])
 
-  const loadEmployees = () => {
-    const allEmployees = employeeService.getActive()
-    setEmployees(allEmployees)
-  }
-
-  const calculatePayroll = () => {
+  const calculatePayroll = async () => {
     setIsCalculating(true)
 
     try {
-      const items: PayrollItem[] = []
-
-      employees.forEach((employee) => {
-        const custom = customValues[employee.id] || {}
-
-        const item = calculateEmployeePayroll(employee, selectedYear, selectedMonth, {
-          presentDays: custom.presentDays ?? 22,
-          absentDays: custom.absentDays ?? 0,
-          leaveDays: custom.leaveDays ?? 0,
-          regularOTHours: custom.regularOTHours ?? 0,
-          weekendOTHours: custom.weekendOTHours ?? 0,
-          holidayOTHours: custom.holidayOTHours ?? 0,
-          bonus: custom.bonus ?? 0,
-          commission: custom.commission ?? 0,
-          reimbursements: custom.reimbursements ?? 0,
-          otherDeductions: custom.otherDeductions ?? 0,
+      // Call the Server-Side Calculation Engine
+      const res = await fetch('/api/payroll/calculate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          month: selectedMonth,
+          year: selectedYear,
+          companyId: employees[0]?.companyId // Assuming single company context for now
         })
-
-        items.push(item)
       })
 
-      setPayrollItems(items)
+      if (!res.ok) throw new Error('Calculation failed')
+
+      const data = await res.json()
+
+      // Map API result to UI PayrollItem structure
+      const mappedItems: PayrollItem[] = data.details.map((d: any) => ({
+        employeeId: d.employeeId,
+        employee: {
+          id: d.employeeId,
+          firstName: d.employeeName.split(' ')[0],
+          lastName: d.employeeName.split(' ').slice(1).join(' '),
+          employeeCode: 'N/A', // Detail might need this
+          department: 'General', // Detail might need this
+          // ... strict type mapping might need adjustment based on API response
+        },
+        basicSalary: d.earnings.basic,
+        housingAllowance: d.earnings.hra,
+        transportationAllowance: d.earnings.transport,
+        otherAllowances: d.earnings.special + d.earnings.medical + d.earnings.other,
+        overtime: d.earnings.overtimePay,
+        grossSalary: d.earnings.grossEarnings,
+        totalDeductions: d.deductions.totalDeductions,
+        netSalary: d.netPay,
+        // Add breakdown if UI supports it
+        pfEmployee: d.deductions.pfEmployee,
+        proTax: d.deductions.pt,
+        tax: d.deductions.tds,
+      }))
+
+      setPayrollItems(mappedItems)
       setIsCalculated(true)
 
       toast({
         title: '✅ Payroll Calculated',
-        description: `Successfully calculated payroll for ${items.length} employees.`,
+        description: `Successfully processed for ${mappedItems.length} employees.`,
       })
     } catch (error) {
+      console.error(error);
       toast({
         title: '❌ Calculation Error',
-        description: 'Failed to calculate payroll. Please try again.',
+        description: 'Failed to calculate payroll through API.',
         variant: 'destructive',
       })
     } finally {
@@ -99,43 +120,24 @@ export default function NewPayrollPage() {
   }
 
   const savePayroll = async () => {
-    if (!isCalculated || payrollItems.length === 0) {
-      toast({
-        title: 'No Data',
-        description: 'Please calculate payroll first.',
-        variant: 'destructive',
-      })
-      return
-    }
+    if (!isCalculated || payrollItems.length === 0) return
 
     setIsSaving(true)
 
     try {
-      const totalGross = payrollItems.reduce((sum, item) => sum + item.grossSalary, 0)
-      const totalDeductions = payrollItems.reduce((sum, item) => sum + item.totalDeductions, 0)
-      const totalNet = payrollItems.reduce((sum, item) => sum + item.netSalary, 0)
-
-      const payrollRun = payrollService.createRun({
-        runCode: `PR-${selectedYear}${String(selectedMonth).padStart(2, '0')}`,
-        payPeriod: `${selectedYear}-${String(selectedMonth).padStart(2, '0')}`,
-        payrollMonth: selectedMonth,
-        payrollYear: selectedYear,
-        paymentDate,
-        status: 'calculated',
-        totalEmployees: payrollItems.length,
-        totalGross,
-        totalDeductions,
-        totalNet,
-        totalEmployerCost: totalGross * 1.15,
-        notes: `Payroll for ${formatMonth(selectedMonth, selectedYear)}`,
+      // Call API with save=true
+      const res = await fetch('/api/payroll/calculate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          month: selectedMonth,
+          year: selectedYear,
+          companyId: employees[0]?.companyId,
+          save: true
+        })
       })
 
-      const itemsWithRunId = payrollItems.map(item => ({
-        ...item,
-        payrollRunId: payrollRun.id,
-      }))
-
-      payrollService.createItemsBulk(itemsWithRunId)
+      if (!res.ok) throw new Error('Save failed')
 
       toast({
         title: '🎉 Payroll Saved!',
@@ -436,9 +438,8 @@ export default function NewPayrollPage() {
                       return (
                         <tr
                           key={index}
-                          className={`border-b hover:bg-gradient-to-r hover:from-blue-50 hover:to-purple-50 transition-all ${
-                            index % 2 === 0 ? 'bg-white' : 'bg-gray-50'
-                          }`}
+                          className={`border-b hover:bg-gradient-to-r hover:from-blue-50 hover:to-purple-50 transition-all ${index % 2 === 0 ? 'bg-white' : 'bg-gray-50'
+                            }`}
                         >
                           <td className="px-4 py-4">
                             <div className="font-semibold text-gray-900">
