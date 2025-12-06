@@ -1,50 +1,58 @@
 import { prisma } from '@/lib/prisma';
-import { startOfDay, endOfDay, eachDayOfInterval, isWeekend, differenceInDays } from 'date-fns';
+import {
+  startOfDay,
+  endOfDay,
+  eachDayOfInterval,
+  isWeekend
+} from 'date-fns';
 
-export const LeaveService = {
+type CheckBalanceResult = {
+  sufficient: boolean;
+  available: number; // days available after pending
+  pending: number;
+  message?: string;
+};
+
+export const leaveService = {
   /**
    * Calculate working days excluding weekends and holidays
+   * - startDate / endDate may be Date or ISO string
    */
   async calculateWorkingDays(
-    startDate: Date,
-    endDate: Date,
-    employeeId: string,
-    includeWeekends: boolean = false,
-    includeHolidays: boolean = false
+    startDate: Date | string,
+    endDate: Date | string,
+    includeWeekends = false,
+    includeHolidays = false
   ): Promise<number> {
-    const days = eachDayOfInterval({ start: startDate, end: endDate });
+    const start = startDate instanceof Date ? startDate : new Date(startDate);
+    const end = endDate instanceof Date ? endDate : new Date(endDate);
+
+    const days = eachDayOfInterval({ start, end });
     let workingDays = 0;
 
-    // Get holidays for the period
+    // fetch holidays in the date range (assumes publicHoliday.date is a Date or a date string)
     const holidays = await prisma.publicHoliday.findMany({
       where: {
         date: {
-          gte: startOfDay(startDate),
-          lte: endOfDay(endDate)
+          gte: startOfDay(start),
+          lte: endOfDay(end)
         }
-      }
+      },
+      select: { date: true } // only need the date field
     });
 
     const holidayDates = new Set(
-      holidays.map(h => startOfDay(h.date).getTime())
+      holidays.map(h => startOfDay(new Date(h.date)).getTime())
     );
-
-    // Get employee shift for weekend definition (defaulting to Sat/Sun if no shift)
-    // In a real scenario, we'd fetch the specific shift. For now, assuming standard weekends.
-    // TODO: Fetch actual shift weeklyOffDays
 
     for (const day of days) {
       const dayStart = startOfDay(day);
 
       // Skip weekends if not included
-      if (!includeWeekends && isWeekend(day)) {
-        continue;
-      }
+      if (!includeWeekends && isWeekend(day)) continue;
 
       // Skip holidays if not included
-      if (!includeHolidays && holidayDates.has(dayStart.getTime())) {
-        continue;
-      }
+      if (!includeHolidays && holidayDates.has(dayStart.getTime())) continue;
 
       workingDays++;
     }
@@ -54,22 +62,28 @@ export const LeaveService = {
 
   /**
    * Check if employee has sufficient leave balance
-   * Considers PENDING leaves to prevent over-application
+   * - leaveType: 'ANNUAL' | 'SICK' | 'UNPAID' | others
+   * - requestedDays: number of days employee is applying for
+   *
+   * Returns object with whether sufficient and numeric balances (pending & available).
    */
   async checkLeaveBalance(
     employeeId: string,
     leaveType: string,
     requestedDays: number
-  ): Promise<{ sufficient: boolean; available: number; pending: number; message?: string }> {
+  ): Promise<CheckBalanceResult> {
+    if (!employeeId) {
+      return { sufficient: false, available: 0, pending: 0, message: 'Missing employeeId' };
+    }
 
-    // Unpaid leave always available
+    // UNPAID is unlimited here
     if (leaveType === 'UNPAID') {
-      return { sufficient: true, available: Infinity, pending: 0 };
+      return { sufficient: true, available: Number.POSITIVE_INFINITY, pending: 0 };
     }
 
     const currentYear = new Date().getFullYear();
 
-    // 1. Get actual DB balance
+    // find or create leave balance record for the employee+year
     let balance = await prisma.leaveBalance.findUnique({
       where: {
         employeeId_year: {
@@ -79,49 +93,52 @@ export const LeaveService = {
       }
     });
 
-    // Create balance record if it doesn't exist
+    // If no balance record, try to create one using policy defaults if possible
     if (!balance) {
       const policy = await prisma.leavePolicy.findFirst({
         where: { leaveType: leaveType as any, isActive: true }
       });
 
+      // reasonable defaults (adjust to your org policy)
+      const defaultAnnual = policy?.annualEntitlement ?? 30;
+      const defaultSick = policy?.sickEntitlement ?? 15;
+
       balance = await prisma.leaveBalance.create({
         data: {
           employeeId,
           year: currentYear,
-          annualLeaveEntitled: leaveType === 'ANNUAL' ? (policy?.annualEntitlement || 30) : 0,
-          annualLeaveBalance: leaveType === 'ANNUAL' ? (policy?.annualEntitlement || 30) : 0,
-          sickLeaveEntitled: leaveType === 'SICK' ? 15 : 0,
-          sickLeaveBalance: leaveType === 'SICK' ? 15 : 0,
+          annualLeaveEntitled: leaveType === 'ANNUAL' ? defaultAnnual : 0,
+          annualLeaveBalance: leaveType === 'ANNUAL' ? defaultAnnual : 0,
+          sickLeaveEntitled: leaveType === 'SICK' ? defaultSick : 0,
+          sickLeaveBalance: leaveType === 'SICK' ? defaultSick : 0
         }
       });
     }
 
-    // 2. Calculate Pending Leaves (Applied but not yet approved/rejected)
-    // We must subtract these to show "Effective Available Balance"
+    // Calculate pending leaves (applied but not approved/rejected)
     const pendingLeaves = await prisma.leave.findMany({
       where: {
         employeeId,
         leaveType: leaveType as any,
-        status: 'PENDING',
-        // Exclude the current leave if we were checking an update, but here we assume new application
-      }
+        status: 'PENDING'
+      },
+      select: { numberOfDays: true }
     });
 
-    const pendingDays = pendingLeaves.reduce((sum, leave) => sum + Number(leave.numberOfDays), 0);
+    const pendingDays = pendingLeaves.reduce((s, r) => s + Number(r.numberOfDays || 0), 0);
 
-    // 3. Determine Available Balance
+    // determine DB balance based on leaveType
     let dbBalance = 0;
     switch (leaveType) {
       case 'ANNUAL':
-        dbBalance = Number(balance.annualLeaveBalance);
+        dbBalance = Number(balance.annualLeaveBalance ?? 0);
         break;
       case 'SICK':
-        dbBalance = Number(balance.sickLeaveBalance);
+        dbBalance = Number(balance.sickLeaveBalance ?? 0);
         break;
       default:
-        // For other types, check if there's a specific limit or default to allowed
-        return { sufficient: true, available: Infinity, pending: pendingDays };
+        // other leave types - you may want to handle differently
+        return { sufficient: true, available: Number.POSITIVE_INFINITY, pending: pendingDays };
     }
 
     const effectiveBalance = dbBalance - pendingDays;
@@ -129,44 +146,41 @@ export const LeaveService = {
     if (requestedDays > effectiveBalance) {
       return {
         sufficient: false,
-        available: effectiveBalance,
+        available: Math.max(0, effectiveBalance),
         pending: pendingDays,
-        message: `Insufficient ${leaveType.toLowerCase()} leave balance. Available: ${effectiveBalance} days (Pending: ${pendingDays})`
+        message: `Insufficient ${leaveType.toLowerCase()} leave. Available: ${Math.max(0, effectiveBalance)} days (Pending: ${pendingDays})`
       };
     }
 
-    return { sufficient: true, available: effectiveBalance, pending: pendingDays };
+    return { sufficient: true, available: Math.max(0, effectiveBalance), pending: pendingDays };
   },
 
   /**
-   * Check for overlapping leaves
+   * Check for overlapping leaves for given employee and date-range.
+   * Returns whether overlap exists and the overlapping records.
    */
   async checkOverlappingLeaves(
     employeeId: string,
-    startDate: Date,
-    endDate: Date
+    startDate: Date | string,
+    endDate: Date | string
   ): Promise<{ hasOverlap: boolean; overlappingLeaves: any[] }> {
+    const start = startDate instanceof Date ? startDate : new Date(startDate);
+    const end = endDate instanceof Date ? endDate : new Date(endDate);
 
     const overlappingLeaves = await prisma.leave.findMany({
       where: {
         employeeId,
-        status: {
-          in: ['PENDING', 'APPROVED']
-        },
-        OR: [
-          {
-            AND: [
-              { startDate: { lte: endDate } },
-              { endDate: { gte: startDate } }
-            ]
-          }
+        status: { in: ['PENDING', 'APPROVED'] },
+        AND: [
+          { startDate: { lte: end } },
+          { endDate: { gte: start } }
         ]
       }
     });
 
-    return {
-      hasOverlap: overlappingLeaves.length > 0,
-      overlappingLeaves
-    };
+    return { hasOverlap: overlappingLeaves.length > 0, overlappingLeaves };
   }
 };
+
+// Default export for convenience (so imports using default or named both work)
+export default leaveService;
