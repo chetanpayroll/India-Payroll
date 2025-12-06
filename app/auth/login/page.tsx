@@ -25,26 +25,39 @@ export default function LoginPage() {
     setLoading(true)
 
     try {
-      const result = await signIn('credentials', {
-        redirect: false,
-        email: formData.email,
-        password: formData.password,
-      })
+      // ⚠️ TEMPORARY - DIRECT API CALL FOR DEV MODE
+      const response = await fetch('/api/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          email: formData.email,
+          password: formData.password
+        })
+      });
 
-      if (result?.error) {
+      const data = await response.json();
+
+      if (!response.ok) {
         toast({
           title: "Login failed",
-          description: "Invalid email or password",
+          description: data.error || "Invalid credentials",
           variant: "destructive"
         })
       } else {
+        // Store token as per instructions
+        localStorage.setItem('authToken', data.token);
+        localStorage.setItem('user', JSON.stringify(data.user));
+
         toast({
           title: "Welcome back!",
           description: "Login successful. Redirecting to dashboard...",
         })
-        router.push('/dashboard')
+
+        // Force reload/redirect to ensure state updates
+        window.location.href = '/dashboard';
       }
     } catch (error) {
+      console.error(error);
       toast({
         title: "Login failed",
         description: "An unexpected error occurred",
@@ -164,8 +177,8 @@ export default function LoginPage() {
                     <Mail className="absolute left-3 top-3 h-4 w-4 text-purple-300" />
                     <Input
                       id="email"
-                      type="email"
-                      placeholder="you@company.com"
+                      type="text" // Allow any format
+                      placeholder="Enter any email/username"
                       className="pl-10 bg-white/10 border-white/20 text-white placeholder:text-purple-300 focus:bg-white/20 focus:border-purple-400"
                       value={formData.email}
                       onChange={(e) => setFormData({ ...formData, email: e.target.value })}

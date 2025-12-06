@@ -27,15 +27,23 @@ export default function PayrollPage() {
   useInitData()
   const formatCurrency = useCurrencyFormatter()
 
-  const [payrollRuns, setPayrollRuns] = useState<PayrollRun[]>([])
-
+  /* Updated to use Server-Side API */
   useEffect(() => {
     loadPayrolls()
   }, [])
 
-  const loadPayrolls = () => {
-    const runs = payrollService.getAllRuns()
-    setPayrollRuns(runs)
+  const loadPayrolls = async () => {
+    try {
+      const res = await fetch('/api/payroll')
+      if (res.ok) {
+        const data = await res.json()
+        setPayrollRuns(data)
+      } else {
+        console.error('Failed to fetch payroll runs')
+      }
+    } catch (error) {
+      console.error('Error loading payrolls:', error)
+    }
   }
 
   const getStatusColor = (status: string) => {
@@ -188,9 +196,8 @@ export default function PayrollPage() {
                   {payrollRuns.map((run, index) => (
                     <tr
                       key={run.id}
-                      className={`hover:bg-gradient-to-r hover:from-blue-50 hover:to-purple-50 transition-all ${
-                        index % 2 === 0 ? 'bg-white' : 'bg-gray-50'
-                      }`}
+                      className={`hover:bg-gradient-to-r hover:from-blue-50 hover:to-purple-50 transition-all ${index % 2 === 0 ? 'bg-white' : 'bg-gray-50'
+                        }`}
                     >
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div className="font-semibold text-gray-900">{formatMonth(run.payrollMonth, run.payrollYear)}</div>

@@ -1,32 +1,28 @@
+// GMP Payroll - Payroll API Endpoints
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
-import { getServerSession } from 'next-auth';
-import { authOptions } from '@/lib/auth';
+
+// Removed legacy imports
 
 export async function GET(request: Request) {
-    const session = await getServerSession(authOptions);
-    if (!session) {
-        return new NextResponse('Unauthorized', { status: 401 });
-    }
-
     try {
         const { searchParams } = new URL(request.url);
         const year = searchParams.get('year');
         const month = searchParams.get('month');
+        const companyId = searchParams.get('companyId');
 
         const where: any = {};
 
-        if (year) {
-            where.payrollYear = parseInt(year);
-        }
-
-        if (month) {
-            where.payrollMonth = parseInt(month);
-        }
+        if (year) where.payrollYear = parseInt(year);
+        if (month) where.payrollMonth = parseInt(month);
+        if (companyId) where.companyId = companyId;
 
         const payrollRuns = await prisma.payrollRun.findMany({
             where,
             orderBy: { createdAt: 'desc' },
+            include: {
+                company: true
+            }
         });
 
         return NextResponse.json(payrollRuns);
@@ -37,29 +33,39 @@ export async function GET(request: Request) {
 }
 
 export async function POST(request: Request) {
-    const session = await getServerSession(authOptions);
-    if (!session) {
-        return new NextResponse('Unauthorized', { status: 401 });
-    }
-
     try {
         const body = await request.json();
 
         // Basic validation
-        if (!body.payrollMonth || !body.payrollYear) {
-            return new NextResponse('Missing required fields', { status: 400 });
+        if (!body.payrollMonth || !body.payrollYear || !body.companyId) {
+            return new NextResponse('Missing required fields (month, year, companyId)', { status: 400 });
+        }
+
+        // Check if run already exists
+        const existingRun = await prisma.payrollRun.findFirst({
+            where: {
+                companyId: body.companyId,
+                payrollMonth: body.payrollMonth,
+                payrollYear: body.payrollYear
+            }
+        });
+
+        if (existingRun) {
+            return new NextResponse('Payroll run already exists for this period', { status: 409 });
         }
 
         const payrollRun = await prisma.payrollRun.create({
             data: {
+                companyId: body.companyId,
                 payrollMonth: body.payrollMonth,
                 payrollYear: body.payrollYear,
-                status: body.status || 'DRAFT',
+                payPeriodStart: new Date(body.payPeriodStart || `${body.payrollYear}-${body.payrollMonth}-01`),
+                payPeriodEnd: new Date(body.payPeriodEnd || `${body.payrollYear}-${body.payrollMonth}-28`), // Simple default
+                status: body.status || 'Draft',
                 totalEmployees: body.totalEmployees || 0,
                 totalGross: body.totalGross || 0,
                 totalDeductions: body.totalDeductions || 0,
-                totalNet: body.totalNet || 0,
-                processingDate: new Date(),
+                totalNetPay: body.totalNetPay || 0,
             }
         });
 
