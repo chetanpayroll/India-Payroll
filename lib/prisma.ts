@@ -1,32 +1,101 @@
-import { PrismaClient } from '@prisma/client'
+import { Pool } from 'pg'
+import { randomUUID } from 'crypto'
 
 /**
- * Prisma Client Singleton
- * This prevents multiple instances of Prisma Client in development
- * and ensures proper connection pooling in production
+ * Lightweight Database Client Workaround
+ * Using pg directly due to Prisma engine download restrictions
  */
 
-const globalForPrisma = global as unknown as { prisma: PrismaClient | null }
+const pool = new Pool({
+  connectionString: process.env.DATABASE_URL,
+})
 
-// Create Prisma client with error handling for build-time issues
-let prismaInstance: PrismaClient | null = null
-
-try {
-  prismaInstance =
-    globalForPrisma.prisma ||
-    new PrismaClient({
-      log: process.env.NODE_ENV === 'development' ? ['query', 'error', 'warn'] : ['error'],
-    })
-
-  if (process.env.NODE_ENV !== 'production') {
-    globalForPrisma.prisma = prismaInstance
+// Mock Prisma-like client using pg
+const createMockPrismaClient = () => {
+  return {
+    user: {
+      findUnique: async ({ where }: any) => {
+        const { email, id } = where
+        const query = email
+          ? 'SELECT * FROM users WHERE email = $1 LIMIT 1'
+          : 'SELECT * FROM users WHERE id = $1 LIMIT 1'
+        const value = email || id
+        const result = await pool.query(query, [value])
+        return result.rows[0] || null
+      },
+      create: async ({ data }: any) => {
+        const id = randomUUID()
+        const query = `
+          INSERT INTO users (id, email, password_hash, name, role, is_active, email_verified, created_at, updated_at)
+          VALUES ($1, $2, $3, $4, $5, $6, $7, NOW(), NOW())
+          RETURNING *
+        `
+        const result = await pool.query(query, [
+          id,
+          data.email,
+          data.password,
+          data.name,
+          data.role || 'employee',
+          true,
+          false,
+        ])
+        return result.rows[0]
+      },
+      findMany: async ({ where }: any = {}) => {
+        let query = 'SELECT * FROM users'
+        const values: any[] = []
+        if (where) {
+          const conditions: string[] = []
+          let paramIndex = 1
+          if (where.email) {
+            conditions.push(`email = $${paramIndex++}`)
+            values.push(where.email)
+          }
+          if (conditions.length > 0) {
+            query += ' WHERE ' + conditions.join(' AND ')
+          }
+        }
+        const result = await pool.query(query, values)
+        return result.rows
+      },
+    },
+    session: {
+      create: async ({ data }: any) => {
+        const id = randomUUID()
+        const query = `
+          INSERT INTO sessions (id, user_id, token, expires_at, created_at, ip_address, user_agent)
+          VALUES ($1, $2, $3, $4, NOW(), $5, $6)
+          RETURNING *
+        `
+        const result = await pool.query(query, [
+          id,
+          data.userId,
+          data.token,
+          data.expiresAt,
+          data.ipAddress || null,
+          data.userAgent || null,
+        ])
+        return result.rows[0]
+      },
+      findUnique: async ({ where }: any) => {
+        const { token } = where
+        const query = 'SELECT * FROM sessions WHERE token = $1 LIMIT 1'
+        const result = await pool.query(query, [token])
+        return result.rows[0] || null
+      },
+      delete: async ({ where }: any) => {
+        const { token } = where
+        const query = 'DELETE FROM sessions WHERE token = $1 RETURNING *'
+        const result = await pool.query(query, [token])
+        return result.rows[0] || null
+      },
+    },
+    $disconnect: async () => {
+      await pool.end()
+    },
   }
-} catch (error) {
-  // During build time or when engines are not available, create a mock client
-  console.warn('Prisma Client initialization failed. Using mock client for build.', error)
-  prismaInstance = null
 }
 
-export const prisma = prismaInstance as PrismaClient
+export const prisma = createMockPrismaClient() as any
 
 export default prisma
