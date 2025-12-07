@@ -66,7 +66,7 @@ export const authOptions: NextAuthOptions = {
                                         legalName: 'Demo Company Pvt Ltd',
                                         pan: 'AAAAA0000A',
                                         tan: 'DEMO00000A',
-                                        address: 'Demo Address, India',
+                                        addressLine1: 'Demo Address, India',
                                         city: 'Mumbai',
                                         state: 'Maharashtra',
                                         postalCode: '400001',
@@ -79,15 +79,15 @@ export const authOptions: NextAuthOptions = {
                             // Hash the password (even though we accept any password in demo mode)
                             const hashedPassword = await bcrypt.hash(credentials.password, 10);
 
-                            // Create user with SUPER_ADMIN role
+                            // Create user with super_admin role
                             user = await prisma.user.create({
                                 data: {
                                     email: credentials.email,
                                     password: hashedPassword,
                                     name: credentials.email.split('@')[0], // Use email prefix as name
-                                    role: 'SUPER_ADMIN',
+                                    role: 'super_admin',
                                     isActive: true,
-                                    emailVerified: new Date()
+                                    emailVerified: true
                                 }
                             });
 
@@ -96,7 +96,7 @@ export const authOptions: NextAuthOptions = {
                                 data: {
                                     companyId: defaultCompany.id,
                                     userId: user.id,
-                                    role: 'SUPER_ADMIN',
+                                    role: 'super_admin',
                                     isActive: true
                                 }
                             });
@@ -111,7 +111,6 @@ export const authOptions: NextAuthOptions = {
                             id: user.id,
                             email: user.email,
                             name: user.name,
-                            image: user.image,
                             role: user.role,
                         };
 
@@ -149,7 +148,6 @@ export const authOptions: NextAuthOptions = {
                     id: user.id,
                     name: user.name,
                     email: user.email,
-                    image: user.image,
                     role: user.role,
                 };
             },
