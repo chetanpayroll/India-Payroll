@@ -1,6 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { leaveService } from '@/lib/services/leave-service';
 
+// Force dynamic rendering for this route
+export const dynamic = 'force-dynamic';
+export const runtime = 'nodejs';
+
 /**
  * GET /api/leave/statistics
  * Get leave statistics
