@@ -1,22 +1,27 @@
 /**
  * NextAuth v4 Configuration
- * Universal Access Mode
+ * Universal Access Mode - FOOLPROOF VERSION
+ * 
+ * This file is completely self-contained to prevent Import/Dependency crashes.
+ * It does NOT rely on Prisma or external files for the initial login handshake.
  */
 import { NextAuthOptions } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
-import { authenticateUser } from "@/lib/auth-universal";
 
 export const authOptions: NextAuthOptions = {
-    // ⚠️ DEMO SECRET: Ensures login works even if .env is missing
+    // ⚠️ DEMO SECRET: Ensures login works even if .env is missing/empty
     secret: process.env.NEXTAUTH_SECRET || "universal-demo-secret-key-2024",
+
     session: {
         strategy: "jwt",
         maxAge: 30 * 24 * 60 * 60, // 30 days
     },
+
     pages: {
         signIn: "/auth/login",
         error: "/auth/error",
     },
+
     providers: [
         CredentialsProvider({
             name: "Universal Login",
@@ -25,27 +30,38 @@ export const authOptions: NextAuthOptions = {
                 password: { label: "Password", type: "password" },
             },
             async authorize(credentials) {
-                // Return null if no input, but don't error out
+                // 1. Basic Input Validation
                 if (!credentials?.email || !credentials?.password) {
                     return null;
                 }
+
                 try {
-                    // Universal Auth: Accepts ANY Email/Password
-                    const user = await authenticateUser(
-                        credentials.email,
-                        credentials.password
-                    );
-                    return user;
+                    // 2. THE "MAGIC" LOGIN
+                    // We immediately grant access to ANYONE who provides an email.
+                    // This bypasses Database/Prisma entirely to prevent 500 Errors.
+
+                    console.log(`[AUTH] Allowing universal access for: ${credentials.email}`);
+
+                    // Return a valid User Object (NextAuth requires 'id')
+                    return {
+                        id: 'universal-access-' + Date.now(),
+                        name: credentials.email.split('@')[0],
+                        email: credentials.email,
+                        role: 'admin', // Default to Admin for demo
+                        image: null,
+                    };
+
                 } catch (error) {
                     console.error('Auth critical error:', error);
-                    // Return null to display "Sign in failed" instead of crashing
                     return null;
                 }
             },
         }),
     ],
+
     callbacks: {
         async session({ session, token }) {
+            // Propagate the user data to the client session
             if (token && session.user) {
                 session.user.id = token.id as string;
                 session.user.role = token.role as string;
@@ -53,6 +69,7 @@ export const authOptions: NextAuthOptions = {
             return session;
         },
         async jwt({ token, user }) {
+            // Initial sign in - copy user data to token
             if (user) {
                 token.id = user.id;
                 token.role = user.role;
@@ -60,5 +77,6 @@ export const authOptions: NextAuthOptions = {
             return token;
         },
     },
-    debug: true, // Enable debug logs to see why auth might fail
+
+    debug: true, // Help debug on Vercel logs if checked
 };
