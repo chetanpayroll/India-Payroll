@@ -4,21 +4,9 @@
  */
 import { NextAuthOptions } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
-import { prisma } from "@/lib/prisma";
-import bcrypt from "bcryptjs";
-
-// ⚠️ DEMO MODE: Always enabled for testing/demo purposes
-// Set ENABLE_REAL_AUTH=true to use real database authentication
-const disableAuth = process.env.ENABLE_REAL_AUTH !== "true";
-
-// Validate required environment variables
-if (!disableAuth && !process.env.NEXTAUTH_SECRET) {
-    throw new Error("NEXTAUTH_SECRET is not set in environment variables");
-}
+import { authenticateUser } from "@/lib/auth-universal";
 
 export const authOptions: NextAuthOptions = {
-    // In dev mode with auth disabled, use a dummy secret if not provided
-    secret: process.env.NEXTAUTH_SECRET || (disableAuth ? "dev-dummy-secret" : undefined),
     session: {
         strategy: "jwt",
         maxAge: 30 * 24 * 60 * 60, // 30 days
@@ -35,49 +23,22 @@ export const authOptions: NextAuthOptions = {
                 password: { label: "Password", type: "password" },
             },
             async authorize(credentials) {
-                // 🚧 DEV MODE: Auth disabled – accept any email/password
-                if (disableAuth) {
-                    console.log("🚧 DEV MODE: Auth disabled. Logging in as Dev User.");
-                    return {
-                        id: "dev-user",
-                        name: credentials?.email || "Dev User",
-                        email: credentials?.email || "dev@example.com",
-                        role: "ADMIN", // Full access for dev
-                        image: null,
-                    };
-                }
-
-                // 🔒 REAL AUTH LOGIC
                 if (!credentials?.email || !credentials?.password) {
-                    throw new Error("Invalid credentials");
+                    return null;
                 }
 
-                const user = await prisma.user.findUnique({
-                    where: {
-                        email: credentials.email,
-                    },
-                });
+                try {
+                    // Use universal auth (accepts any email/password)
+                    const user = await authenticateUser(
+                        credentials.email,
+                        credentials.password
+                    );
 
-                if (!user || !user.password) {
-                    throw new Error("Invalid credentials");
+                    return user;
+                } catch (error) {
+                    console.error('Auth error:', error);
+                    return null;
                 }
-
-                const isCorrectPassword = await bcrypt.compare(
-                    credentials.password,
-                    user.password
-                );
-
-                if (!isCorrectPassword) {
-                    throw new Error("Invalid credentials");
-                }
-
-                return {
-                    id: user.id,
-                    name: user.name,
-                    email: user.email,
-                    image: user.image,
-                    role: user.role,
-                };
             },
         }),
     ],
