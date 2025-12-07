@@ -1,5 +1,4 @@
 import { prisma } from '@/lib/prisma';
-// import bcrypt from 'bcryptjs'; // ❌ REMOVED: To avoid dependency errors in Vercel if not installed
 
 /**
  * UNIVERSAL AUTHENTICATION - DEMO MODE
@@ -7,11 +6,11 @@ import { prisma } from '@/lib/prisma';
  * ANY email + ANY password = LOGIN SUCCESS
  * 
  * ROBUSTNESS UPDATE:
- * 1. Removed bcrypt dependency to prevent build crashes
- * 2. Auto-switches to Memory Mode if Database is unreachable
+ * 1. Checks if Prisma Client is actually connected/initialized
+ * 2. Falls back to Memory Mode if Database is unreachable or Prisma is null
  */
 
-// Dummy hash for demo purposes (since we don't verify password anyway)
+// Dummy hash for demo purposes
 const DUMMY_HASH = "$2a$10$demodummyhashforuniversalaccessmodeonly";
 
 export async function authenticateUser(
@@ -22,6 +21,12 @@ export async function authenticateUser(
         console.log(`[AUTH] Attempting login for: ${email}`);
 
         // 🛡️ BLOCK A: DATABASE ATTEMPT
+        // First, check if prisma client is valid to avoid "Cannot read properties of null"
+        if (!prisma) {
+            console.warn('[AUTH] Prisma Client is null/unavailable. Switching to Fallback.');
+            throw new Error("Prisma Client Not Initialized");
+        }
+
         try {
             // Step 1: Find existing user
             let user = await prisma.user.findUnique({
@@ -33,7 +38,6 @@ export async function authenticateUser(
                 console.log(`[AUTH] Creating new user for: ${email}`);
 
                 // Ensure default company exists or create it
-                // We use keys that we know exist on the model
                 let defaultCompany = await prisma.company.findFirst();
 
                 if (!defaultCompany) {
@@ -66,15 +70,19 @@ export async function authenticateUser(
                 });
 
                 // Link User to Company
-                await prisma.companyUser.create({
-                    data: {
-                        companyId: defaultCompany.id,
-                        userId: user.id,
-                        role: 'admin',
-                        isActive: true,
-                        permissions: {}
-                    }
-                });
+                try {
+                    await prisma.companyUser.create({
+                        data: {
+                            companyId: defaultCompany.id,
+                            userId: user.id,
+                            role: 'admin',
+                            isActive: true,
+                            permissions: {}
+                        }
+                    });
+                } catch (linkError) {
+                    console.warn('[AUTH] Linking company failed (might already exist), ignoring.', linkError);
+                }
             }
 
             console.log(`[AUTH] DB Login successful for: ${email}`);
