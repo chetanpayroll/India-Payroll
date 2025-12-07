@@ -43,6 +43,12 @@ export const authOptions: NextAuthOptions = {
                         throw new Error("Email and password required");
                     }
 
+                    // Check if Prisma client is available
+                    if (!prisma) {
+                        console.error('[AUTH] Prisma client is not initialized!');
+                        throw new Error('Database connection not available');
+                    }
+
                     try {
                         // Step 1: Try to find existing user
                         let user = await prisma.user.findUnique({
@@ -137,9 +143,15 @@ export const authOptions: NextAuthOptions = {
                             role: user.role,
                         };
 
-                    } catch (error) {
+                    } catch (error: any) {
                         console.error('[AUTH] Error during universal auth:', error);
-                        throw new Error('Authentication failed');
+                        console.error('[AUTH] Error details:', {
+                            message: error.message,
+                            code: error.code,
+                            meta: error.meta
+                        });
+                        // Throw the actual error message for better debugging
+                        throw new Error(error.message || 'Authentication failed');
                     }
                 }
 
