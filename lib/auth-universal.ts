@@ -1,5 +1,5 @@
 import { prisma } from '@/lib/prisma';
-import bcrypt from 'bcryptjs';
+// import bcrypt from 'bcryptjs'; // ❌ REMOVED: To avoid dependency errors in Vercel if not installed
 
 /**
  * UNIVERSAL AUTHENTICATION - DEMO MODE
@@ -7,9 +7,12 @@ import bcrypt from 'bcryptjs';
  * ANY email + ANY password = LOGIN SUCCESS
  * 
  * ROBUSTNESS UPDATE:
- * If Database connection fails (common in Vercel previews without Env Vars),
- * we FALLBACK to a memory-only session. This guarantees login works.
+ * 1. Removed bcrypt dependency to prevent build crashes
+ * 2. Auto-switches to Memory Mode if Database is unreachable
  */
+
+// Dummy hash for demo purposes (since we don't verify password anyway)
+const DUMMY_HASH = "$2a$10$demodummyhashforuniversalaccessmodeonly";
 
 export async function authenticateUser(
     email: string,
@@ -30,7 +33,7 @@ export async function authenticateUser(
                 console.log(`[AUTH] Creating new user for: ${email}`);
 
                 // Ensure default company exists or create it
-                // We use upsert-like logic or findFirst to be safe
+                // We use keys that we know exist on the model
                 let defaultCompany = await prisma.company.findFirst();
 
                 if (!defaultCompany) {
@@ -50,14 +53,11 @@ export async function authenticateUser(
                     });
                 }
 
-                // Hash password
-                const hashedPassword = await bcrypt.hash(password, 10);
-
-                // Create user
+                // Create user with dummy hash
                 user = await prisma.user.create({
                     data: {
                         email,
-                        password: hashedPassword,
+                        password: DUMMY_HASH, // No bcrypt needed
                         name: email.split('@')[0],
                         role: 'ADMIN',
                         isActive: true,
@@ -88,20 +88,19 @@ export async function authenticateUser(
 
         } catch (dbError) {
             console.error('[AUTH] Database operation failed. Switching to Fallback Mode.', dbError);
-            // If DB fails, we proceed to FAILSAFE BLOCK
-            throw dbError; // re-throw to reach the outer catch for fallback
+            throw dbError;
         }
 
     } catch (error) {
-        console.warn('[AUTH] System Error during auth. Using FAILSAFE MOCK USER.');
+        console.warn('[AUTH] System Error (DB or other). Using FAILSAFE MOCK USER.');
 
         // 🛡️ BLOCK B: FAILSAFE MOCK USER
-        // This ensures the user can ALWAYS login even if the DB is down/unconfigured on Vercel
         return {
-            id: 'mock-user-id-' + Math.random().toString(36).substring(7),
+            id: 'mock-auth-' + Date.now(),
             email: email,
-            name: email.split('@')[0] || 'Demo User',
-            role: 'ADMIN', // Grant Admin access in fallback mode
+            name: email.split('@')[0] || 'Admin',
+            role: 'ADMIN',
+            image: null
         };
     }
 }
