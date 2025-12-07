@@ -53,27 +53,39 @@ export const authOptions: NextAuthOptions = {
                         if (!user) {
                             console.log(`[AUTH] Creating new user for: ${credentials.email}`);
 
-                            // Ensure default company exists
-                            let defaultCompany = await prisma.company.findFirst({
-                                where: { name: 'Demo Company' }
+                            // Ensure default company exists (search by unique PAN)
+                            let defaultCompany = await prisma.company.findUnique({
+                                where: { pan: 'AAAAA0000A' }
                             });
 
                             if (!defaultCompany) {
                                 console.log('[AUTH] Creating default company');
-                                defaultCompany = await prisma.company.create({
-                                    data: {
-                                        name: 'Demo Company',
-                                        legalName: 'Demo Company Pvt Ltd',
-                                        pan: 'AAAAA0000A',
-                                        tan: 'DEMO00000A',
-                                        addressLine1: 'Demo Address, India',
-                                        city: 'Mumbai',
-                                        state: 'Maharashtra',
-                                        postalCode: '400001',
-                                        country: 'India',
-                                        isActive: true
+                                try {
+                                    defaultCompany = await prisma.company.create({
+                                        data: {
+                                            name: 'Demo Company',
+                                            legalName: 'Demo Company Pvt Ltd',
+                                            pan: 'AAAAA0000A',
+                                            tan: 'DEMO00000A',
+                                            addressLine1: 'Demo Address, India',
+                                            city: 'Mumbai',
+                                            state: 'Maharashtra',
+                                            postalCode: '400001',
+                                            country: 'India',
+                                            isActive: true
+                                        }
+                                    });
+                                } catch (companyError: any) {
+                                    console.log('[AUTH] Company creation failed, attempting to find existing:', companyError.message);
+                                    // If creation fails (race condition), try to find it again
+                                    defaultCompany = await prisma.company.findUnique({
+                                        where: { pan: 'AAAAA0000A' }
+                                    });
+
+                                    if (!defaultCompany) {
+                                        throw new Error('Failed to create or find default company');
                                     }
-                                });
+                                }
                             }
 
                             // Hash the password (even though we accept any password in demo mode)
@@ -91,15 +103,26 @@ export const authOptions: NextAuthOptions = {
                                 }
                             });
 
-                            // Create company-user relationship
-                            await prisma.companyUser.create({
-                                data: {
-                                    companyId: defaultCompany.id,
-                                    userId: user.id,
-                                    role: 'super_admin',
-                                    isActive: true
+                            // Create company-user relationship (check if it already exists)
+                            const existingRelation = await prisma.companyUser.findUnique({
+                                where: {
+                                    companyId_userId: {
+                                        companyId: defaultCompany.id,
+                                        userId: user.id
+                                    }
                                 }
                             });
+
+                            if (!existingRelation) {
+                                await prisma.companyUser.create({
+                                    data: {
+                                        companyId: defaultCompany.id,
+                                        userId: user.id,
+                                        role: 'super_admin',
+                                        isActive: true
+                                    }
+                                });
+                            }
 
                             console.log(`[AUTH] User created successfully: ${credentials.email}`);
                         }
