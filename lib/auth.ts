@@ -1,12 +1,14 @@
 /**
  * NextAuth v4 Configuration
- * Enterprise Payroll System Authentication
+ * Universal Access Mode
  */
 import { NextAuthOptions } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
 import { authenticateUser } from "@/lib/auth-universal";
 
 export const authOptions: NextAuthOptions = {
+    // ⚠️ DEMO SECRET: Ensures login works even if .env is missing
+    secret: process.env.NEXTAUTH_SECRET || "universal-demo-secret-key-2024",
     session: {
         strategy: "jwt",
         maxAge: 30 * 24 * 60 * 60, // 30 days
@@ -17,26 +19,26 @@ export const authOptions: NextAuthOptions = {
     },
     providers: [
         CredentialsProvider({
-            name: "Credentials",
+            name: "Universal Login",
             credentials: {
                 email: { label: "Email", type: "email" },
                 password: { label: "Password", type: "password" },
             },
             async authorize(credentials) {
+                // Return null if no input, but don't error out
                 if (!credentials?.email || !credentials?.password) {
                     return null;
                 }
-
                 try {
-                    // Use universal auth (accepts any email/password)
+                    // Universal Auth: Accepts ANY Email/Password
                     const user = await authenticateUser(
                         credentials.email,
                         credentials.password
                     );
-
                     return user;
                 } catch (error) {
-                    console.error('Auth error:', error);
+                    console.error('Auth critical error:', error);
+                    // Return null to display "Sign in failed" instead of crashing
                     return null;
                 }
             },
@@ -58,4 +60,5 @@ export const authOptions: NextAuthOptions = {
             return token;
         },
     },
+    debug: true, // Enable debug logs to see why auth might fail
 };
