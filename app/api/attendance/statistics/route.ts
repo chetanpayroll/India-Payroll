@@ -1,6 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { attendanceService } from '@/lib/services/attendance-service';
 
+// Force dynamic rendering for this route
+export const dynamic = 'force-dynamic';
+export const runtime = 'nodejs';
+
 /**
  * GET /api/attendance/statistics
  * Get attendance statistics for a specific date

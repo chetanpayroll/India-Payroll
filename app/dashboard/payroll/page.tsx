@@ -27,6 +27,9 @@ export default function PayrollPage() {
   useInitData()
   const formatCurrency = useCurrencyFormatter()
 
+  // State for payroll runs
+  const [payrollRuns, setPayrollRuns] = useState<PayrollRun[]>([])
+
   /* Updated to use Server-Side API */
   useEffect(() => {
     loadPayrolls()
