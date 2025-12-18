@@ -58,6 +58,18 @@ const createMockPrismaClient = () => {
         const result = await pool.query(query, values)
         return result.rows
       },
+      update: async ({ where, data }: any) => {
+        const { email } = where
+        const { password } = data
+        const query = `
+          UPDATE users
+          SET password_hash = $1, updated_at = NOW()
+          WHERE email = $2
+          RETURNING *
+        `
+        const result = await pool.query(query, [password, email])
+        return result.rows[0]
+      },
     },
     session: {
       create: async ({ data }: any) => {

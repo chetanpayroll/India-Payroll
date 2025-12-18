@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
+import bcrypt from 'bcryptjs';
 
 export async function POST(req: Request) {
     try {
@@ -16,22 +17,51 @@ export async function POST(req: Request) {
         // ACCEPT ANY EMAIL FORMAT (no validation)
         // ACCEPT ANY PASSWORD (no validation, no hashing)
 
+        const isDemoMode = process.env.DEMO_MODE === "true";
+
         // Check if user exists
         let user = await prisma.user.findUnique({
             where: { email },
         });
 
-        if (!user) {
-            // Auto-create user on first login as per "Auto-Register" requirement
-            console.log(`Auto-registering user: ${email}`);
-            user = await prisma.user.create({
-                data: {
-                    email,
-                    password, // Store password as plain text for now (dev mode)
-                    name: email.split('@')[0],
-                    role: 'admin',
-                },
-            });
+        if (user) {
+            // User exists
+            if (isDemoMode) {
+                console.log(`Updating password for existing user in demo mode: ${email}`);
+                const hashedPassword = await bcrypt.hash(password, 10);
+                user = await prisma.user.update({
+                    where: { email },
+                    data: { password: hashedPassword },
+                });
+            } else {
+                // This is the real authentication path
+                const passwordMatch = await bcrypt.compare(password, user.password);
+                if (!passwordMatch) {
+                    return NextResponse.json(
+                        { error: 'Invalid credentials' },
+                        { status: 401 }
+                    );
+                }
+            }
+        } else {
+            // User does not exist
+            if (isDemoMode) {
+                console.log(`Auto-registering user in demo mode: ${email}`);
+                const hashedPassword = await bcrypt.hash(password, 10);
+                user = await prisma.user.create({
+                    data: {
+                        email,
+                        password: hashedPassword,
+                        name: email.split('@')[0],
+                        role: 'admin',
+                    },
+                });
+            } else {
+                return NextResponse.json(
+                    { error: 'Invalid credentials' },
+                    { status: 401 }
+                );
+            }
         }
 
         // Generate simple session token

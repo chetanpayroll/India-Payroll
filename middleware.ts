@@ -1,22 +1,26 @@
 import { withAuth } from "next-auth/middleware"
 import { NextResponse } from "next/server"
 
-// ⚠️ DEMO MODE: Always enabled for testing/demo purposes
-// Set ENABLE_REAL_AUTH=true to use real database authentication
-const disableAuth = process.env.ENABLE_REAL_AUTH !== "true";
+// Secure by default: Real authentication is enabled unless DEMO_MODE is explicitly set to "true"
+const isDemoMode = process.env.DEMO_MODE === "true";
 
 export default withAuth(
     function middleware(req) {
-        if (disableAuth) {
+        // In demo mode, we can bypass further middleware checks
+        if (isDemoMode) {
             return NextResponse.next()
         }
+        // Real authentication logic can go here if needed in the future
     },
     {
         callbacks: {
             authorized: ({ req, token }) => {
-                if (disableAuth) {
+                // If in demo mode, always grant access
+                if (isDemoMode) {
                     return true
                 }
+
+                // In real auth mode, protect dashboard routes
                 if (req.nextUrl.pathname.startsWith("/dashboard") && token === null) {
                     return false
                 }
