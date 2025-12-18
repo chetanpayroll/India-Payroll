@@ -1,0 +1,75 @@
+
+> gmppayroll-system@1.0.0 dev
+> next dev
+
+   ▲ Next.js 14.0.4
+   - Local:        http://localhost:3000
+   - Environments: .env
+
+ ✓ Ready in 1983ms
+ ✓ Compiled /middleware in 343ms (66 modules)
+ ⨯ Error [SyntaxError]: Invalid or unexpected token
+    at <unknown> (file:///app/.next/server/middleware.js:19)
+    at new Script (node:vm:117:7)
+    at createScript (node:vm:269:10)
+    at runInContext (node:vm:300:10)
+    at evaluateInContext (file:///app/node_modules/next/dist/server/web/sandbox/context.js:377:38)
+    at getRuntimeContext (file:///app/node_modules/next/dist/server/web/sandbox/sandbox.js:70:9)
+    at async runWithTaggedErrors (file:///app/node_modules/next/dist/server/web/sandbox/sandbox.js:76:21)
+    at async DevServer.runMiddleware (file:///app/node_modules/next/dist/server/next-server.js:1035:24)
+    at async DevServer.runMiddleware (file:///app/node_modules/next/dist/server/dev/next-dev-server.js:260:28)
+    at async NextNodeServer.handleCatchallMiddlewareRequest (file:///app/node_modules/next/dist/server/next-server.js:318:26)
+    at async DevServer.handleRequestImpl (file:///app/node_modules/next/dist/server/base-server.js:811:28) {
+  middleware: true
+}
+ ○ Compiling /_error ...
+ ✓ Compiled /_error in 2s (188 modules)
+ ○ Compiling /not-found ...
+ ⚠ Fast Refresh had to perform a full reload due to a runtime error.
+ ⨯ Error [SyntaxError]: Invalid or unexpected token
+    at <unknown> (file:///app/.next/server/middleware.js:19)
+    at new Script (node:vm:117:7)
+    at createScript (node:vm:269:10)
+    at runInContext (node:vm:300:10)
+    at evaluateInContext (file:///app/node_modules/next/dist/server/web/sandbox/context.js:377:38)
+    at getRuntimeContext (file:///app/node_modules/next/dist/server/web/sandbox/sandbox.js:70:9)
+    at async runWithTaggedErrors (file:///app/node_modules/next/dist/server/web/sandbox/sandbox.js:76:21)
+    at async DevServer.runMiddleware (file:///app/node_modules/next/dist/server/next-server.js:1035:24)
+    at async DevServer.runMiddleware (file:///app/node_modules/next/dist/server/dev/next-dev-server.js:260:28)
+    at async NextNodeServer.handleCatchallMiddlewareRequest (file:///app/node_modules/next/dist/server/next-server.js:318:26)
+    at async DevServer.handleRequestImpl (file:///app/node_modules/next/dist/server/base-server.js:811:28) {
+  middleware: true
+}
+ ✓ Compiled /not-found in 4.8s (737 modules)
+ ⚠ Fast Refresh had to perform a full reload due to a runtime error.
+ ⨯ Error [SyntaxError]: Invalid or unexpected token
+    at <unknown> (file:///app/.next/server/middleware.js:19)
+    at new Script (node:vm:117:7)
+    at createScript (node:vm:269:10)
+    at runInContext (node:vm:300:10)
+    at evaluateInContext (file:///app/node_modules/next/dist/server/web/sandbox/context.js:377:38)
+    at getRuntimeContext (file:///app/node_modules/next/dist/server/web/sandbox/sandbox.js:70:9)
+    at async runWithTaggedErrors (file:///app/node_modules/next/dist/server/web/sandbox/sandbox.js:76:21)
+    at async DevServer.runMiddleware (file:///app/node_modules/next/dist/server/next-server.js:1035:24)
+    at async DevServer.runMiddleware (file:///app/node_modules/next/dist/server/dev/next-dev-server.js:260:28)
+    at async NextNodeServer.handleCatchallMiddlewareRequest (file:///app/node_modules/next/dist/server/next-server.js:318:26)
+    at async DevServer.handleRequestImpl (file:///app/node_modules/next/dist/server/base-server.js:811:28) {
+  middleware: true
+}
+ ⨯ Error [SyntaxError]: Invalid or unexpected token
+    at <unknown> (file:///app/.next/server/middleware.js:19)
+    at new Script (node:vm:117:7)
+    at createScript (node:vm:269:10)
+    at runInContext (node:vm:300:10)
+    at evaluateInContext (file:///app/node_modules/next/dist/server/web/sandbox/context.js:377:38)
+    at getRuntimeContext (file:///app/node_modules/next/dist/server/web/sandbox/sandbox.js:70:9)
+    at async runWithTaggedErrors (file:///app/node_modules/next/dist/server/web/sandbox/sandbox.js:76:21)
+    at async DevServer.runMiddleware (file:///app/node_modules/next/dist/server/next-server.js:1035:24)
+    at async DevServer.runMiddleware (file:///app/node_modules/next/dist/server/dev/next-dev-server.js:260:28)
+    at async NextNodeServer.handleCatchallMiddlewareRequest (file:///app/node_modules/next/dist/server/next-server.js:318:26)
+    at async DevServer.handleRequestImpl (file:///app/node_modules/next/dist/server/base-server.js:811:28) {
+  middleware: true
+}
+ ✓ Compiled in 1274ms (803 modules)
+ ✓ Compiled in 51ms (64 modules)
+[?25h

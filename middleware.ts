@@ -1,35 +1,68 @@
-import { withAuth } from "next-auth/middleware"
-import { NextResponse } from "next/server"
 
-// Secure by default: Real authentication is enabled unless DEMO_MODE is explicitly set to "true"
-const isDemoMode = process.env.DEMO_MODE === "true";
+import { NextRequest, NextResponse } from 'next/server';
 
-export default withAuth(
-    function middleware(req) {
-        // In demo mode, we can bypass further middleware checks
-        if (isDemoMode) {
-            return NextResponse.next()
-        }
-        // Real authentication logic can go here if needed in the future
-    },
-    {
-        callbacks: {
-            authorized: ({ req, token }) => {
-                // If in demo mode, always grant access
-                if (isDemoMode) {
-                    return true
-                }
+const isDemoMode = process.env.DEMO_MODE === 'true';
 
-                // In real auth mode, protect dashboard routes
-                if (req.nextUrl.pathname.startsWith("/dashboard") && token === null) {
-                    return false
-                }
-                return true
-            }
-        }
+async function verifySessionToken(token: string, req: NextRequest) {
+  try {
+    const response = await fetch(new URL('/api/auth/verify', req.url), {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Cookie: `authToken=${token}`,
+      },
+      body: JSON.stringify({ token }),
+    });
+
+    if (response.ok) {
+      const data = await response.json();
+      return data;
     }
-)
+    return { valid: false };
+  } catch (error) {
+    console.error('Error verifying session token:', error);
+    return { valid: false };
+  }
+}
+
+export async function middleware(req: NextRequest) {
+  const { pathname } = req.nextUrl;
+
+  if (
+    pathname.startsWith('/_next/') ||
+    pathname.startsWith('/api/') ||
+    pathname.startsWith('/static/') ||
+    pathname.includes('.')
+  ) {
+    return NextResponse.next();
+  }
+
+  const publicPaths = ['/auth/login', '/auth/register', '/'];
+  const isPublicPath = publicPaths.includes(pathname);
+
+  if (isDemoMode) {
+    return NextResponse.next();
+  }
+
+  const token = req.cookies.get('authToken')?.value;
+
+  if (!token && !isPublicPath) {
+    return NextResponse.redirect(new URL('/auth/login', req.url));
+  }
+
+  if (token) {
+    const { valid } = await verifySessionToken(token, req);
+    if (!valid && !isPublicPath) {
+      return NextResponse.redirect(new URL('/auth/login', req.url));
+    }
+    if (valid && isPublicPath && pathname !== '/') {
+        return NextResponse.redirect(new URL('/dashboard', req.url));
+    }
+  }
+
+  return NextResponse.next();
+}
 
 export const config = {
-    matcher: ["/dashboard/:path*"]
-}
+  matcher: ['/((?!api|_next/static|_next/image|favicon.ico).*)'],
+};
